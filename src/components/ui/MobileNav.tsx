@@ -70,16 +70,6 @@ export default function MobileNav({
         onClick={() => onChange("donate")}
       />
       <TabButton
-        label="Sources"
-        icon={
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M7 3.5A1.5 1.5 0 018.5 2h3A1.5 1.5 0 0113 3.5v.206l3.243 2.834A2.5 2.5 0 0117 8.282V15.5a2.5 2.5 0 01-2.5 2.5h-9A2.5 2.5 0 013 15.5V8.282a2.5 2.5 0 01.757-1.742L7 3.706V3.5z" />
-          </svg>
-        }
-        active={active === "sources"}
-        onClick={() => onChange("sources")}
-      />
-      <TabButton
         label="About"
         icon={
           <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
@@ -89,7 +79,7 @@ export default function MobileNav({
             />
           </svg>
         }
-        active={active === "about"}
+        active={active === "about" || active === "sources"}
         onClick={() => onChange("about")}
       />
     </nav>

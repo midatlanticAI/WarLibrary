@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ConflictEvent } from "@/types";
 
 const CONFLICT_START = "2026-02-28";
@@ -10,7 +10,11 @@ interface OverviewBannerProps {
 }
 
 export default function OverviewBanner({ events }: OverviewBannerProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  // Start collapsed on mobile to maximize map space
+  const [collapsed, setCollapsed] = useState(true);
+  useEffect(() => {
+    if (window.innerWidth >= 640) setCollapsed(false);
+  }, []);
 
   const stats = useMemo(() => {
     // Sum individual event fatalities
@@ -115,8 +119,9 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
           </span>
           {collapsed && (
             <span className="text-xs text-zinc-600">
-              Day {stats.daysOfConflict} · {stats.totalEvents} events ·{" "}
-              {stats.countries} countries
+              Day {stats.daysOfConflict} ·{" "}
+              <span className="text-red-400">{stats.totalKilled.toLocaleString()}+</span> killed ·{" "}
+              {stats.totalEvents} events · {stats.countries} countries
             </span>
           )}
         </div>
@@ -138,9 +143,9 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
       </button>
 
       {!collapsed && (
-        <div className="space-y-3 px-4 pb-3">
-          {/* Summary text — dynamically generated from event data */}
-          <p className="text-sm leading-relaxed text-zinc-300">
+        <div className="space-y-2 px-4 pb-3 sm:space-y-3">
+          {/* Summary text — hidden on mobile for space, shown on sm+ */}
+          <p className="hidden text-sm leading-relaxed text-zinc-300 sm:block">
             <span className="font-semibold text-zinc-100">
               Operation Epic Fury: Day {stats.daysOfConflict}.
             </span>{" "}
@@ -168,9 +173,9 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
             <StatChip label="Events" value={String(stats.totalEvents)} color="text-zinc-300" className="hidden sm:block" />
           </div>
 
-          {/* Latest event */}
+          {/* Latest event — compact on mobile */}
           {stats.latestEvent && (
-            <div className="flex items-start gap-2 rounded-lg bg-zinc-900/50 p-2.5">
+            <div className="flex items-start gap-2 rounded-lg bg-zinc-900/50 p-2 sm:p-2.5">
               <span className="relative mt-0.5 flex h-2 w-2 flex-shrink-0">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
@@ -183,10 +188,10 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
                   </span>{" "}
                   — {stats.latestEvent.region}, {stats.latestEvent.country}
                 </div>
-                <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500">
+                <p className="mt-0.5 line-clamp-1 text-xs text-zinc-500 sm:line-clamp-2">
                   {stats.latestEvent.description}
                 </p>
-                <span className="mt-0.5 inline-block text-[10px] text-zinc-600">
+                <span className="mt-0.5 hidden text-[10px] text-zinc-600 sm:inline-block">
                   Source: {stats.latestEvent.source}
                 </span>
               </div>

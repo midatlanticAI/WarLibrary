@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, {
   Marker,
   Popup,
@@ -50,6 +50,19 @@ export default function ConflictMap({
   dateRange,
 }: ConflictMapProps) {
   const mapRef = useRef<MapRef>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Resize map when container dimensions change (e.g. banner collapse)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      mapRef.current?.resize();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const [viewState, setViewState] = useState({
     longitude: 49.0,
     latitude: 32.0,
@@ -111,7 +124,7 @@ export default function ConflictMap({
   }, []);
 
   return (
-    <div className="relative h-full w-full">
+    <div ref={containerRef} className="relative h-full w-full">
       <Map
         ref={mapRef}
         {...viewState}
