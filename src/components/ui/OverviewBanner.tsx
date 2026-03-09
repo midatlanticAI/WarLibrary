@@ -13,10 +13,29 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const stats = useMemo(() => {
-    const totalKilled = events.reduce(
+    // Sum individual event fatalities
+    const summedFatalities = events.reduce(
       (sum, e) => sum + (e.fatalities || 0),
       0
     );
+
+    // Also check for cumulative death toll reports in event descriptions
+    // These are more accurate than summing individual events
+    let reportedTotal = 0;
+    for (const e of events) {
+      const desc = (e.description || "").toLowerCase();
+      // Match patterns like "death toll exceeds 1,300" or "1,332 killed" or "toll reaches 555"
+      const tollMatch = desc.match(/(?:death toll|toll|casualties).*?(\d[\d,]+)\s*(?:killed|dead|people)/i)
+        || desc.match(/(?:death toll|toll).*?(?:reaches|exceeds|surpasses|passes|tops)\s*(\d[\d,]+)/i)
+        || (e.description || "").match(/(\d[\d,]+)\+?\s*(?:fatalities|killed|dead)\s*(?:reported|confirmed)/i);
+      if (tollMatch) {
+        const num = parseInt(tollMatch[1].replace(/,/g, ""), 10);
+        if (num > reportedTotal) reportedTotal = num;
+      }
+    }
+
+    // Use the higher of: summed individual fatalities vs reported cumulative total
+    const totalKilled = Math.max(summedFatalities, reportedTotal);
     const countries = new Set(events.map((e) => e.country)).size;
     const countryList = [...new Set(events.map((e) => e.country))];
     const startDate = new Date(CONFLICT_START);

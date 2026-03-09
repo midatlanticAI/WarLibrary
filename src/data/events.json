@@ -5,10 +5,13 @@
       "event_type": "airstrike",
       "description": "Operation Epic Fury begins. US and Israeli forces launch coordinated airstrikes on Tehran, striking Khamenei's compound and killing Supreme Leader Ali Khamenei along with family members.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": 12,
       "source": "Al Jazeera"
     },
@@ -20,7 +23,10 @@
       "longitude": 51.3347,
       "country": "Iran",
       "region": "Tehran - Military District",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "CNN"
     },
@@ -29,10 +35,13 @@
       "event_type": "airstrike",
       "description": "Israeli and US strikes hit nuclear-related facilities and missile production sites in Isfahan, continuing the degradation of Iran's nuclear infrastructure begun in 2025's Operation Midnight Hammer.",
       "latitude": 32.6546,
-      "longitude": 51.6680,
+      "longitude": 51.668,
       "country": "Iran",
       "region": "Isfahan",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "CSIS"
     },
@@ -41,10 +50,13 @@
       "event_type": "airstrike",
       "description": "US and Israeli strikes target IRGC Aerospace Force underground missile base near Kermanshah (Panj Pelleh base) and at least 15 buildings in the Kermanshah missile factory complex.",
       "latitude": 34.3142,
-      "longitude": 47.0650,
+      "longitude": 47.065,
       "country": "Iran",
       "region": "Kermanshah",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "FDD"
     },
@@ -52,11 +64,14 @@
       "date": "2026-02-28T03:30:00Z",
       "event_type": "airstrike",
       "description": "Strikes hit IRGC and nuclear-related facilities in Karaj, northwest of Tehran, targeting centrifuge component manufacturing sites.",
-      "latitude": 35.8400,
+      "latitude": 35.84,
       "longitude": 50.9391,
       "country": "Iran",
       "region": "Karaj",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "Al Jazeera"
     },
@@ -68,7 +83,10 @@
       "longitude": 50.8746,
       "country": "Iran",
       "region": "Qom",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "FDD"
     },
@@ -77,12 +95,16 @@
       "event_type": "airstrike",
       "description": "Airstrike destroys the Shajareh Tayyebeh girls' elementary school in Minab, Hormozgan province, during the school day. Between 80 and 180 people killed, mostly schoolchildren. US investigation later suggests American forces likely responsible.",
       "latitude": 27.1461,
-      "longitude": 57.0840,
+      "longitude": 57.084,
       "country": "Iran",
       "region": "Minab, Hormozgan",
-      "actors": ["United States"],
-      "fatalities": 168,
-      "source": "Washington Post"
+      "actors": [
+        "United States"
+      ],
+      "fatalities": 180,
+      "source": "Washington Post",
+      "civilian_impact": "Elementary girls' school struck during school day, approximately 180 people killed, mostly schoolchildren",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-02-28T08:00:00Z",
@@ -92,7 +114,10 @@
       "longitude": 56.2666,
       "country": "Iran",
       "region": "Bandar Abbas",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "The War Zone"
     },
@@ -104,19 +129,25 @@
       "longitude": 34.7818,
       "country": "Israel",
       "region": "Tel Aviv",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 1,
-      "source": "Times of Israel"
+      "source": "Times of Israel",
+      "civilian_impact": "One civilian woman (foreign caregiver) killed, 22 others injured in residential strike",
+      "verification_status": "reported"
     },
     {
       "date": "2026-02-28T18:30:00Z",
       "event_type": "missile_attack",
       "description": "IRGC announces missile attacks targeting Israeli government in Tel Aviv, security and military centers in Haifa, and positions in East Jerusalem as part of initial retaliatory wave.",
-      "latitude": 32.7940,
+      "latitude": 32.794,
       "longitude": 34.9896,
       "country": "Israel",
       "region": "Haifa",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Al Arabiya"
     },
@@ -124,35 +155,46 @@
       "date": "2026-02-28T20:00:00Z",
       "event_type": "missile_attack",
       "description": "Iran launches first wave of retaliatory ballistic missiles and drones toward US bases in Gulf states, targeting Al Dhafra Air Base in Abu Dhabi. Debris falls in residential area near Zayed International Airport, killing one Pakistani civilian.",
-      "latitude": 24.2480,
+      "latitude": 24.248,
       "longitude": 54.5472,
       "country": "United Arab Emirates",
       "region": "Abu Dhabi",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 1,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "One Pakistani civilian killed by debris from intercepted missile near Zayed International Airport",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-01T06:00:00Z",
       "event_type": "drone_attack",
-      "description": "Iranian drone strikes Kuwait International Airport, injuring several employees and causing material damage to the passenger terminal. Smoke seen rising from direction of US Embassy in Kuwait City.",
+      "description": "Iranian drone strikes Kuwait International Airport, injuring several employees and causing material damage to the passenger terminal. One person killed.",
       "latitude": 29.2266,
       "longitude": 47.9689,
       "country": "Kuwait",
       "region": "Kuwait City",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 1,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "One person killed in drone strike on airport; smoke reported near US Embassy area",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-01T08:00:00Z",
       "event_type": "drone_attack",
       "description": "Saraya Awliya al-Dam (Guardians of Blood), affiliated with Islamic Resistance in Iraq, launches drone and missile attacks on US bases at Erbil International Airport in retaliation for Khamenei's death. Explosions heard across the airport.",
       "latitude": 36.2356,
-      "longitude": 43.9630,
+      "longitude": 43.963,
       "country": "Iraq",
       "region": "Erbil",
-      "actors": ["Islamic Resistance in Iraq", "Saraya Awliya al-Dam"],
+      "actors": [
+        "Islamic Resistance in Iraq",
+        "Saraya Awliya al-Dam"
+      ],
       "fatalities": null,
       "source": "Kurdistan24"
     },
@@ -160,13 +202,17 @@
       "date": "2026-03-01T09:00:00Z",
       "event_type": "drone_attack",
       "description": "Iranian drone strike hits a makeshift US operations center at Shuaiba civilian port in Kuwait, killing six US service members with no prior warning or siren. Four others seriously injured.",
-      "latitude": 29.0500,
-      "longitude": 48.1700,
+      "latitude": 29.05,
+      "longitude": 48.17,
       "country": "Kuwait",
       "region": "Shuaiba Port",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 6,
-      "source": "CNN"
+      "source": "CNN",
+      "civilian_impact": "Six US service members killed, four others seriously injured at makeshift operations center",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-01T12:00:00Z",
@@ -176,9 +222,13 @@
       "longitude": 34.9883,
       "country": "Israel",
       "region": "Beit Shemesh",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 9,
-      "source": "Times of Israel"
+      "source": "Times of Israel",
+      "civilian_impact": "Nine people killed including three teenage siblings in synagogue and bomb shelter strike; 49 others injured",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-01T14:00:00Z",
@@ -188,9 +238,14 @@
       "longitude": 51.6081,
       "country": "Qatar",
       "region": "Doha",
-      "actors": ["Iran", "Qatar"],
+      "actors": [
+        "Iran",
+        "Qatar"
+      ],
       "fatalities": 0,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "16 people injured in Qatar from missile and drone strikes; no deaths reported",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-01T16:00:00Z",
@@ -200,7 +255,9 @@
       "longitude": 55.2708,
       "country": "United Arab Emirates",
       "region": "Dubai",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Al Jazeera"
     },
@@ -209,10 +266,12 @@
       "event_type": "strategic_development",
       "description": "Iran officially closes the Strait of Hormuz using drone strikes near the waterway. Tanker traffic drops 70%, then falls to near zero. Over 150 ships anchor outside the strait. Global oil prices spike over 10%.",
       "latitude": 26.5667,
-      "longitude": 56.2500,
+      "longitude": 56.25,
       "country": "Iran",
       "region": "Strait of Hormuz",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "NPR"
     },
@@ -224,21 +283,28 @@
       "longitude": 34.9514,
       "country": "Israel",
       "region": "Mishmar HaCarmel, south of Haifa",
-      "actors": ["Hezbollah", "Israel"],
+      "actors": [
+        "Hezbollah",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "Anadolu Agency"
     },
     {
       "date": "2026-03-02T03:00:00Z",
       "event_type": "airstrike",
-      "description": "Israel launches massive airstrikes on Beirut's Dahieh southern suburbs, targeting Hezbollah headquarters in ten high-rise buildings. Hezbollah intelligence chief Hussein Makled and five senior IRGC Quds Force commanders killed.",
+      "description": "Israel launches massive airstrikes on Beirut's Dahieh southern suburbs, targeting Hezbollah headquarters. Hezbollah intelligence chief Hussein Makled killed along with senior IRGC Quds Force commanders.",
       "latitude": 33.8418,
       "longitude": 35.5171,
       "country": "Lebanon",
       "region": "Beirut - Dahieh",
-      "actors": ["Israel"],
+      "actors": [
+        "Israel"
+      ],
       "fatalities": 31,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "31 people killed in strikes on Beirut suburbs",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-02T06:00:00Z",
@@ -248,9 +314,13 @@
       "longitude": 35.2033,
       "country": "Lebanon",
       "region": "Southern Lebanon",
-      "actors": ["Israel"],
+      "actors": [
+        "Israel"
+      ],
       "fatalities": 11,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "11 people killed, 58 wounded in southern Lebanon; IDF issues evacuation orders to 50 villages across southern Lebanon and Bekaa Valley",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-02T08:00:00Z",
@@ -260,7 +330,9 @@
       "longitude": 51.5461,
       "country": "Qatar",
       "region": "Ras Laffan",
-      "actors": ["Qatar"],
+      "actors": [
+        "Qatar"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
@@ -272,7 +344,15 @@
       "longitude": -77.0364,
       "country": "United States",
       "region": "Washington D.C.",
-      "actors": ["United States", "Bahrain", "Jordan", "Kuwait", "Qatar", "Saudi Arabia", "United Arab Emirates"],
+      "actors": [
+        "United States",
+        "Bahrain",
+        "Jordan",
+        "Kuwait",
+        "Qatar",
+        "Saudi Arabia",
+        "United Arab Emirates"
+      ],
       "fatalities": 0,
       "source": "US State Department"
     },
@@ -284,7 +364,10 @@
       "longitude": 35.5736,
       "country": "Lebanon",
       "region": "Southern Lebanon - Metula border",
-      "actors": ["Israel", "Hezbollah"],
+      "actors": [
+        "Israel",
+        "Hezbollah"
+      ],
       "fatalities": null,
       "source": "Al Jazeera"
     },
@@ -296,7 +379,9 @@
       "longitude": 46.6253,
       "country": "Saudi Arabia",
       "region": "Riyadh",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "PBS"
     },
@@ -308,7 +393,9 @@
       "longitude": 50.8746,
       "country": "Iran",
       "region": "Qom",
-      "actors": ["Israel"],
+      "actors": [
+        "Israel"
+      ],
       "fatalities": null,
       "source": "Times of Israel"
     },
@@ -316,11 +403,13 @@
       "date": "2026-03-03T10:00:00Z",
       "event_type": "strategic_development",
       "description": "Syria deploys Interior Ministry forces and elite troops to the frontier with Israeli-occupied Golan Heights, setting up roadblocks near Jabata al-Khashab and Khan Arnabeh to prevent Iranian proxy remnants from provoking Israeli retaliation.",
-      "latitude": 33.2500,
-      "longitude": 35.8200,
+      "latitude": 33.25,
+      "longitude": 35.82,
       "country": "Syria",
       "region": "Quneitra - Golan Heights border",
-      "actors": ["Syria"],
+      "actors": [
+        "Syria"
+      ],
       "fatalities": 0,
       "source": "The National"
     },
@@ -329,10 +418,12 @@
       "event_type": "strategic_development",
       "description": "Syria moves hundreds of soldiers, tanks, troop carriers, and field artillery from Kurdish front lines in eastern Syria to the border with Lebanon's Hezbollah strongholds.",
       "latitude": 34.0047,
-      "longitude": 36.2110,
+      "longitude": 36.211,
       "country": "Syria",
       "region": "Syria-Lebanon border",
-      "actors": ["Syria"],
+      "actors": [
+        "Syria"
+      ],
       "fatalities": 0,
       "source": "The National"
     },
@@ -340,11 +431,14 @@
       "date": "2026-03-04T01:00:00Z",
       "event_type": "battle",
       "description": "USS Charlotte (Los Angeles-class submarine) torpedoes and sinks Iranian Navy frigate IRIS Dena in the Indian Ocean, 19 nautical miles off Galle, Sri Lanka, with two Mark 48 torpedoes. Ship sinks within 2-3 minutes. 87 Iranian sailors killed.",
-      "latitude": 5.9500,
+      "latitude": 5.95,
       "longitude": 80.2167,
       "country": "Sri Lanka",
       "region": "Indian Ocean, off Galle",
-      "actors": ["United States", "Iran"],
+      "actors": [
+        "United States",
+        "Iran"
+      ],
       "fatalities": 87,
       "source": "Naval News"
     },
@@ -353,10 +447,12 @@
       "event_type": "missile_attack",
       "description": "Iranian ballistic missile penetrates air defenses and strikes Al Udeid Air Base in Qatar, the largest US military installation in the Middle East. The AN/FPS-132 early-warning radar system ($1.1B) is damaged. No casualties reported.",
       "latitude": 25.1173,
-      "longitude": 51.3150,
+      "longitude": 51.315,
       "country": "Qatar",
       "region": "Al Udeid Air Base",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "Stars and Stripes"
     },
@@ -364,11 +460,14 @@
       "date": "2026-03-04T10:00:00Z",
       "event_type": "battle",
       "description": "Iranian catamaran corvette IRIS Shahid Sayyad Shirazi (Soleimani-class) struck by US forces, left burning at sea with considerable damage. Part of broader campaign that destroyed Iran's entire Gulf of Oman fleet.",
-      "latitude": 25.5000,
-      "longitude": 57.0000,
+      "latitude": 25.5,
+      "longitude": 57,
       "country": "Iran",
       "region": "Gulf of Oman",
-      "actors": ["United States", "Iran"],
+      "actors": [
+        "United States",
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Naval News"
     },
@@ -377,10 +476,12 @@
       "event_type": "strategic_development",
       "description": "Iran's Fars News Agency reports Iran has fired over 500 ballistic and naval missiles and almost 2,000 drones since Feb 28. US reports Iran's ballistic missile rate has dropped 90% and drone rate 83% since day one, suggesting depletion of stocks.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
@@ -392,7 +493,9 @@
       "longitude": 44.3583,
       "country": "Iraq",
       "region": "Harir Air Base, Kurdistan",
-      "actors": ["Islamic Resistance in Iraq"],
+      "actors": [
+        "Islamic Resistance in Iraq"
+      ],
       "fatalities": null,
       "source": "The National"
     },
@@ -401,10 +504,13 @@
       "event_type": "airstrike",
       "description": "Heavy overnight bombing of Tehran on day seven. Strikes target remaining military infrastructure, air defenses, and missile launchers. IDF reports approximately 5,000 bombs dropped since the start of the war.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "Al Jazeera"
     },
@@ -413,34 +519,43 @@
       "event_type": "missile_attack",
       "description": "Iran targets Israeli embassy in Bahrain and fires missiles toward Saudi Arabia. Iranian missiles intercepted over Saudi Arabia, Qatar, UAE, and Bahrain activates air raid sirens.",
       "latitude": 26.2285,
-      "longitude": 50.5860,
+      "longitude": 50.586,
       "country": "Bahrain",
       "region": "Manama",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Al Jazeera"
     },
     {
       "date": "2026-03-06T08:00:00Z",
       "event_type": "airstrike",
-      "description": "Israel strikes Beirut and Tehran simultaneously. Trump demands Iran's 'unconditional surrender'. Lebanon death toll from Israeli attacks reaches at least 294 killed, 1,023 wounded, and 95,000 displaced.",
+      "description": "Israel strikes Beirut and Tehran. Trump demands Iran's 'unconditional surrender'. Lebanon death toll from Israeli attacks reaches at least 294 killed, 1,023 wounded, and 95,000 displaced.",
       "latitude": 33.8938,
       "longitude": 35.5018,
       "country": "Lebanon",
       "region": "Beirut",
-      "actors": ["Israel"],
+      "actors": [
+        "Israel"
+      ],
       "fatalities": null,
-      "source": "NPR"
+      "source": "NPR",
+      "civilian_impact": "At least 294 killed and 1,023 wounded in Lebanon; 95,000 displaced from Israeli attacks",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-06T12:00:00Z",
       "event_type": "strategic_development",
       "description": "Washington Post reports Russia is providing Iran with intelligence to target US forces, escalating great-power dimensions of the conflict.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["Russia", "Iran"],
+      "actors": [
+        "Russia",
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "Washington Post"
     },
@@ -452,9 +567,14 @@
       "longitude": 36.0833,
       "country": "Lebanon",
       "region": "Nabi Chit, Bekaa Valley",
-      "actors": ["Israel", "Hezbollah"],
+      "actors": [
+        "Israel",
+        "Hezbollah"
+      ],
       "fatalities": 41,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "At least 41 people killed and 40 wounded in Nabi Chit, Bekaa Valley during airstrike coinciding with commando raid",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-07T03:00:00Z",
@@ -464,7 +584,10 @@
       "longitude": 36.0833,
       "country": "Lebanon",
       "region": "Nabi Chit, Bekaa Valley",
-      "actors": ["Israel", "Hezbollah"],
+      "actors": [
+        "Israel",
+        "Hezbollah"
+      ],
       "fatalities": null,
       "source": "Times of Israel"
     },
@@ -476,9 +599,14 @@
       "longitude": 54.3773,
       "country": "United Arab Emirates",
       "region": "Abu Dhabi",
-      "actors": ["Iran", "United Arab Emirates"],
+      "actors": [
+        "Iran",
+        "United Arab Emirates"
+      ],
       "fatalities": 0,
-      "source": "Gulf News"
+      "source": "Gulf News",
+      "civilian_impact": "UAE intercepts 109 drones and 9 ballistic missiles in single day; no casualties reported from successful interceptions",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-07T10:00:00Z",
@@ -488,9 +616,13 @@
       "longitude": 55.2708,
       "country": "United Arab Emirates",
       "region": "Dubai",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 1,
-      "source": "Irish Times"
+      "source": "Irish Times",
+      "civilian_impact": "One person killed in Dubai during Iranian missile and drone attacks",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-07T14:00:00Z",
@@ -500,7 +632,11 @@
       "longitude": 36.2913,
       "country": "Syria",
       "region": "Damascus region",
-      "actors": ["Israel", "Iran", "Syria"],
+      "actors": [
+        "Israel",
+        "Iran",
+        "Syria"
+      ],
       "fatalities": null,
       "source": "Enab Baladi"
     },
@@ -509,22 +645,30 @@
       "event_type": "strategic_development",
       "description": "War enters day nine. Over 500,000 displaced in Lebanon. Total Iranian civilian death toll exceeds 1,300 per Iranian Red Crescent. Conflict shows no signs of de-escalation as Iran announces appointment of new supreme leader.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["Iran", "United States", "Israel"],
+      "actors": [
+        "Iran",
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "Over 500,000 displaced in Lebanon; total Iranian civilian death toll exceeds 1,300 per Iranian Red Crescent",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-02T10:00:00Z",
       "event_type": "strategic_development",
       "description": "Houthi leader Abdulmalik al-Houthi delivers speeches supporting Iran but does not announce retaliatory military action. Internal debate within Houthis over whether to resume Red Sea attacks and join the war.",
       "latitude": 15.3694,
-      "longitude": 44.1910,
+      "longitude": 44.191,
       "country": "Yemen",
       "region": "Sanaa",
-      "actors": ["Houthis"],
+      "actors": [
+        "Houthis"
+      ],
       "fatalities": 0,
       "source": "FDD Long War Journal"
     },
@@ -532,11 +676,13 @@
       "date": "2026-02-28T10:00:00Z",
       "event_type": "airstrike",
       "description": "US warships launch Tomahawk cruise missiles at Iranian targets. US Army HIMARS launchers also employed. Strikes target Iranian air defences, drone launch sites, airfields, and missile production facilities across western and central Iran.",
-      "latitude": 34.0300,
-      "longitude": 51.1500,
+      "latitude": 34.03,
+      "longitude": 51.15,
       "country": "Iran",
       "region": "Central Iran",
-      "actors": ["United States"],
+      "actors": [
+        "United States"
+      ],
       "fatalities": null,
       "source": "PBS"
     },
@@ -548,19 +694,26 @@
       "longitude": 51.4216,
       "country": "Iran",
       "region": "Tehran - Grand Bazaar",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "Total civilian casualties in Iran surpass 1,300 killed according to Iranian Red Crescent. Infrastructure damage includes Grand Bazaar in Tehran and Golestan Palace, a UNESCO World Heritage Site.",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-05T14:00:00Z",
       "event_type": "airstrike",
       "description": "Continued US strikes target Iranian military sites in Tabriz, expanding the geographic scope of Operation Epic Fury to northwestern Iran near the Azerbaijan border.",
-      "latitude": 38.0800,
+      "latitude": 38.08,
       "longitude": 46.2919,
       "country": "Iran",
       "region": "Tabriz",
-      "actors": ["United States"],
+      "actors": [
+        "United States"
+      ],
       "fatalities": null,
       "source": "Critical Threats"
     },
@@ -572,9 +725,14 @@
       "longitude": 35.5097,
       "country": "Lebanon",
       "region": "Beirut southern suburbs",
-      "actors": ["Israel", "Hezbollah"],
+      "actors": [
+        "Israel",
+        "Hezbollah"
+      ],
       "fatalities": 52,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "52 people killed and 154 injured in deadliest single day of Lebanon front; multiple Hezbollah command posts and weapons caches destroyed",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-08T06:00:00Z",
@@ -584,9 +742,14 @@
       "longitude": 35.2033,
       "country": "Lebanon",
       "region": "Southern Lebanon",
-      "actors": ["Israel", "Hezbollah"],
+      "actors": [
+        "Israel",
+        "Hezbollah"
+      ],
       "fatalities": 2,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "Two Israeli soldiers killed; more than 517,000 registered as displaced in Lebanon",
+      "verification_status": "reported"
     }
   ],
   "metadata": {

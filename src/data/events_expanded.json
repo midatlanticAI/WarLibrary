@@ -8,19 +8,24 @@
       "longitude": 32.9879,
       "country": "Cyprus",
       "region": "RAF Akrotiri, Sovereign Base Area",
-      "actors": ["Hezbollah"],
+      "actors": [
+        "Hezbollah"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
     {
       "date": "2026-03-01T23:00:00Z",
       "event_type": "drone_attack",
-      "description": "A second drone launched from Lebanon toward Cyprus is intercepted by Greek F-16 fighter jets over Lebanese airspace before reaching Cypriot territory.",
-      "latitude": 34.6500,
-      "longitude": 33.0000,
+      "description": "A second drone launched from Lebanon toward Cyprus is intercepted by Greek F-16 fighter jets over Cypriot airspace, not Lebanese airspace as originally stated.",
+      "latitude": 34.65,
+      "longitude": 33,
       "country": "Cyprus",
       "region": "Cypriot airspace",
-      "actors": ["Hezbollah", "Greece"],
+      "actors": [
+        "Hezbollah",
+        "Greece"
+      ],
       "fatalities": 0,
       "source": "Greek City Times"
     },
@@ -32,7 +37,9 @@
       "longitude": 33.0413,
       "country": "Cyprus",
       "region": "Eastern Mediterranean",
-      "actors": ["United Kingdom"],
+      "actors": [
+        "United Kingdom"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
@@ -44,7 +51,10 @@
       "longitude": 33.0413,
       "country": "Cyprus",
       "region": "Cyprus",
-      "actors": ["Greece", "France"],
+      "actors": [
+        "Greece",
+        "France"
+      ],
       "fatalities": 0,
       "source": "Defense News"
     },
@@ -56,7 +66,9 @@
       "longitude": 33.6249,
       "country": "Cyprus",
       "region": "Larnaca",
-      "actors": ["Hezbollah"],
+      "actors": [
+        "Hezbollah"
+      ],
       "fatalities": 0,
       "source": "Cyprus Mail"
     },
@@ -68,7 +80,13 @@
       "longitude": 33.0413,
       "country": "Cyprus",
       "region": "Eastern Mediterranean",
-      "actors": ["Italy", "Spain", "Netherlands", "Germany", "France"],
+      "actors": [
+        "Italy",
+        "Spain",
+        "Netherlands",
+        "Germany",
+        "France"
+      ],
       "fatalities": 0,
       "source": "Times of Israel"
     },
@@ -80,7 +98,9 @@
       "longitude": 33.3642,
       "country": "Cyprus",
       "region": "Nicosia",
-      "actors": ["Cyprus"],
+      "actors": [
+        "Cyprus"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
@@ -92,7 +112,9 @@
       "longitude": 33.6249,
       "country": "Cyprus",
       "region": "Larnaca",
-      "actors": ["Cyprus"],
+      "actors": [
+        "Cyprus"
+      ],
       "fatalities": 0,
       "source": "Cyprus Mail"
     },
@@ -104,9 +126,12 @@
       "longitude": 45.4584,
       "country": "Azerbaijan",
       "region": "Nakhchivan",
-      "actors": ["Iran"],
-      "fatalities": 0,
-      "source": "Al Jazeera"
+      "actors": [
+        "Iran"
+      ],
+      "fatalities": 2,
+      "source": "Al Jazeera",
+      "civilian_impact": "At least two civilians injured in drone strikes on Razi airport terminal and near school in Shakarabad village"
     },
     {
       "date": "2026-03-05T14:00:00Z",
@@ -116,7 +141,9 @@
       "longitude": 49.8671,
       "country": "Azerbaijan",
       "region": "Baku",
-      "actors": ["Azerbaijan"],
+      "actors": [
+        "Azerbaijan"
+      ],
       "fatalities": 0,
       "source": "Jerusalem Post"
     },
@@ -128,7 +155,10 @@
       "longitude": 49.8671,
       "country": "Azerbaijan",
       "region": "Baku",
-      "actors": ["Azerbaijan", "Iran"],
+      "actors": [
+        "Azerbaijan",
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "OC Media"
     },
@@ -140,7 +170,11 @@
       "longitude": 36.2208,
       "country": "Turkey",
       "region": "Dortyol, Hatay Province",
-      "actors": ["Iran", "NATO", "Turkey"],
+      "actors": [
+        "Iran",
+        "NATO",
+        "Turkey"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
@@ -152,7 +186,10 @@
       "longitude": 4.3517,
       "country": "Belgium",
       "region": "NATO HQ, Brussels",
-      "actors": ["NATO", "Turkey"],
+      "actors": [
+        "NATO",
+        "Turkey"
+      ],
       "fatalities": 0,
       "source": "CNBC"
     },
@@ -164,7 +201,9 @@
       "longitude": 36.7822,
       "country": "Jordan",
       "region": "Muwaffaq Salti Air Base, Azraq",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "CNN"
     },
@@ -176,7 +215,10 @@
       "longitude": 36.7822,
       "country": "Jordan",
       "region": "Muwaffaq Salti Air Base, Azraq",
-      "actors": ["United States", "Iran"],
+      "actors": [
+        "United States",
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "Defence Security Asia"
     },
@@ -188,9 +230,13 @@
       "longitude": 67.0011,
       "country": "Pakistan",
       "region": "Karachi",
-      "actors": ["United States", "Pakistan"],
+      "actors": [
+        "United States",
+        "Pakistan"
+      ],
       "fatalities": 10,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "civilian_impact": "10 killed, over 60 injured at US consulate in Karachi"
     },
     {
       "date": "2026-03-01T12:00:00Z",
@@ -200,9 +246,12 @@
       "longitude": 75.5406,
       "country": "Pakistan",
       "region": "Skardu, Gilgit-Baltistan",
-      "actors": ["Pakistan"],
-      "fatalities": 13,
-      "source": "Al Jazeera"
+      "actors": [
+        "Pakistan"
+      ],
+      "fatalities": 12,
+      "source": "Al Jazeera",
+      "civilian_impact": "At least 12 protesters and one security officer killed in pro-Iran demonstrations in Gilgit and Skardu"
     },
     {
       "date": "2026-03-01T14:00:00Z",
@@ -212,9 +261,12 @@
       "longitude": 73.0931,
       "country": "Pakistan",
       "region": "Islamabad",
-      "actors": ["Pakistan"],
+      "actors": [
+        "Pakistan"
+      ],
       "fatalities": 2,
-      "source": "NBC News"
+      "source": "NBC News",
+      "civilian_impact": "Two protesters killed near the US Embassy in Islamabad during pro-Iran marches"
     },
     {
       "date": "2026-03-02T06:00:00Z",
@@ -224,7 +276,9 @@
       "longitude": 74.3144,
       "country": "Pakistan",
       "region": "Gilgit-Baltistan",
-      "actors": ["Pakistan"],
+      "actors": [
+        "Pakistan"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
@@ -233,10 +287,12 @@
       "event_type": "strategic_development",
       "description": "India activates 'Project Ghar' (Project Home) evacuation operation for 9 million Indian nationals in Gulf Cooperation Council countries. Ministry of External Affairs puts Indian Navy and Air Force on standby for mass evacuations.",
       "latitude": 28.6139,
-      "longitude": 77.2090,
+      "longitude": 77.209,
       "country": "India",
       "region": "New Delhi",
-      "actors": ["India"],
+      "actors": [
+        "India"
+      ],
       "fatalities": 0,
       "source": "Business Today India"
     },
@@ -245,10 +301,12 @@
       "event_type": "strategic_development",
       "description": "Over 52,000 Indians evacuated from Gulf states by March 7, with 32,107 travelling on Indian carriers. Hundreds of thousands more await evacuation flights as airports in the region face disruptions and cancellations.",
       "latitude": 28.6139,
-      "longitude": 77.2090,
+      "longitude": 77.209,
       "country": "India",
       "region": "New Delhi",
-      "actors": ["India"],
+      "actors": [
+        "India"
+      ],
       "fatalities": 0,
       "source": "Business Today India"
     },
@@ -260,7 +318,9 @@
       "longitude": 31.2357,
       "country": "Egypt",
       "region": "Cairo",
-      "actors": ["Egypt"],
+      "actors": [
+        "Egypt"
+      ],
       "fatalities": 0,
       "source": "Times of Israel"
     },
@@ -272,7 +332,9 @@
       "longitude": 32.2653,
       "country": "Egypt",
       "region": "Suez Canal",
-      "actors": ["Egypt"],
+      "actors": [
+        "Egypt"
+      ],
       "fatalities": 0,
       "source": "Al Arabiya"
     },
@@ -281,10 +343,12 @@
       "event_type": "strategic_development",
       "description": "Brent crude oil surges 12% to over $92 per barrel as Iran closes the Strait of Hormuz. US crude tops $91. Roughly one-third of seaborne crude oil trade and 19% of global LNG flows transit the strait.",
       "latitude": 26.5667,
-      "longitude": 56.2500,
+      "longitude": 56.25,
       "country": "Iran",
       "region": "Strait of Hormuz",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "CNBC"
     },
@@ -293,10 +357,12 @@
       "event_type": "strategic_development",
       "description": "Maritime insurers cancel war risk protection and indemnity insurance for vessels transiting the Persian Gulf effective March 5. Economic risk becomes too high for ship owners. Over 400 vessels anchor outside the strait.",
       "latitude": 26.5667,
-      "longitude": 56.2500,
+      "longitude": 56.25,
       "country": "Iran",
       "region": "Strait of Hormuz",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
@@ -308,7 +374,9 @@
       "longitude": -77.0364,
       "country": "United States",
       "region": "Washington D.C.",
-      "actors": ["United States"],
+      "actors": [
+        "United States"
+      ],
       "fatalities": 0,
       "source": "CNBC"
     },
@@ -320,7 +388,9 @@
       "longitude": -0.1278,
       "country": "United Kingdom",
       "region": "London",
-      "actors": ["European Union"],
+      "actors": [
+        "European Union"
+      ],
       "fatalities": 0,
       "source": "CNN"
     },
@@ -328,11 +398,13 @@
       "date": "2026-03-05T08:00:00Z",
       "event_type": "strategic_development",
       "description": "Over 400,000 metric tons of Indian basmati rice for export stuck at Indian ports or in transit. 75% of India's basmati exports (6 million tons/year) go to the Middle East. Shipping rerouted via Cape of Good Hope, adding 14-25 days to transit.",
-      "latitude": 19.0760,
+      "latitude": 19.076,
       "longitude": 72.8777,
       "country": "India",
       "region": "Mumbai",
-      "actors": ["India"],
+      "actors": [
+        "India"
+      ],
       "fatalities": 0,
       "source": "Down to Earth"
     },
@@ -344,7 +416,10 @@
       "longitude": 55.0631,
       "country": "United Arab Emirates",
       "region": "Dubai - Jebel Ali Port",
-      "actors": ["Iran", "United Arab Emirates"],
+      "actors": [
+        "Iran",
+        "United Arab Emirates"
+      ],
       "fatalities": 0,
       "source": "Times of Israel"
     },
@@ -353,12 +428,15 @@
       "event_type": "drone_attack",
       "description": "A Shahed-type drone strikes near the Fairmont The Palm Hotel on Palm Jumeirah in Dubai, causing a large explosion and fire. Four people injured from debris and blast effects.",
       "latitude": 25.1124,
-      "longitude": 55.1390,
+      "longitude": 55.139,
       "country": "United Arab Emirates",
       "region": "Dubai - Palm Jumeirah",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
-      "source": "Wikipedia"
+      "source": "Wikipedia",
+      "civilian_impact": "Four people injured from debris and blast effects in strike near Fairmont The Palm Hotel"
     },
     {
       "date": "2026-03-02T16:30:00Z",
@@ -368,7 +446,9 @@
       "longitude": 54.3773,
       "country": "United Arab Emirates",
       "region": "Abu Dhabi",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "CNBC"
     },
@@ -380,21 +460,27 @@
       "longitude": 54.3826,
       "country": "United Arab Emirates",
       "region": "Abu Dhabi - Zayed Port",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "Wikipedia"
     },
     {
       "date": "2026-03-04T14:00:00Z",
       "event_type": "strategic_development",
-      "description": "UAE Defense Ministry reports intercepting 161 of 174 tracked ballistic missiles, 645 of 689 detected drones, and 8 cruise missiles since February 28. An additional 812 drones detected with 755 intercepted; 57 made impact within the country.",
+      "description": "UAE Defense Ministry reports intercepting 161 of 174 tracked ballistic missiles, 645 of 689 detected drones, and 8 cruise missiles since February 28. An additional 812 drones detected with 755 intercepted; 57 made impact within the country. Four foreign nationals killed.",
       "latitude": 24.4539,
       "longitude": 54.3773,
       "country": "United Arab Emirates",
       "region": "Abu Dhabi",
-      "actors": ["United Arab Emirates", "Iran"],
+      "actors": [
+        "United Arab Emirates",
+        "Iran"
+      ],
       "fatalities": 4,
-      "source": "Gulf News"
+      "source": "Gulf News",
+      "civilian_impact": "Four foreign nationals killed (from Pakistan, Nepal, and Bangladesh) and 112 injured since strikes began"
     },
     {
       "date": "2026-03-03T18:00:00Z",
@@ -404,19 +490,26 @@
       "longitude": 54.3773,
       "country": "United Arab Emirates",
       "region": "Abu Dhabi",
-      "actors": ["United Arab Emirates", "Iran"],
-      "fatalities": null,
-      "source": "Axios"
+      "actors": [
+        "United Arab Emirates",
+        "Iran"
+      ],
+      "fatalities": 4,
+      "source": "Axios",
+      "civilian_impact": "Four foreign nationals killed (from Pakistan, Nepal, and Bangladesh) and 112 injured since strikes began"
     },
     {
       "date": "2026-03-02T01:00:00Z",
       "event_type": "drone_attack",
       "description": "Hezbollah launches 23 separate attacks against Israel in 24 hours using rockets (16 incidents) and UAVs (7 incidents), targeting the border communities, the Galilee, the Golan Heights, and the Haifa area.",
       "latitude": 33.0167,
-      "longitude": 35.1000,
+      "longitude": 35.1,
       "country": "Israel",
       "region": "Northern Israel - Galilee",
-      "actors": ["Hezbollah", "Israel"],
+      "actors": [
+        "Hezbollah",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "Alma Research Center"
     },
@@ -428,7 +521,9 @@
       "longitude": 35.5711,
       "country": "Israel",
       "region": "Kiryat Shmona",
-      "actors": ["Hezbollah"],
+      "actors": [
+        "Hezbollah"
+      ],
       "fatalities": null,
       "source": "Times of Israel"
     },
@@ -440,7 +535,10 @@
       "longitude": 35.5736,
       "country": "Israel",
       "region": "Southern Lebanon border",
-      "actors": ["Hezbollah", "Israel"],
+      "actors": [
+        "Hezbollah",
+        "Israel"
+      ],
       "fatalities": 2,
       "source": "Times of Israel"
     },
@@ -452,31 +550,41 @@
       "longitude": 52.5836,
       "country": "Iran",
       "region": "Shiraz",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "FDD"
     },
     {
       "date": "2026-03-03T04:00:00Z",
       "event_type": "airstrike",
-      "description": "IAEA confirms entrance buildings at Iran's underground Natanz Fuel Enrichment Plant were damaged in US-Israeli strikes. Attacks targeted enrichment facility entrances at the main Iranian nuclear site.",
+      "description": "IAEA confirms entrance buildings at Iran's underground Natanz Fuel Enrichment Plant were damaged in US-Israeli strikes. Attacks targeted enrichment facility entrances at the main Iranian nuclear site. No fatalities reported.",
       "latitude": 33.7244,
       "longitude": 51.7273,
       "country": "Iran",
       "region": "Natanz",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-02T06:00:00Z",
       "event_type": "airstrike",
       "description": "US-Israeli strikes damage the Isfahan Nuclear Technology Center irradiation facility. No radiation leak reported. Strikes also hit a covert weapons development site known as Minzadehei and the Lavisan 2/Mojdeh complex.",
       "latitude": 32.6546,
-      "longitude": 51.6680,
+      "longitude": 51.668,
       "country": "Iran",
       "region": "Isfahan",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": null,
       "source": "FDD"
     },
@@ -485,10 +593,12 @@
       "event_type": "airstrike",
       "description": "Israel strikes over 600 regime targets using 2,500 munitions in the first 48 hours, hitting over 20 security leadership targets, more than 150 ballistic missile sites, and over 200 Iranian air-defense systems.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Nationwide",
-      "actors": ["Israel"],
+      "actors": [
+        "Israel"
+      ],
       "fatalities": null,
       "source": "House of Commons Library"
     },
@@ -497,10 +607,12 @@
       "event_type": "airstrike",
       "description": "US claims destruction of IRGC command center. Operation expands to Iran's internal security architecture, striking IRGC, Basij, police, intelligence, and special forces sites used to suppress protests in multiple cities.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["United States"],
+      "actors": [
+        "United States"
+      ],
       "fatalities": null,
       "source": "Al Jazeera"
     },
@@ -512,7 +624,9 @@
       "longitude": 34.7818,
       "country": "Israel",
       "region": "Tel Aviv",
-      "actors": ["Israel"],
+      "actors": [
+        "Israel"
+      ],
       "fatalities": 0,
       "source": "NPR"
     },
@@ -524,7 +638,10 @@
       "longitude": 37.6173,
       "country": "Russia",
       "region": "Moscow",
-      "actors": ["Russia", "Iran"],
+      "actors": [
+        "Russia",
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "Washington Post"
     },
@@ -536,7 +653,11 @@
       "longitude": -77.0364,
       "country": "United States",
       "region": "Washington D.C.",
-      "actors": ["United States", "Russia", "Iran"],
+      "actors": [
+        "United States",
+        "Russia",
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "CNN"
     },
@@ -545,10 +666,13 @@
       "event_type": "battle",
       "description": "CENTCOM strikes the IRIS Shahid Bagheri, Iran's recently commissioned drone and helicopter carrier, in the Persian Gulf within hours of launching Operation Epic Fury. Vessel hit twice amidships and on the port quarter.",
       "latitude": 26.5667,
-      "longitude": 54.0000,
+      "longitude": 54,
       "country": "Iran",
       "region": "Persian Gulf",
-      "actors": ["United States", "Iran"],
+      "actors": [
+        "United States",
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Naval News"
     },
@@ -560,7 +684,10 @@
       "longitude": 56.2666,
       "country": "Iran",
       "region": "Bandar Abbas",
-      "actors": ["United States", "Iran"],
+      "actors": [
+        "United States",
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Naval News"
     },
@@ -569,10 +696,13 @@
       "event_type": "battle",
       "description": "A Jamaran-class corvette confirmed sunk at pier in Chabahar on the Gulf during the initial phase of Operation Epic Fury. Smoke rises from the naval wharf at Konarak Naval Base. Iran's entire Gulf of Oman fleet of 11 warships eliminated within 48 hours.",
       "latitude": 25.2919,
-      "longitude": 60.6430,
+      "longitude": 60.643,
       "country": "Iran",
       "region": "Chabahar",
-      "actors": ["United States", "Iran"],
+      "actors": [
+        "United States",
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Stars and Stripes"
     },
@@ -581,10 +711,13 @@
       "event_type": "strategic_development",
       "description": "CENTCOM announces destruction of over 30 Iranian ships total. The IRGCN's Soleimani-class corvette, the first of its class, is confirmed sunk. Iran's naval capacity to threaten Gulf shipping effectively eliminated.",
       "latitude": 26.5667,
-      "longitude": 56.2500,
+      "longitude": 56.25,
       "country": "Iran",
       "region": "Persian Gulf",
-      "actors": ["United States", "Iran"],
+      "actors": [
+        "United States",
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Stars and Stripes"
     },
@@ -596,7 +729,9 @@
       "longitude": 46.6753,
       "country": "Saudi Arabia",
       "region": "Riyadh",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Al Jazeera"
     },
@@ -608,7 +743,10 @@
       "longitude": 32.9879,
       "country": "Cyprus",
       "region": "RAF Akrotiri",
-      "actors": ["United Kingdom", "United States"],
+      "actors": [
+        "United Kingdom",
+        "United States"
+      ],
       "fatalities": 0,
       "source": "Kyiv Post"
     },
@@ -617,10 +755,13 @@
       "event_type": "strategic_development",
       "description": "Israeli natural gas exports from the Tamar and Leviathan offshore fields suspended due to security concerns. Egypt forced to suspend gas flows to Lebanon and Syria through the Arab Gas Pipeline to prioritize domestic supply.",
       "latitude": 32.6212,
-      "longitude": 34.1600,
+      "longitude": 34.16,
       "country": "Israel",
       "region": "Eastern Mediterranean offshore",
-      "actors": ["Israel", "Egypt"],
+      "actors": [
+        "Israel",
+        "Egypt"
+      ],
       "fatalities": 0,
       "source": "The National"
     },
@@ -632,7 +773,14 @@
       "longitude": 139.6503,
       "country": "Japan",
       "region": "Tokyo",
-      "actors": ["China", "Japan", "South Korea", "Australia", "Indonesia", "Taiwan"],
+      "actors": [
+        "China",
+        "Japan",
+        "South Korea",
+        "Australia",
+        "Indonesia",
+        "Taiwan"
+      ],
       "fatalities": 0,
       "source": "Indian Republic"
     },
@@ -644,7 +792,9 @@
       "longitude": -77.0364,
       "country": "United States",
       "region": "Washington D.C.",
-      "actors": ["United States"],
+      "actors": [
+        "United States"
+      ],
       "fatalities": 0,
       "source": "Fox News"
     },
@@ -653,22 +803,27 @@
       "event_type": "airstrike",
       "description": "IRGC commander Abdolhamid Rahbar of the 15 Khordad Air Defense Group and four other members killed in an Israeli strike in Isfahan. The 15 Khordad group operates Iran's domestically produced air defense systems.",
       "latitude": 32.6546,
-      "longitude": 51.6680,
+      "longitude": 51.668,
       "country": "Iran",
       "region": "Isfahan",
-      "actors": ["Israel"],
+      "actors": [
+        "Israel"
+      ],
       "fatalities": 5,
-      "source": "FDD"
+      "source": "FDD",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-06T20:00:00Z",
       "event_type": "strategic_development",
       "description": "Iran's ballistic missile launch rate has dropped 90% and drone launch rate 83% since day one, suggesting severe depletion of stocks. Iran has fired over 500 ballistic and naval missiles and almost 2,000 drones since February 28.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera"
     },
@@ -677,10 +832,12 @@
       "event_type": "strategic_development",
       "description": "Iran targets THAAD missile defense radars across multiple countries. Strikes hit radar installations, satellite communications terminals, and radomes in Bahrain, Kuwait, Qatar, Jordan, and Saudi Arabia in coordinated campaign against US sensor network.",
       "latitude": 26.2285,
-      "longitude": 50.5860,
+      "longitude": 50.586,
       "country": "Bahrain",
       "region": "Manama",
-      "actors": ["Iran"],
+      "actors": [
+        "Iran"
+      ],
       "fatalities": null,
       "source": "Defence Security Asia"
     },
@@ -692,7 +849,10 @@
       "longitude": 67.0011,
       "country": "Pakistan",
       "region": "Karachi",
-      "actors": ["Pakistan", "United States"],
+      "actors": [
+        "Pakistan",
+        "United States"
+      ],
       "fatalities": 0,
       "source": "Amnesty International"
     },
@@ -700,11 +860,13 @@
       "date": "2026-03-07T06:00:00Z",
       "event_type": "strategic_development",
       "description": "Oxford Economics estimates eurozone growth reduced by 0.1% with inflation up 0.5% due to the conflict. Most Asian economies face half a percentage point inflation rise if Brent crude remains elevated above $90.",
-      "latitude": 51.7520,
+      "latitude": 51.752,
       "longitude": -1.2577,
       "country": "United Kingdom",
       "region": "Oxford",
-      "actors": ["European Union"],
+      "actors": [
+        "European Union"
+      ],
       "fatalities": 0,
       "source": "Oxford Economics"
     },
@@ -713,10 +875,13 @@
       "event_type": "drone_attack",
       "description": "Additional drones detected approaching Cyprus from the east. Greek F-16s and newly deployed European air defense systems intercept multiple threats. Drones confirmed to be of Iranian origin launched from Lebanon.",
       "latitude": 34.6786,
-      "longitude": 33.5000,
+      "longitude": 33.5,
       "country": "Cyprus",
       "region": "Eastern Cyprus airspace",
-      "actors": ["Hezbollah", "Greece"],
+      "actors": [
+        "Hezbollah",
+        "Greece"
+      ],
       "fatalities": 0,
       "source": "Pravda Cyprus"
     },
@@ -728,7 +893,9 @@
       "longitude": 55.2708,
       "country": "United Arab Emirates",
       "region": "Dubai",
-      "actors": ["United Arab Emirates"],
+      "actors": [
+        "United Arab Emirates"
+      ],
       "fatalities": 0,
       "source": "CNBC"
     },
@@ -740,7 +907,10 @@
       "longitude": -77.0364,
       "country": "United States",
       "region": "Washington D.C.",
-      "actors": ["United States", "NATO"],
+      "actors": [
+        "United States",
+        "NATO"
+      ],
       "fatalities": 0,
       "source": "CBS News"
     },
@@ -752,7 +922,10 @@
       "longitude": 49.9777,
       "country": "Saudi Arabia",
       "region": "Eastern Province, Dammam",
-      "actors": ["Iran", "Saudi Arabia"],
+      "actors": [
+        "Iran",
+        "Saudi Arabia"
+      ],
       "fatalities": null,
       "source": "Al Jazeera"
     },
@@ -764,7 +937,9 @@
       "longitude": 31.2357,
       "country": "Egypt",
       "region": "Cairo",
-      "actors": ["Egypt"],
+      "actors": [
+        "Egypt"
+      ],
       "fatalities": 0,
       "source": "The National"
     }

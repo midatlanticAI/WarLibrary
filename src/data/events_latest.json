@@ -5,24 +5,33 @@
       "event_type": "airstrike",
       "description": "Israeli Air Force launches 'wide-scale' strikes on Tehran using approximately 80 fighter jets dropping 230 munitions. Targets include IRGC Aerospace Force headquarters, oil storage depots at Shahran, Aghdasieh, and Karaj, and the Tehran refinery. 16 cargo aircraft used by IRGC Quds Force destroyed at Mehrabad Airport. At least 4 killed. First strikes on Iran's oil infrastructure since war began.",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["Israel Air Force", "IRGC"],
+      "actors": [
+        "Israel Air Force",
+        "IRGC"
+      ],
       "fatalities": 4,
-      "source": "Al Jazeera, Axios, TIME"
+      "source": "Al Jazeera, Axios, TIME",
+      "civilian_impact": "Strikes on oil storage and refinery infrastructure caused environmental contamination; civilian areas affected by strikes on military targets",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-08T06:00:00Z",
       "event_type": "violence_against_civilians",
       "description": "Tehran engulfed in toxic black smoke after overnight Israeli strikes on fuel depots cause fires to burn for hours. Iran's Red Crescent warns residents to stay indoors due to acid rain containing hydrocarbons, sulphur and nitrogen oxides. Oil-tainted black rainfall reported across the city causing chemical burn risk.",
-      "latitude": 35.7400,
-      "longitude": 51.3300,
+      "latitude": 35.74,
+      "longitude": 51.33,
       "country": "Iran",
       "region": "Tehran - Shahran district",
-      "actors": ["Israel Air Force"],
+      "actors": [
+        "Israel Air Force"
+      ],
       "fatalities": 0,
-      "source": "TIME, France 24, Fortune, CNN"
+      "source": "TIME, France 24, Fortune, CNN",
+      "civilian_impact": "Toxic black smoke engulfed Tehran; Iran's Red Crescent warned residents to stay indoors due to acid rain containing hydrocarbons, sulphur and nitrogen oxides; oil-tainted black rainfall reported across the city",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-08T04:00:00Z",
@@ -32,21 +41,30 @@
       "longitude": 35.4735,
       "country": "Lebanon",
       "region": "Beirut - Rawche",
-      "actors": ["Israel Navy", "IRGC Quds Force"],
-      "fatalities": 4,
-      "source": "Times of Israel, France 24, Al Jazeera"
+      "actors": [
+        "Israel Navy",
+        "IRGC Quds Force"
+      ],
+      "fatalities": 5,
+      "source": "Times of Israel, France 24, Al Jazeera",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-08T10:00:00Z",
       "event_type": "strategic_development",
       "description": "Iran's Assembly of Experts elects Mojtaba Khamenei (57), son of slain Supreme Leader Ali Khamenei, as the third Supreme Leader of the Islamic Republic. IRGC and senior officials pledge allegiance. Trump calls him 'lightweight' and demands input in choosing Iran's leader. IDF issues statement in Persian warning it will 'pursue every successor.'",
       "latitude": 35.6892,
-      "longitude": 51.3890,
+      "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["Assembly of Experts", "Mojtaba Khamenei", "IRGC"],
+      "actors": [
+        "Assembly of Experts",
+        "Mojtaba Khamenei",
+        "IRGC"
+      ],
       "fatalities": 0,
-      "source": "NPR, NBC News, CBS News, Al Jazeera"
+      "source": "NPR, NBC News, CBS News, Al Jazeera",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-08T12:00:00Z",
@@ -56,21 +74,31 @@
       "longitude": 34.7818,
       "country": "Israel",
       "region": "Tel Aviv / Petah Tikva",
-      "actors": ["Iran", "Israel Air Defense"],
+      "actors": [
+        "Iran",
+        "Israel Air Defense"
+      ],
       "fatalities": 0,
-      "source": "Jerusalem Post, Haaretz, Times of Israel"
+      "source": "Jerusalem Post, Haaretz, Times of Israel",
+      "civilian_impact": "6-7 wounded including a man in his 40s in serious condition in Tel Aviv",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-08T08:00:00Z",
       "event_type": "missile_attack",
       "description": "Iranian missile strikes residential area in Al-Kharj governorate, Saudi Arabia, killing 2 foreign workers (Indian and Bangladeshi nationals) and wounding 12 Bangladeshi residents. First civilian fatalities in Saudi Arabia since the war began. Saudi defense ministry reports intercepting 15 Iranian drones near Riyadh.",
-      "latitude": 24.1500,
-      "longitude": 47.3100,
+      "latitude": 24.15,
+      "longitude": 47.31,
       "country": "Saudi Arabia",
       "region": "Al-Kharj",
-      "actors": ["Iran", "Saudi Air Defense"],
+      "actors": [
+        "Iran",
+        "Saudi Air Defense"
+      ],
       "fatalities": 2,
-      "source": "Al Jazeera, PBS, Fortune"
+      "source": "Al Jazeera, PBS, Fortune",
+      "civilian_impact": "2 foreign workers killed (Indian and Bangladeshi nationals); 12 Bangladeshi residents wounded",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-08T09:00:00Z",
@@ -80,21 +108,30 @@
       "longitude": 46.6753,
       "country": "Saudi Arabia",
       "region": "Riyadh (announced)",
-      "actors": ["United States", "Iran"],
+      "actors": [
+        "United States",
+        "Iran"
+      ],
       "fatalities": 1,
-      "source": "CBS News, CNN, Fortune"
+      "source": "CBS News, CNN, Fortune",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-08T07:00:00Z",
       "event_type": "drone_attack",
       "description": "Iranian drone attack damages water desalination plant in Bahrain and causes fire at Mina Salman seaport facility. 3 people injured. Attack raises fears about targeting of civilian water infrastructure in Gulf states.",
       "latitude": 26.2285,
-      "longitude": 50.5860,
+      "longitude": 50.586,
       "country": "Bahrain",
       "region": "Mina Salman",
-      "actors": ["Iran", "Bahrain"],
+      "actors": [
+        "Iran",
+        "Bahrain"
+      ],
       "fatalities": 0,
-      "source": "Military.com, Fortune, Al Jazeera"
+      "source": "Military.com, Fortune, Al Jazeera",
+      "civilian_impact": "Water desalination plant damaged; fire at Mina Salman seaport facility; 3 people injured",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-08T05:00:00Z",
@@ -104,9 +141,14 @@
       "longitude": 55.2708,
       "country": "United Arab Emirates",
       "region": "Multiple locations",
-      "actors": ["Iran", "UAE Air Defense"],
+      "actors": [
+        "Iran",
+        "UAE Air Defense"
+      ],
       "fatalities": 0,
-      "source": "Gulf News, The National, Al Jazeera"
+      "source": "Gulf News, The National, Al Jazeera",
+      "civilian_impact": "Debris and shrapnel from interceptions caused injuries in populated areas",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-07T22:00:00Z",
@@ -116,9 +158,14 @@
       "longitude": 36.1167,
       "country": "Lebanon",
       "region": "Nabi Chit, Bekaa Valley",
-      "actors": ["Israel", "Hezbollah"],
+      "actors": [
+        "Israel",
+        "Hezbollah"
+      ],
       "fatalities": 41,
-      "source": "Al Jazeera, France 24, Middle East Monitor"
+      "source": "Al Jazeera, France 24, Middle East Monitor",
+      "civilian_impact": "At least 41 killed and 40 wounded in Israeli air-and-ground raids",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-08T11:00:00Z",
@@ -128,9 +175,13 @@
       "longitude": -77.0369,
       "country": "United States",
       "region": "Washington DC (diplomatic)",
-      "actors": ["United States", "Israel"],
+      "actors": [
+        "United States",
+        "Israel"
+      ],
       "fatalities": 0,
-      "source": "Axios, NPR"
+      "source": "Axios, NPR",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-08T14:00:00Z",
@@ -140,9 +191,14 @@
       "longitude": 6.1432,
       "country": "Switzerland",
       "region": "Geneva (UN HQ)",
-      "actors": ["United Nations", "UNHCR"],
+      "actors": [
+        "United Nations",
+        "UNHCR"
+      ],
       "fatalities": 0,
-      "source": "UN News, UNHCR, CARE"
+      "source": "UN News, UNHCR, CARE",
+      "civilian_impact": "Nearly 25 million people in affected regions are already refugees, internally displaced, or recent returnees; 517,000+ displaced in Lebanon; 84,000 in collective shelters",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-07T00:00:00Z",
@@ -152,9 +208,14 @@
       "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran (announced)",
-      "actors": ["China", "Iran", "IRGC"],
+      "actors": [
+        "China",
+        "Iran",
+        "IRGC"
+      ],
       "fatalities": 0,
-      "source": "Global Defense Corp, The National, Times of Israel, Jerusalem Post"
+      "source": "Global Defense Corp, The National, Times of Israel, Jerusalem Post",
+      "verification_status": "claimed"
     },
     {
       "date": "2026-03-01T03:00:00Z",
@@ -164,60 +225,261 @@
       "longitude": 51.389,
       "country": "Iran",
       "region": "Tehran",
-      "actors": ["United States", "Israel", "Iran", "China"],
+      "actors": [
+        "United States",
+        "Israel",
+        "Iran",
+        "China"
+      ],
       "fatalities": 0,
-      "source": "The Economist, India TV News, Global Defense Corp, People's News Today"
+      "source": "The Economist, India TV News, Global Defense Corp, People's News Today",
+      "verification_status": "reported"
+    },
+    {
+      "date": "2026-03-05T06:52:36Z",
+      "event_type": "missile_attack",
+      "description": "US submarine sinks Iranian warship in Indian Ocean south of Sri Lanka. More than 100 personnel thought to be aboard the vessel.",
+      "latitude": 6.5,
+      "longitude": 81,
+      "country": "Indian Ocean",
+      "region": "Indian Ocean",
+      "actors": [
+        "US Navy",
+        "Iranian Navy"
+      ],
+      "fatalities": 0,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/articles/c0e55g03v2zo",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": "100+ military personnel aboard vessel"
+    },
+    {
+      "date": "2026-03-05T11:35:09Z",
+      "event_type": "missile_attack",
+      "description": "Iran's military targets headquarters of Iranian Kurdish forces in northern Iraq, stepping up strikes on Kurdish opposition groups.",
+      "latitude": 36.5,
+      "longitude": 44,
+      "country": "Iraq",
+      "region": "Northern Iraq",
+      "actors": [
+        "Iran",
+        "Iranian Kurdish forces"
+      ],
+      "fatalities": 0,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/articles/c2k88y1147jo",
+      "confidence": 0.9,
+      "verification_status": "reported",
+      "location_precision": "region"
+    },
+    {
+      "date": "2026-03-08T18:13:22Z",
+      "event_type": "missile_attack",
+      "description": "Strikes on water desalination plants in Bahrain. Attacks on non-military water infrastructure described as 'serious escalation' by analysts",
+      "latitude": 26.13,
+      "longitude": 50.55,
+      "country": "Bahrain",
+      "region": "Bahrain",
+      "actors": [
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "New York Times",
+      "source_url": "https://www.nytimes.com/2026/03/08/world/middleeast/desalination-plants-iran-bahrain.html",
+      "confidence": 0.85,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": "Water desalination plants attacked, civilian water supply disrupted"
+    },
+    {
+      "date": "2026-03-08T18:38:52Z",
+      "event_type": "strategic_development",
+      "description": "US Embassy in Baghdad targeted as Iraq gets drawn deeper into regional war. Trump administration pressures Iraqi leaders to distance themselves from Iran.",
+      "latitude": 33.31,
+      "longitude": 44.36,
+      "country": "Iraq",
+      "region": "Baghdad",
+      "actors": [
+        "US",
+        "Iraq"
+      ],
+      "fatalities": 0,
+      "source": "New York Times",
+      "source_url": "https://www.nytimes.com/2026/03/08/world/middleeast/us-embassy-baghdad-iraq-iran-war.html",
+      "confidence": 0.85,
+      "verification_status": "reported",
+      "location_precision": "city"
+    },
+    {
+      "date": "2026-03-08T15:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli strikes on the town of Seir al-Gharbiya in southern Lebanon kill 19 people, most of them women and children according to Lebanese National News Agency. Rescue operations underway as buildings collapse. Part of intensified southern Lebanon campaign on day nine of the war.",
+      "latitude": 33.3667,
+      "longitude": 35.3833,
+      "country": "Lebanon",
+      "region": "Seir al-Gharbiya, South Lebanon",
+      "actors": ["Israel Air Force", "Hezbollah"],
+      "fatalities": 19,
+      "source": "The New Arab, Lebanese National News Agency",
+      "civilian_impact": "19 killed including women and children; buildings collapsed; rescue operations ongoing",
+      "verification_status": "confirmed"
+    },
+    {
+      "date": "2026-03-08T13:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli strikes kill at least 20 people across multiple towns in southern Lebanon as Israel renews assault on day nine. Targets include residential areas and infrastructure. Death toll in Lebanon passes 394 killed in one week including 83 children, 42 women, and 9 rescue workers, per Lebanese Health Ministry.",
+      "latitude": 33.27,
+      "longitude": 35.20,
+      "country": "Lebanon",
+      "region": "Southern Lebanon (multiple towns)",
+      "actors": ["Israel Air Force"],
+      "fatalities": 20,
+      "source": "Euronews, Al Jazeera",
+      "civilian_impact": "20+ killed across multiple southern towns; 517,000+ displaced; schools in Beirut converted to shelters",
+      "verification_status": "confirmed"
+    },
+    {
+      "date": "2026-03-08T16:00:00Z",
+      "event_type": "airstrike",
+      "description": "Two Israeli strikes hit Ain al-Helweh Palestinian refugee camp on the outskirts of Sidon, the largest Palestinian refugee camp in Lebanon. Smoke rises from the camp. Casualties reported but numbers not yet confirmed. Camp houses approximately 120,000 Palestinian refugees.",
+      "latitude": 33.5333,
+      "longitude": 35.3833,
+      "country": "Lebanon",
+      "region": "Ain al-Helweh, Sidon",
+      "actors": ["Israel Air Force"],
+      "fatalities": 0,
+      "source": "Times of Israel, The New Arab",
+      "civilian_impact": "Palestinian refugee camp struck; 120,000 refugees at risk; smoke and damage reported",
+      "verification_status": "reported"
+    },
+    {
+      "date": "2026-03-08T17:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israel strikes town of Ghaziyeh in southern Lebanon. At least one person rescued alive from rubble. Evacuation orders issued for Arnoun, Yohmor, Zrariyeh East, and Zrariyeh West. Residents ordered to move north of Nabatieh governorate immediately.",
+      "latitude": 33.5167,
+      "longitude": 35.3667,
+      "country": "Lebanon",
+      "region": "Ghaziyeh, South Lebanon",
+      "actors": ["Israel Air Force"],
+      "fatalities": 0,
+      "source": "Al Jazeera, Lebanese National News Agency",
+      "civilian_impact": "People trapped under rubble; evacuation orders for multiple villages; mass displacement",
+      "verification_status": "reported"
+    },
+    {
+      "date": "2026-03-05T08:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli strikes hit Beirut and southern Lebanon, killing 10 people amid threats against Iranian officials hiding in Lebanon. Israel issues warnings to Lebanese civilians to evacuate areas where Hezbollah operates. Strikes target buildings in Beirut's Dahiyeh suburbs.",
+      "latitude": 33.8547,
+      "longitude": 35.4867,
+      "country": "Lebanon",
+      "region": "Beirut - Dahiyeh suburbs",
+      "actors": ["Israel Air Force", "Hezbollah"],
+      "fatalities": 10,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/5/israeli-strikes-hit-beirut-amid-threats-on-iranian-officials-in-lebanon",
+      "civilian_impact": "10 killed; civilian buildings struck in Dahiyeh",
+      "verification_status": "confirmed"
+    },
+    {
+      "date": "2026-03-05T14:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israel kills more than 100 Lebanese in a single day as it commands Beirut residents to flee. Massive strikes on multiple locations across Lebanon mark the deadliest day of the conflict for Lebanon. Buildings devastated across the country as death toll rises sharply.",
+      "latitude": 33.8938,
+      "longitude": 35.5018,
+      "country": "Lebanon",
+      "region": "Lebanon (multiple locations including Beirut)",
+      "actors": ["Israel Air Force", "Hezbollah"],
+      "fatalities": 100,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/gallery/2026/3/5/buildings-devastated-by-israeli-strikes-in-lebanon-death-toll-rises-to-77",
+      "civilian_impact": "100+ killed in single day; buildings devastated; mass evacuation orders for Beirut; death toll rises sharply",
+      "verification_status": "confirmed"
+    },
+    {
+      "date": "2026-03-09T06:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Lebanese Health Ministry confirms cumulative death toll from Israeli attacks on Lebanon reaches 394 people killed in one week, including 83 children, 42 women, and 9 rescue workers. Over 1,200 wounded. 517,000+ people registered as displaced. Israeli military claims to have struck over 600 Hezbollah targets and killed 200 Hezbollah members. Ground operations continue in southern Lebanon.",
+      "latitude": 33.8938,
+      "longitude": 35.5018,
+      "country": "Lebanon",
+      "region": "Lebanon (nationwide)",
+      "actors": ["Israel", "Hezbollah", "Lebanese Health Ministry"],
+      "fatalities": 0,
+      "source": "Al Jazeera, RTE, Manila Times, Euronews",
+      "civilian_impact": "394 killed including 83 children, 42 women, 9 rescue workers; 1,200+ wounded; 517,000+ displaced; schools converted to shelters",
+      "verification_status": "confirmed"
+    },
+    {
+      "date": "2026-03-08T20:58:20Z",
+      "event_type": "protest",
+      "description": "International Women's Day marches in multiple countries denounce US-Israeli war on Iran. Thousands of demonstrators in Spain and other countries take stand against the war.",
+      "latitude": 40,
+      "longitude": 4,
+      "country": "Spain",
+      "region": "Spain",
+      "actors": [
+        "Anti-war protesters"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/8/marches-for-international-womens-day-denounce-war-abuse-and-oppression",
+      "confidence": 0.9,
+      "verification_status": "reported",
+      "location_precision": "country"
+    },
+    {
+      "date": "2026-03-01T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Iranian attacks killed one person and injured 32 in Kuwait, according to Wikipedia.",
+      "latitude": 29.31,
+      "longitude": 47.48,
+      "country": "Kuwait",
+      "region": "Kuwait",
+      "actors": [
+        "IRGC"
+      ],
+      "fatalities": 1,
+      "source": "en.wikipedia.org",
+      "source_url": "https://en.wikipedia.org/wiki/List_of_attacks_during_the_2026_Iran_war",
+      "confidence": 0.5499999999999999,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "1 killed, 32 injured"
+    },
+    {
+      "date": "2026-03-06T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Death toll from Israeli attacks on Lebanon rises to at least 217 people killed, with 798 wounded and approximately 95,000 displaced as of March 6, 2026. Lebanese Prime Minister Nawaf Salam warns consequences may be 'unprecedented' at humanitarian and political levels. Israel launched air strikes on southern Lebanese towns including Srifa, Aita al-Shaab, Touline, as-Sawana, and Majdal Selem.",
+      "latitude": 33.85,
+      "longitude": 35.49,
+      "country": "Lebanon",
+      "region": "Lebanon (multiple locations)",
+      "actors": [
+        "Israeli Air Force"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/6/death-toll-in-israels-lebanon-attacks-over-120-as-beirut-south-east-hit",
+      "confidence": 1,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": "217 killed, 798 wounded, 95,000 displaced"
     }
   ],
   "metadata": {
     "generated": "2026-03-09",
     "source": "multiple",
-    "note": "Latest conflict updates - Day 9-10 events (March 7 evening through March 8, 2026). All events sourced from verified major news outlets. No confirmed new events found specifically for March 9 beyond continuation of existing operations. The database existing files cover through March 8 morning; these entries fill in major verified events from March 7 evening through March 8.",
-    "conflict_status_summary": {
-      "as_of": "2026-03-09T00:00:00Z",
-      "total_estimated_casualties": {
-        "iran_killed": "1,332+",
-        "lebanon_killed": "200+ (est. 300 per some sources)",
-        "israel_killed": "11+",
-        "us_military_killed": 7,
-        "gulf_states_killed": "15+ (Saudi Arabia 2, UAE 4, Bahrain 1, others)",
-        "total_estimated": "1,560+"
-      },
-      "countries_actively_involved": [
-        "United States (Operation Epic Fury - airstrikes on Iran)",
-        "Israel (Operation Roaring Lion - airstrikes on Iran, Lebanon ground invasion)",
-        "Iran (retaliatory missile/drone strikes across 9+ countries)",
-        "Lebanon/Hezbollah (strikes on Israel, ground fighting with IDF)",
-        "Saudi Arabia (targeted by Iran, intercepting drones/missiles)",
-        "UAE (targeted by Iran, air defense operations, considering strikes on Iranian missile sites)",
-        "Bahrain (targeted by Iran, hosting US Fifth Fleet)",
-        "Kuwait (targeted by Iran)",
-        "Qatar (targeted by Iran)",
-        "Oman (targeted by Iran, former mediator)",
-        "Iraq (Iranian proxy activity, US base attacks)",
-        "Jordan (THAAD radar attacked)",
-        "Cyprus (RAF Akrotiri drone strike from Hezbollah)",
-        "UK (military deployments to Cyprus)",
-        "France (naval deployments to Cyprus)",
-        "Greece (F-16 interception of drones)",
-        "Russia (intelligence sharing with Iran per reports)"
-      ],
-      "major_developments_last_24h": [
-        "Mojtaba Khamenei named new Supreme Leader of Iran, replacing his slain father",
-        "Israel strikes Iranian oil infrastructure for first time - 30+ fuel depots hit in Tehran area",
-        "Tehran engulfed in toxic smoke and acid rain from burning fuel depots",
-        "First US-Israel disagreement as oil strikes exceed agreed scope",
-        "7th US service member dies from injuries sustained in Saudi Arabia attack",
-        "First Saudi civilian deaths (2 killed in Al-Kharj)",
-        "5 IRGC Quds Force commanders killed in Israeli strike on Beirut hotel",
-        "Iran fires cluster warhead missile at central Israel, 6-7 wounded",
-        "41 killed in Israeli raids on Nabi Chit in Bekaa Valley, Lebanon",
-        "Iranian desalination plant strike in Bahrain raises civilian infrastructure fears",
-        "Oil reaches $100/barrel"
-      ],
-      "strait_of_hormuz_status": "Effectively closed. Near-total halt in maritime traffic since Iran's IRGC warned it would attack any vessel attempting passage. About 20% of global oil supply normally transits the strait. 400+ ships stuck. No oil shipments in past 24 hours. Insurance companies have withdrawn coverage for the region.",
-      "diplomatic_efforts": "Stalled. Trump demands Iran's 'unconditional surrender' before negotiations. UN Security Council held emergency session with Russia and China calling for immediate ceasefire. Oman (former mediator) condemned strikes as undermining active negotiations. UK urges Iran to return to dialogue. No ceasefire in sight.",
-      "humanitarian_situation": "UN declares 'major humanitarian emergency.' 25 million people in affected areas already refugees/displaced. 517,000+ displaced in Lebanon. 22 million need humanitarian support. 17 million face food insecurity. Strait of Hormuz closure disrupts aid deliveries to Gaza, Yemen, Somalia. Tehran residents warned to stay indoors due to toxic air from burning fuel depots. 32,000 Americans evacuated from Middle East since Feb 28."
-    }
+    "note": "Auto-updated from real news sources. Events verified against Al Jazeera, Euronews, RTE, The New Arab, Manila Times.",
+    "sources_checked": [
+      "GDELT API",
+      "Google News RSS",
+      "Al Jazeera RSS",
+      "BBC RSS",
+      "NYT RSS",
+      "Reuters RSS"
+    ]
   }
 }

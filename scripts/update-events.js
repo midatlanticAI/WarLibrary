@@ -126,6 +126,37 @@ const VALID_EVENT_TYPES = [
 // ---------------------------------------------------------------------------
 
 /**
+ * Fetch the full text content of an article URL.
+ * Uses a simple approach: fetch the page and extract text from <p> tags.
+ * Returns the first ~2000 chars of article body text.
+ */
+async function fetchArticleBody(url) {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; WarLibrary/1.0; +https://warlibrary.midatlantic.ai)",
+        Accept: "text/html",
+      },
+      signal: AbortSignal.timeout(10000),
+      redirect: "follow",
+    });
+    if (!res.ok) return "";
+    const html = await res.text();
+    // Extract text from <p> tags
+    const paragraphs = [];
+    const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+    let m;
+    while ((m = pRegex.exec(html)) !== null) {
+      const text = m[1].replace(/<[^>]*>/g, "").trim();
+      if (text.length > 40) paragraphs.push(text);
+    }
+    return paragraphs.join("\n").slice(0, 3000);
+  } catch {
+    return "";
+  }
+}
+
+/**
  * Fetch articles from GDELT API (free, no key needed).
  * Returns array of { title, url, source, date, description }.
  */
@@ -637,6 +668,36 @@ async function main() {
   );
 
   // 2. Fetch real news articles from multiple sources
+  // Start with high-priority authoritative articles that have detailed event listings
+  console.log("\n--- Fetching priority authoritative sources ---");
+  const priorityUrls = [
+    "https://en.wikipedia.org/wiki/List_of_attacks_during_the_2026_Iran_war",
+    "https://en.wikipedia.org/wiki/Casualties_of_the_Twelve-Day_War",
+    "https://en.wikipedia.org/wiki/2026_Hezbollah%E2%80%93Israel_strikes",
+    "https://www.aljazeera.com/news/2026/3/1/us-israel-attacks-on-iran-death-toll-and-injuries-live-tracker",
+    "https://www.aljazeera.com/news/2026/3/4/death-toll-in-iran-surpasses-1000-as-israel-us-strikes-continue",
+    "https://www.aljazeera.com/news/2026/3/6/death-toll-in-israels-lebanon-attacks-over-120-as-beirut-south-east-hit",
+    "https://www.aljazeera.com/news/2026/3/2/iran-death-toll-reaches-555-as-us-israel-escalate-attacks",
+    "https://eu.detroitnews.com/story/news/world/2026/03/08/iran-crisis-lebanon/89052569007/",
+  ];
+  const priorityArticles = [];
+  for (const url of priorityUrls) {
+    const body = await fetchArticleBody(url);
+    if (body && body.length > 100) {
+      const source = extractSourceFromUrl(url);
+      priorityArticles.push({
+        title: `Authoritative source: ${source}`,
+        url,
+        source,
+        date: new Date().toISOString(),
+        description: body.slice(0, 200),
+        body,
+      });
+      console.log(`  ${source}: ${body.length} chars`);
+    }
+  }
+  console.log(`  Got ${priorityArticles.length} priority sources with article text.`);
+
   console.log("\n--- Fetching news articles ---");
 
   console.log("Fetching from GDELT API...");
@@ -675,14 +736,40 @@ async function main() {
     process.exit(0);
   }
 
-  // 3. Prepare article summaries for Claude (limit to avoid token bloat)
-  const maxArticles = 75;
-  const articlesToProcess = allArticles.slice(0, maxArticles);
+  // 3. Fetch full article bodies for top articles (prioritize Tier 1 sources)
+  // Include priority authoritative articles first
+  const maxArticles = 40;
+  // Sort: Tier 1 sources first, then by date
+  const sortedArticles = [...allArticles].sort((a, b) => {
+    const tierA = getSourceTier(a.source);
+    const tierB = getSourceTier(b.source);
+    if (tierA !== tierB) return tierA - tierB;
+    return (b.date || "").localeCompare(a.date || "");
+  });
+  const articlesToProcess = sortedArticles.slice(0, maxArticles);
 
-  const articleSummaries = articlesToProcess
+  console.log(`\nFetching full article text for top ${articlesToProcess.length} articles...`);
+  const CONCURRENT_FETCHES = 5;
+  for (let i = 0; i < articlesToProcess.length; i += CONCURRENT_FETCHES) {
+    const batch = articlesToProcess.slice(i, i + CONCURRENT_FETCHES);
+    const bodies = await Promise.all(batch.map((art) => fetchArticleBody(art.url)));
+    for (let j = 0; j < batch.length; j++) {
+      batch[j].body = bodies[j];
+    }
+    if (i % 10 === 0 && i > 0) console.log(`  Fetched ${i}/${articlesToProcess.length} article bodies...`);
+  }
+  const articlesWithBody = articlesToProcess.filter((a) => a.body && a.body.length > 100).length;
+  console.log(`  ${articlesWithBody} articles have substantial body text.`);
+
+  // Combine priority articles (full text) with regular articles
+  const allArticlesForClaude = [...priorityArticles, ...articlesToProcess];
+
+  const articleSummaries = allArticlesForClaude
     .map(
-      (art, i) =>
-        `[${i + 1}] Title: ${art.title}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}\n    Description: ${(art.description || "").slice(0, 200)}`
+      (art, i) => {
+        const bodySnippet = art.body ? `\n    Body: ${art.body.slice(0, 2000)}` : "";
+        return `[${i + 1}] Title: ${art.title}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}\n    Description: ${(art.description || "").slice(0, 200)}${bodySnippet}`;
+      }
     )
     .join("\n\n");
 
@@ -741,7 +828,9 @@ RULES:
 8. If an article does not describe a specific conflict event, SKIP it
 9. Return ONLY a valid JSON array — no markdown, no code fences, no explanation
 10. Assign a "confidence" score (0.0 to 1.0) to each event based on source reliability and corroboration
-11. Assign a "verification_status" to each event:
+11. FATALITIES: Extract the EXACT number of fatalities mentioned in the article. If the article says "at least 41 killed", set fatalities to 41. If it says "dozens killed" with no number, use 0 and note in description. Do NOT make up or estimate fatality numbers — use ONLY what the article explicitly states. This is critical for credibility.
+12. CUMULATIVE DEATH TOLLS: If an article reports a cumulative death toll (e.g., "death toll in Iran reaches 1,332"), create a strategic_development event with the total in the description and fatalities set to 0 (since it's cumulative, not from a single event).
+13. Assign a "verification_status" to each event:
     - "confirmed" = verified by 2+ independent credible sources or official statement
     - "reported" = reported by a credible outlet but not independently verified
     - "claimed" = based on claims by one party (e.g., "Iran claims...", "officials said...")
@@ -774,7 +863,7 @@ Extract all conflict events from these articles. If no articles contain relevant
   try {
     response = await client.messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [{ role: "user", content: prompt }],
     });
   } catch (err) {
