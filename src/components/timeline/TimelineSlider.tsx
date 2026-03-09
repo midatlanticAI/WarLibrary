@@ -110,7 +110,7 @@ export default function TimelineSlider({
             onClick={() =>
               onChange({ start: preset.start, end: preset.end })
             }
-            className={`rounded px-2 py-0.5 text-xs transition-colors ${
+            className={`rounded px-3 py-1.5 text-xs transition-colors ${
               dateRange.start === preset.start && dateRange.end === preset.end
                 ? "bg-red-600 text-white"
                 : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"

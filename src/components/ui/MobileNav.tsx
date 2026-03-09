@@ -14,7 +14,7 @@ export default function MobileNav({
   newEventCount,
 }: MobileNavProps) {
   return (
-    <nav className="flex border-t border-zinc-800 bg-[#0e0e0e] sm:hidden">
+    <nav className="flex border-t border-zinc-800 bg-[#0e0e0e] pb-[env(safe-area-inset-bottom)] sm:hidden">
       <TabButton
         label="Map"
         icon={
@@ -112,7 +112,7 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors ${
+      className={`relative flex flex-1 flex-col items-center gap-0.5 py-2.5 transition-colors ${
         active ? "text-zinc-100" : "text-zinc-600"
       }`}
     >

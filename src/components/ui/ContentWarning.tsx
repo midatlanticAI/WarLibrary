@@ -184,7 +184,7 @@ function FirstVisit({
   onEnter: () => void;
 }) {
   return (
-    <div className="space-y-5 rounded-xl border border-zinc-800 bg-[#111] p-6">
+    <div className="space-y-4 rounded-xl border border-zinc-800 bg-[#111] p-4 sm:space-y-5 sm:p-6">
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
           WAR LIBRARY
@@ -216,18 +216,18 @@ function FirstVisit({
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center text-xs text-zinc-500">
-        <div className="rounded bg-zinc-900/60 p-2">
+      <div className="grid grid-cols-3 gap-1.5 text-center text-xs text-zinc-500 sm:gap-2">
+        <div className="rounded bg-zinc-900/60 px-1.5 py-2 sm:p-2">
           <div className="font-medium text-zinc-300">Map</div>
-          <div>Every event plotted with details</div>
+          <div className="hidden sm:block">Every event plotted with details</div>
         </div>
-        <div className="rounded bg-zinc-900/60 p-2">
+        <div className="rounded bg-zinc-900/60 px-1.5 py-2 sm:p-2">
           <div className="font-medium text-zinc-300">Ask AI</div>
-          <div>Question the data directly</div>
+          <div className="hidden sm:block">Question the data directly</div>
         </div>
-        <div className="rounded bg-zinc-900/60 p-2">
+        <div className="rounded bg-zinc-900/60 px-1.5 py-2 sm:p-2">
           <div className="font-medium text-zinc-300">Feed</div>
-          <div>Chronological event timeline</div>
+          <div className="hidden sm:block">Chronological event timeline</div>
         </div>
       </div>
 
@@ -238,11 +238,10 @@ function FirstVisit({
         Enter War Library
       </button>
 
-      <div className="text-center text-xs text-zinc-600">
+      <div className="text-center text-[11px] leading-relaxed text-zinc-600 sm:text-xs">
         <span className="font-medium">{eventCount} verified events</span> from{" "}
         <span className="font-medium">
-          Al Jazeera · CNN · BBC · Reuters · AP · NPR · Times of Israel ·
-          Washington Post
+          Al Jazeera, CNN, BBC, Reuters, AP
         </span>{" "}
         and more
       </div>

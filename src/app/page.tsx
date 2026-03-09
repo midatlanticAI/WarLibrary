@@ -156,7 +156,7 @@ export default function Home() {
             dateRange={dateRange}
           />
 
-          <div className="absolute bottom-0 left-0 right-0 p-3 md:right-[380px]">
+          <div className="absolute bottom-0 left-0 right-0 p-3 pb-4 sm:pb-3 md:right-[380px]">
             <TimelineSlider
               events={events}
               dateRange={dateRange}

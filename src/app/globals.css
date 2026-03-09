@@ -77,3 +77,25 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Safe area support for modern phones (notch, gesture bar, camera cutout) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Prevent 300ms tap delay and double-tap zoom on mobile */
+html {
+  touch-action: manipulation;
+}
+
+/* Prevent text selection on interactive elements */
+button, nav, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}

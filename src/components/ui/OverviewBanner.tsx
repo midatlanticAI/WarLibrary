@@ -139,14 +139,14 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
           </p>
 
           {/* Stats grid */}
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-7">
+          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7 sm:gap-2">
             <StatChip label="Killed" value={`${(stats.totalKilled / 1000).toFixed(1)}k+`} color="text-red-400" />
             <StatChip label="Countries" value={String(stats.countries)} color="text-blue-400" />
             <StatChip label="Airstrikes" value={String(stats.airstrikes)} color="text-red-300" />
             <StatChip label="Missiles" value={String(stats.missiles)} color="text-orange-400" />
-            <StatChip label="Drones" value={String(stats.drones)} color="text-yellow-400" />
-            <StatChip label="Civilian Impact" value={String(stats.civilianImpactEvents)} color="text-amber-400" />
-            <StatChip label="Events" value={String(stats.totalEvents)} color="text-zinc-300" />
+            <StatChip label="Drones" value={String(stats.drones)} color="text-yellow-400" className="hidden sm:block" />
+            <StatChip label="Civilian" value={String(stats.civilianImpactEvents)} color="text-amber-400" className="hidden sm:block" />
+            <StatChip label="Events" value={String(stats.totalEvents)} color="text-zinc-300" className="hidden sm:block" />
           </div>
 
           {/* Latest event */}
@@ -183,14 +183,16 @@ function StatChip({
   label,
   value,
   color,
+  className,
 }: {
   label: string;
   value: string;
   color: string;
+  className?: string;
 }) {
   return (
-    <div className="rounded-md bg-zinc-900/60 px-2 py-1.5 text-center">
-      <div className={`text-sm font-bold ${color}`}>{value}</div>
+    <div className={`rounded-md bg-zinc-900/60 px-1.5 py-1.5 text-center sm:px-2 ${className ?? ""}`}>
+      <div className={`text-xs font-bold sm:text-sm ${color}`}>{value}</div>
       <div className="text-[10px] text-zinc-600">{label}</div>
     </div>
   );

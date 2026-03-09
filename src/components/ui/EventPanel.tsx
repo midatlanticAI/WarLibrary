@@ -53,28 +53,9 @@ export default function EventPanel({
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <button
-        onClick={onToggle}
-        className="fixed right-3 top-3 z-30 rounded-lg bg-black/80 p-2 text-zinc-300 backdrop-blur-sm md:hidden"
-        aria-label="Toggle event panel"
-      >
-        {isOpen ? (
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-          </svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z" />
-          </svg>
-        )}
-      </button>
-
       {/* Panel */}
       <div
-        className={`fixed right-0 top-0 z-20 flex h-full w-full flex-col border-l border-zinc-800 bg-[#0e0e0e]/95 backdrop-blur-md transition-transform duration-300 md:relative md:w-[380px] md:translate-x-0 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className="flex h-full w-full flex-col border-l border-zinc-800 bg-[#0e0e0e]/95 backdrop-blur-md md:w-[380px]"
       >
         {/* Header */}
         <div className="border-b border-zinc-800 p-4">
@@ -225,7 +206,7 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition-colors ${
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-colors ${
         active
           ? "bg-zinc-700 text-zinc-200"
           : "bg-zinc-900 text-zinc-500 hover:bg-zinc-800"

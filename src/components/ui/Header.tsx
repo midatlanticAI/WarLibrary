@@ -18,7 +18,7 @@ export default function Header({
   dayCount,
 }: HeaderProps) {
   return (
-    <header className="flex h-12 items-center justify-between border-b border-zinc-800 bg-[#0e0e0e]/95 px-4 backdrop-blur-md">
+    <header className="flex h-12 flex-shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e0e]/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="flex items-center gap-4">
         {/* Logo */}
         <button
