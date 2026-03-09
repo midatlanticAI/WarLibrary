@@ -12,6 +12,8 @@ export interface ConflictEvent {
   source: string;
   source_url: string | null;
   created_at: string;
+  confidence?: number;           // 0.0 to 1.0
+  verification_status?: "verified" | "multi-source" | "unconfirmed";
 }
 
 export interface Faction {

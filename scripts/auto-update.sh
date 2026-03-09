@@ -2,12 +2,12 @@
 
 # War Library - Auto Update Script
 #
-# Runs the Node.js event update script, and if new events were added,
-# rebuilds the Next.js app and restarts PM2.
+# Runs the Node.js event update script to append new events to
+# events_latest.json. The API route reads from disk on each request,
+# so no rebuild or PM2 restart is needed — new events appear within 60s.
 #
 # Usage:
-#   ./scripts/auto-update.sh          # Normal run
-#   ./scripts/auto-update.sh --force  # Force rebuild even if no new events
+#   ./scripts/auto-update.sh
 #
 # Cron (every 10 minutes):
 #   */10 * * * * /opt/warlibrary/scripts/auto-update.sh >> /var/log/warlibrary-updates.log 2>&1
@@ -18,10 +18,7 @@ set -euo pipefail
 # Config
 # ---------------------------------------------------------------------------
 PROJECT_DIR="/opt/warlibrary"
-LOG_FILE="/var/log/warlibrary-updates.log"
 NODE_BIN="/usr/bin/node"
-NPM_BIN="/usr/bin/npm"
-PM2_BIN="/usr/bin/pm2"
 
 # Use nvm node if available
 if [ -f "$HOME/.nvm/nvm.sh" ]; then
@@ -29,13 +26,6 @@ if [ -f "$HOME/.nvm/nvm.sh" ]; then
   # shellcheck disable=SC1091
   source "$NVM_DIR/nvm.sh"
   NODE_BIN="$(which node)"
-  NPM_BIN="$(which npm)"
-  PM2_BIN="$(which pm2 2>/dev/null || echo '/usr/bin/pm2')"
-fi
-
-FORCE_REBUILD=false
-if [ "${1:-}" = "--force" ]; then
-  FORCE_REBUILD=true
 fi
 
 # ---------------------------------------------------------------------------
@@ -66,46 +56,14 @@ echo "$UPDATE_OUTPUT" | while IFS= read -r line; do
   log "  [update] $line"
 done
 
-# Check if new events were added
-NEEDS_REBUILD=false
+# Log status (no rebuild needed — API reads from disk)
 if echo "$UPDATE_OUTPUT" | grep -q "STATUS: EVENTS_ADDED"; then
   EVENTS_COUNT=$(echo "$UPDATE_OUTPUT" | grep "STATUS: EVENTS_ADDED" | sed 's/.*EVENTS_ADDED=//')
-  log "New events detected: $EVENTS_COUNT"
-  NEEDS_REBUILD=true
+  log "New events added: $EVENTS_COUNT (live within 60s, no rebuild needed)"
 elif echo "$UPDATE_OUTPUT" | grep -q "STATUS: NO_NEW_EVENTS"; then
   log "No new events found."
 else
   log "WARNING: Could not determine update status from script output."
-fi
-
-if [ "$FORCE_REBUILD" = true ]; then
-  log "Force rebuild requested."
-  NEEDS_REBUILD=true
-fi
-
-# Rebuild and restart if needed
-if [ "$NEEDS_REBUILD" = true ]; then
-  log "Rebuilding Next.js application..."
-
-  BUILD_OUTPUT=$("$NPM_BIN" run build 2>&1) || {
-    log "ERROR: Build failed!"
-    log "Build output: $BUILD_OUTPUT"
-    exit 1
-  }
-  log "Build completed successfully."
-
-  log "Restarting PM2 process..."
-  if "$PM2_BIN" list 2>/dev/null | grep -q "warlibrary\|frontend\|next"; then
-    "$PM2_BIN" restart all 2>&1 | while IFS= read -r line; do
-      log "  [pm2] $line"
-    done
-    log "PM2 restarted successfully."
-  else
-    log "WARNING: No PM2 process found matching warlibrary/frontend/next."
-    log "You may need to start the app manually: pm2 start npm --name warlibrary -- start"
-  fi
-else
-  log "No rebuild needed. Skipping."
 fi
 
 log "Auto-update complete."

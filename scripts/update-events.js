@@ -576,6 +576,8 @@ async function main() {
     fatalities: 0,
     source: "Al Jazeera",
     source_url: "https://www.aljazeera.com/news/2026/3/9/example-article",
+    confidence: 0.9,
+    verification_status: "verified",
   };
 
   const prompt = `You are a conflict data analyst for War Library, a neutral conflict tracker.
@@ -604,6 +606,11 @@ RULES:
 7. actors must be a JSON array of strings
 8. If an article does not describe a specific conflict event, SKIP it
 9. Return ONLY a valid JSON array — no markdown, no code fences, no explanation
+10. Assign a "confidence" score (0.0 to 1.0) to each event based on source reliability and corroboration
+11. Assign a "verification_status" to each event:
+    - "verified" = event confirmed by 2+ major outlets or an official government/military source
+    - "multi-source" = reported by multiple sources but key details (casualties, scope) vary
+    - "unconfirmed" = single source or unverified claim
 
 JSON SCHEMA (every event must match this exactly):
 ${JSON.stringify(schemaExample, null, 2)}
@@ -683,6 +690,17 @@ Extract all conflict events from these articles. If no articles contain relevant
     if (!event.source_url && event.url) {
       event.source_url = event.url;
       delete event.url;
+    }
+  }
+
+  // 8b. Default confidence and verification_status if missing
+  const VALID_VERIFICATION_STATUSES = ["verified", "multi-source", "unconfirmed"];
+  for (const event of newEvents) {
+    if (typeof event.confidence !== "number" || event.confidence < 0 || event.confidence > 1) {
+      event.confidence = 0.5;
+    }
+    if (!VALID_VERIFICATION_STATUSES.includes(event.verification_status)) {
+      event.verification_status = "unconfirmed";
     }
   }
 

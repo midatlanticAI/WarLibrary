@@ -2,57 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { ConflictEvent } from "@/types";
-import seedData from "@/data/events.json";
-import expandedData from "@/data/events_expanded.json";
-import latestData from "@/data/events_latest.json";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-interface RawEvent {
-  date: string;
-  event_type: string;
-  description: string;
-  latitude: number;
-  longitude: number;
-  country: string;
-  region: string;
-  actors: string[];
-  fatalities: number | null;
-  source: string;
-}
-
-function toConflictEvent(raw: RawEvent, index: number): ConflictEvent {
-  return {
-    id: String(index + 1),
-    date: raw.date,
-    event_type: raw.event_type as ConflictEvent["event_type"],
-    description: raw.description,
-    latitude: raw.latitude,
-    longitude: raw.longitude,
-    country: raw.country,
-    region: raw.region,
-    actors: raw.actors,
-    fatalities: raw.fatalities ?? null,
-    source: raw.source,
-    source_url: null,
-    created_at: raw.date,
+interface EventsApiResponse {
+  data: ConflictEvent[];
+  meta: {
+    total: number;
+    last_updated: string | null;
   };
 }
-
-// Merge both seed files, deduplicate by description similarity, sort by date
-const allRawEvents = [
-  ...(seedData.events as RawEvent[]),
-  ...(expandedData.events as RawEvent[]),
-  ...(latestData.events as RawEvent[]),
-];
-
-// Sort chronologically
-allRawEvents.sort(
-  (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-);
-
-const SEED_EVENTS: ConflictEvent[] = allRawEvents.map(toConflictEvent);
 
 interface UseEventsReturn {
   events: ConflictEvent[];
@@ -63,27 +20,31 @@ interface UseEventsReturn {
 }
 
 export function useEvents(): UseEventsReturn {
-  const [events, setEvents] = useState<ConflictEvent[]>(SEED_EVENTS);
-  const [loading, setLoading] = useState(false);
+  const [events, setEvents] = useState<ConflictEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(
-    `seed data — ${SEED_EVENTS.length} events`
-  );
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/events?limit=1000`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data && json.data.length > 0) {
-          setEvents(json.data);
-          setLastUpdated("just now");
-        }
+      setError(null);
+      const res = await fetch("/api/events");
+      if (!res.ok) {
+        throw new Error(`Failed to load events (${res.status})`);
       }
-    } catch {
-      // Backend not available yet — use seed data
-      setLastUpdated(`seed data — ${SEED_EVENTS.length} events`);
+      const json: EventsApiResponse = await res.json();
+      if (json.data && json.data.length > 0) {
+        setEvents(json.data);
+        setLastUpdated(
+          json.meta.last_updated
+            ? new Date(json.meta.last_updated).toLocaleString()
+            : `${json.meta.total} events`
+        );
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to load events";
+      setError(message);
     } finally {
       setLoading(false);
     }

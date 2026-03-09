@@ -38,7 +38,7 @@ function toTab(t: MobileTab): Tab {
 
 export default function Home() {
   useNotifications();
-  const { events, loading, lastUpdated } = useEvents();
+  const { events, loading, error, lastUpdated } = useEvents();
   const [selectedEvent, setSelectedEvent] = useState<ConflictEvent | null>(
     null
   );
@@ -73,6 +73,21 @@ export default function Home() {
   function navigateMobile(tab: MobileTab) {
     setMobileTab(tab);
     setActiveTab(toTab(tab));
+  }
+
+  // Initial loading state while events are fetched from the API
+  if (loading && events.length === 0) {
+    return (
+      <div className="flex h-dvh w-screen items-center justify-center bg-[#0a0a0a]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-amber-500" />
+          <p className="text-sm text-zinc-500">Loading events...</p>
+          {error && (
+            <p className="max-w-xs text-center text-xs text-red-400">{error}</p>
+          )}
+        </div>
+      </div>
+    );
   }
 
   // Landing / briefing screen

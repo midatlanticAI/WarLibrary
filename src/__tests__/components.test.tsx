@@ -80,65 +80,56 @@ const mockEvents: ConflictEvent[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Mock JSON imports used by useEvents
+// Mock API response for useEvents (fetches from /api/events)
 // ---------------------------------------------------------------------------
 
-vi.mock("@/data/events.json", () => ({
-  default: {
-    events: [
-      {
-        date: "2026-02-28T10:00:00Z",
-        event_type: "airstrike",
-        description: "Seed event one",
-        latitude: 32.0,
-        longitude: 51.0,
-        country: "Iran",
-        region: "Tehran",
-        actors: ["US"],
-        fatalities: 5,
-        source: "CNN",
-      },
-    ],
+const mockApiEvents: ConflictEvent[] = [
+  {
+    id: "1",
+    date: "2026-02-28T10:00:00Z",
+    event_type: "airstrike",
+    description: "Seed event one",
+    latitude: 32.0,
+    longitude: 51.0,
+    country: "Iran",
+    region: "Tehran",
+    actors: ["US"],
+    fatalities: 5,
+    source: "CNN",
+    source_url: null,
+    created_at: "2026-02-28T10:00:00Z",
   },
-}));
-
-vi.mock("@/data/events_expanded.json", () => ({
-  default: {
-    events: [
-      {
-        date: "2026-03-01T14:00:00Z",
-        event_type: "missile_attack",
-        description: "Expanded event one",
-        latitude: 33.0,
-        longitude: 52.0,
-        country: "Iraq",
-        region: "Baghdad",
-        actors: ["Iran"],
-        fatalities: 2,
-        source: "BBC",
-      },
-    ],
+  {
+    id: "2",
+    date: "2026-03-01T14:00:00Z",
+    event_type: "missile_attack",
+    description: "Expanded event one",
+    latitude: 33.0,
+    longitude: 52.0,
+    country: "Iraq",
+    region: "Baghdad",
+    actors: ["Iran"],
+    fatalities: 2,
+    source: "BBC",
+    source_url: null,
+    created_at: "2026-03-01T14:00:00Z",
   },
-}));
-
-vi.mock("@/data/events_latest.json", () => ({
-  default: {
-    events: [
-      {
-        date: "2026-03-08T09:00:00Z",
-        event_type: "battle",
-        description: "Latest event one",
-        latitude: 34.0,
-        longitude: 53.0,
-        country: "Syria",
-        region: "Damascus",
-        actors: ["Hezbollah"],
-        fatalities: 10,
-        source: "Al Jazeera",
-      },
-    ],
+  {
+    id: "3",
+    date: "2026-03-08T09:00:00Z",
+    event_type: "battle",
+    description: "Latest event one",
+    latitude: 34.0,
+    longitude: 53.0,
+    country: "Syria",
+    region: "Damascus",
+    actors: ["Hezbollah"],
+    fatalities: 10,
+    source: "Al Jazeera",
+    source_url: null,
+    created_at: "2026-03-08T09:00:00Z",
   },
-}));
+];
 
 // ---------------------------------------------------------------------------
 // AskPanel tests
@@ -520,7 +511,14 @@ describe("useEvents", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockRejectedValue(new Error("Backend not available"))
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            data: mockApiEvents,
+            meta: { total: mockApiEvents.length, last_updated: "2026-03-08T09:00:00Z" },
+          }),
+      })
     );
   });
 
@@ -528,35 +526,27 @@ describe("useEvents", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns merged events from all 3 JSON files", async () => {
+  it("returns merged events from API", async () => {
     const { useEvents } = await import("@/hooks/useEvents");
 
     const { result } = renderHook(() => useEvents());
 
-    // We mocked 3 files with 1 event each = 3 total
-    expect(result.current.events).toHaveLength(3);
+    await waitFor(() => {
+      expect(result.current.events).toHaveLength(3);
+    });
   });
 
-  it("events are sorted chronologically (oldest first)", async () => {
+  it("returns events from all sources via API", async () => {
     const { useEvents } = await import("@/hooks/useEvents");
 
     const { result } = renderHook(() => useEvents());
 
-    const dates = result.current.events.map((e) => new Date(e.date).getTime());
-    for (let i = 1; i < dates.length; i++) {
-      expect(dates[i]).toBeGreaterThanOrEqual(dates[i - 1]);
-    }
-  });
-
-  it("returns events from all mocked sources", async () => {
-    const { useEvents } = await import("@/hooks/useEvents");
-
-    const { result } = renderHook(() => useEvents());
-
-    const descriptions = result.current.events.map((e) => e.description);
-    expect(descriptions).toContain("Seed event one");
-    expect(descriptions).toContain("Expanded event one");
-    expect(descriptions).toContain("Latest event one");
+    await waitFor(() => {
+      const descriptions = result.current.events.map((e) => e.description);
+      expect(descriptions).toContain("Seed event one");
+      expect(descriptions).toContain("Expanded event one");
+      expect(descriptions).toContain("Latest event one");
+    });
   });
 
   it("returns loading state", async () => {
@@ -564,16 +554,45 @@ describe("useEvents", () => {
 
     const { result } = renderHook(() => useEvents());
 
-    // loading may be true or false depending on timing, but property exists
+    // loading should be true initially, then false after fetch
     expect(typeof result.current.loading).toBe("boolean");
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
   });
 
-  it("returns error as null by default", async () => {
+  it("returns error as null on success", async () => {
     const { useEvents } = await import("@/hooks/useEvents");
 
     const { result } = renderHook(() => useEvents());
 
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
     expect(result.current.error).toBeNull();
+  });
+
+  it("sets error on fetch failure", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({}),
+      })
+    );
+
+    const { useEvents } = await import("@/hooks/useEvents");
+
+    const { result } = renderHook(() => useEvents());
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.error).toBe("Failed to load events (500)");
   });
 
   it("provides a refresh function", async () => {
@@ -588,6 +607,10 @@ describe("useEvents", () => {
     const { useEvents } = await import("@/hooks/useEvents");
 
     const { result } = renderHook(() => useEvents());
+
+    await waitFor(() => {
+      expect(result.current.events.length).toBeGreaterThan(0);
+    });
 
     const event = result.current.events[0];
     expect(event).toHaveProperty("id");

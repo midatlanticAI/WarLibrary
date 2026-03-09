@@ -3,9 +3,9 @@ import fs from "fs";
 import path from "path";
 
 /**
- * Admin API route for War Library event management.
+ * Events API route for War Library.
  *
- * GET  /api/events - Returns event counts and last update time
+ * GET  /api/events - Returns all merged, deduplicated, sorted events (read from disk each request)
  * POST /api/events - Appends new events (requires wl_admin cookie)
  */
 
@@ -21,11 +21,41 @@ const LATEST_FILE = path.join(DATA_DIR, "events_latest.json");
 // Helpers
 // ---------------------------------------------------------------------------
 
-function readJSON(filePath: string): unknown[] {
+interface RawEvent {
+  date: string;
+  event_type: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  country: string;
+  region: string;
+  actors: string[];
+  fatalities: number | null;
+  source: string;
+}
+
+interface SerializedEvent {
+  id: string;
+  date: string;
+  event_type: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  country: string;
+  region: string;
+  actors: string[];
+  fatalities: number | null;
+  source: string;
+  source_url: string | null;
+  created_at: string;
+}
+
+function readJSONFile(filePath: string): RawEvent[] {
   if (!fs.existsSync(filePath)) return [];
   try {
     const raw = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(raw);
+    const parsed: { events?: RawEvent[] } = JSON.parse(raw);
+    return Array.isArray(parsed.events) ? parsed.events : [];
   } catch {
     return [];
   }
@@ -41,7 +71,39 @@ function getFileMtime(filePath: string): Date | null {
   }
 }
 
-interface ConflictEvent {
+/** Simple deduplication: normalize description to lowercase trimmed, skip duplicates */
+function deduplicateEvents(events: RawEvent[]): RawEvent[] {
+  const seen = new Set<string>();
+  const unique: RawEvent[] = [];
+  for (const ev of events) {
+    const key = ev.description.trim().toLowerCase().slice(0, 120);
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(ev);
+    }
+  }
+  return unique;
+}
+
+function toSerializedEvent(raw: RawEvent, index: number): SerializedEvent {
+  return {
+    id: String(index + 1),
+    date: raw.date,
+    event_type: raw.event_type,
+    description: raw.description,
+    latitude: raw.latitude,
+    longitude: raw.longitude,
+    country: raw.country,
+    region: raw.region,
+    actors: raw.actors,
+    fatalities: raw.fatalities ?? null,
+    source: raw.source,
+    source_url: null,
+    created_at: raw.date,
+  };
+}
+
+interface AdminConflictEvent {
   date: string;
   event_type: string;
   description: string;
@@ -49,12 +111,12 @@ interface ConflictEvent {
   longitude: number;
   country: string;
   region?: string;
-  actors?: string;
+  actors?: string[];
   fatalities?: number;
   source?: string;
 }
 
-function isValidEvent(event: unknown): event is ConflictEvent {
+function isValidEvent(event: unknown): event is AdminConflictEvent {
   if (!event || typeof event !== "object") return false;
   const e = event as Record<string, unknown>;
   const requiredFields = [
@@ -85,30 +147,44 @@ function isAuthenticated(request: NextRequest): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// GET /api/events
+// GET /api/events — read from disk, merge, deduplicate, sort, return
 // ---------------------------------------------------------------------------
 
 export async function GET() {
-  const events = readJSON(EVENTS_FILE);
-  const expanded = readJSON(EXPANDED_FILE);
-  const latest = readJSON(LATEST_FILE);
+  const seedEvents = readJSONFile(EVENTS_FILE);
+  const expandedEvents = readJSONFile(EXPANDED_FILE);
+  const latestEvents = readJSONFile(LATEST_FILE);
+
+  // Merge all sources
+  const allRaw = [...seedEvents, ...expandedEvents, ...latestEvents];
+
+  // Deduplicate by description similarity
+  const unique = deduplicateEvents(allRaw);
+
+  // Sort chronologically — newest first
+  unique.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  // Assign sequential IDs
+  const events: SerializedEvent[] = unique.map(toSerializedEvent);
 
   const lastUpdate = getFileMtime(LATEST_FILE);
 
-  return NextResponse.json({
-    counts: {
-      events: events.length,
-      events_expanded: expanded.length,
-      events_latest: latest.length,
-      total: events.length + expanded.length + latest.length,
+  return NextResponse.json(
+    {
+      data: events,
+      meta: {
+        total: events.length,
+        last_updated: lastUpdate ? lastUpdate.toISOString() : null,
+      },
     },
-    last_updated: lastUpdate ? lastUpdate.toISOString() : null,
-    files: {
-      events: fs.existsSync(EVENTS_FILE),
-      events_expanded: fs.existsSync(EXPANDED_FILE),
-      events_latest: fs.existsSync(LATEST_FILE),
-    },
-  });
+    {
+      headers: {
+        "Cache-Control": "public, max-age=60",
+      },
+    }
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -150,12 +226,12 @@ export async function POST(request: NextRequest) {
   }
 
   // Validate each event
-  const validEvents: ConflictEvent[] = [];
+  const validEvents: AdminConflictEvent[] = [];
   const invalid: number[] = [];
 
   for (let i = 0; i < body.events.length; i++) {
     if (isValidEvent(body.events[i])) {
-      validEvents.push(body.events[i] as ConflictEvent);
+      validEvents.push(body.events[i] as AdminConflictEvent);
     } else {
       invalid.push(i);
     }
@@ -180,7 +256,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Read current latest events and append
-  const currentLatest = readJSON(LATEST_FILE) as ConflictEvent[];
+  const currentLatest = readJSONFile(LATEST_FILE);
   const updatedLatest = [...currentLatest, ...validEvents];
 
   // Ensure data directory exists
@@ -192,7 +268,7 @@ export async function POST(request: NextRequest) {
   try {
     fs.writeFileSync(
       LATEST_FILE,
-      JSON.stringify(updatedLatest, null, 2),
+      JSON.stringify({ events: updatedLatest }, null, 2),
       "utf-8"
     );
   } catch (err) {
@@ -207,7 +283,7 @@ export async function POST(request: NextRequest) {
     events_added: validEvents.length,
     events_rejected: invalid.length,
     total_latest: updatedLatest.length,
-    note: "Events written to events_latest.json. A rebuild (npm run build) and PM2 restart is required for changes to appear on the live site.",
+    note: "Events written to events_latest.json. Changes will appear within 60 seconds (no rebuild required).",
     ...(invalid.length > 0 ? { invalid_indices: invalid } : {}),
   });
 }

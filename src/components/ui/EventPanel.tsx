@@ -156,6 +156,9 @@ export default function EventPanel({
                         {event.fatalities} killed
                       </span>
                     )}
+                    {event.verification_status && (
+                      <VerificationBadge status={event.verification_status} />
+                    )}
                   </div>
                 </div>
               </div>
@@ -244,6 +247,29 @@ function StatBox({
       <div className={`text-lg font-bold ${color}`}>{value}</div>
       <div className="text-xs text-zinc-600">{label}</div>
     </div>
+  );
+}
+
+function VerificationBadge({
+  status,
+}: {
+  status: "verified" | "multi-source" | "unconfirmed";
+}) {
+  const config = {
+    verified: { color: "bg-green-500", label: "Verified" },
+    "multi-source": { color: "bg-amber-500", label: "Multi-source" },
+    unconfirmed: { color: "bg-zinc-500", label: "Unconfirmed" },
+  } as const;
+
+  const { color, label } = config[status];
+
+  return (
+    <span className="inline-flex items-center gap-1" title={label}>
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${color}`} />
+      {status === "unconfirmed" && (
+        <span className="text-zinc-500">{label}</span>
+      )}
+    </span>
   );
 }
 

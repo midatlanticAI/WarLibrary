@@ -284,70 +284,166 @@ function checkGuardrails(question: string): GuardrailResult {
 }
 
 // ---------------------------------------------------------------------------
-// Build event context for Claude
+// RAG-style event retrieval — search and rank events by relevance to query
 // ---------------------------------------------------------------------------
-function buildEventContext(): string {
-  const seed = (seedData as { events: Record<string, unknown>[] }).events;
-  const expanded = (expandedData as { events: Record<string, unknown>[] }).events;
-  const latest = (latestData as { events: Record<string, unknown>[] }).events;
-  const allEvents = [...seed, ...expanded, ...latest];
 
-  allEvents.sort((a, b) =>
-    String(a.date || "").localeCompare(String(b.date || ""))
-  );
+interface EventRecord {
+  date?: string;
+  event_type?: string;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
+  country?: string;
+  region?: string;
+  actors?: string[];
+  fatalities?: number | null;
+  source?: string;
+  source_url?: string | null;
+  confidence?: number;
+  verification_status?: string;
+  [key: string]: unknown;
+}
 
-  const countries = [...new Set(allEvents.map((e) => String(e.country)))];
-  const totalFatalities = allEvents.reduce(
+const STOP_WORDS = new Set([
+  "the", "is", "are", "was", "were", "be", "been", "being",
+  "have", "has", "had", "do", "does", "did", "will", "would",
+  "could", "should", "may", "might", "shall", "can",
+  "a", "an", "and", "but", "or", "nor", "not", "no",
+  "in", "on", "at", "to", "for", "of", "with", "by",
+  "from", "up", "about", "into", "through", "during",
+  "before", "after", "above", "below", "between",
+  "this", "that", "these", "those", "it", "its",
+  "what", "which", "who", "whom", "how", "when", "where", "why",
+  "all", "each", "every", "both", "few", "more", "most",
+  "some", "such", "than", "too", "very", "just",
+  "i", "me", "my", "we", "our", "you", "your",
+  "he", "she", "they", "them", "their", "his", "her",
+  "if", "then", "so", "as", "also", "only",
+  "tell", "know", "think", "many", "much", "any",
+]);
+
+function extractKeywords(query: string): string[] {
+  return query
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 1 && !STOP_WORDS.has(w));
+}
+
+function scoreEvent(event: EventRecord, keywords: string[]): number {
+  const searchable = [
+    String(event.description || ""),
+    String(event.country || ""),
+    String(event.region || ""),
+    String(event.event_type || "").replace(/_/g, " "),
+    ...(Array.isArray(event.actors) ? event.actors.map(String) : []),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  let score = 0;
+  for (const kw of keywords) {
+    if (searchable.includes(kw)) {
+      score++;
+    }
+  }
+  return score;
+}
+
+function searchEvents(
+  query: string,
+  events: EventRecord[],
+  limit: number = 20
+): EventRecord[] {
+  const keywords = extractKeywords(query);
+
+  if (keywords.length === 0) {
+    // No meaningful keywords — return most recent events
+    return [...events]
+      .sort((a, b) =>
+        String(b.date || "").localeCompare(String(a.date || ""))
+      )
+      .slice(0, limit);
+  }
+
+  const scored = events.map((event) => ({
+    event,
+    score: scoreEvent(event, keywords),
+  }));
+
+  const matched = scored
+    .filter((s) => s.score > 0)
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      // Tie-break by date (most recent first)
+      return String(b.event.date || "").localeCompare(
+        String(a.event.date || "")
+      );
+    });
+
+  // If fewer than 5 events match, fall back to most recent
+  if (matched.length < 5) {
+    const recentFallback = [...events]
+      .sort((a, b) =>
+        String(b.date || "").localeCompare(String(a.date || ""))
+      )
+      .slice(0, limit);
+    return recentFallback;
+  }
+
+  return matched.slice(0, limit).map((s) => s.event);
+}
+
+// ---------------------------------------------------------------------------
+// Load all events once at module level
+// ---------------------------------------------------------------------------
+const allEventsRaw: EventRecord[] = [
+  ...(seedData as { events: EventRecord[] }).events,
+  ...(expandedData as { events: EventRecord[] }).events,
+  ...(latestData as { events: EventRecord[] }).events,
+];
+
+// ---------------------------------------------------------------------------
+// Build summary stats (computed once, used in system prompt)
+// ---------------------------------------------------------------------------
+function buildDatabaseSummary(): string {
+  const countries = [...new Set(allEventsRaw.map((e) => String(e.country)))];
+  const totalFatalities = allEventsRaw.reduce(
     (sum, e) => sum + (Number(e.fatalities) || 0),
     0
   );
   const eventTypes = [
-    ...new Set(allEvents.map((e) => String(e.event_type))),
+    ...new Set(allEventsRaw.map((e) => String(e.event_type))),
   ];
 
-  let context = `CONFLICT DATABASE — Operation Epic Fury (US-Israel War on Iran)\n`;
-  context += `Period: Feb 28 – Mar 8, 2026 | ${allEvents.length} verified events | ${totalFatalities.toLocaleString()}+ fatalities reported\n`;
-  context += `Countries affected: ${countries.join(", ")}\n`;
-  context += `Event types: ${eventTypes.map((t) => t.replace(/_/g, " ")).join(", ")}\n\n`;
+  let summary = `CONFLICT DATABASE — Operation Epic Fury (US-Israel War on Iran)\n`;
+  summary += `Period: Feb 28 – Mar 8, 2026 | ${allEventsRaw.length} verified events | ${totalFatalities.toLocaleString()}+ fatalities reported\n`;
+  summary += `Countries affected: ${countries.join(", ")}\n`;
+  summary += `Event types: ${eventTypes.map((t) => t.replace(/_/g, " ")).join(", ")}\n`;
+  return summary;
+}
 
-  const recent = allEvents.slice(-40);
-  const older = allEvents.slice(0, -40);
+const DATABASE_SUMMARY = buildDatabaseSummary();
 
-  if (older.length > 0) {
-    context += `EARLIER EVENTS (${older.length} events, summarized):\n`;
-    const byCountry: Record<string, typeof older> = {};
-    for (const e of older) {
-      const c = String(e.country);
-      if (!byCountry[c]) byCountry[c] = [];
-      byCountry[c].push(e);
-    }
-    for (const [country, evts] of Object.entries(byCountry)) {
-      const kills = evts.reduce(
-        (s, e) => s + (Number(e.fatalities) || 0),
-        0
-      );
-      context += `- ${country}: ${evts.length} events, ${kills} fatalities. Types: ${[...new Set(evts.map((e) => String(e.event_type).replace(/_/g, " ")))].join(", ")}\n`;
-    }
-    context += "\n";
-  }
+// ---------------------------------------------------------------------------
+// Build event context from a subset of relevant events
+// ---------------------------------------------------------------------------
+function buildEventContext(relevantEvents: EventRecord[]): string {
+  let context = DATABASE_SUMMARY + "\n";
+  context += `Based on the most relevant events from our database (${relevantEvents.length} of ${allEventsRaw.length} total):\n\n`;
 
-  context += `RECENT EVENTS (${recent.length} events, full detail):\n`;
-  for (const e of recent) {
-    context += `[${e.date}] ${String(e.event_type).replace(/_/g, " ").toUpperCase()} — ${e.region}, ${e.country}: ${e.description}`;
+  for (const e of relevantEvents) {
+    context += `[${e.date}] ${String(e.event_type || "").replace(/_/g, " ").toUpperCase()} — ${e.region}, ${e.country}: ${e.description}`;
     if (Number(e.fatalities) > 0) context += ` (${e.fatalities} killed)`;
-    context += ` | Actors: ${Array.isArray(e.actors) ? (e.actors as string[]).join(", ") : "unknown"} | Source: ${e.source}\n`;
+    context += ` | Actors: ${Array.isArray(e.actors) ? e.actors.join(", ") : "unknown"} | Source: ${e.source}`;
+    if (e.verification_status) context += ` [${e.verification_status}]`;
+    context += "\n";
   }
 
   return context;
 }
 
-const EVENT_CONTEXT = buildEventContext();
-
-const seedEvents = (seedData as { events: unknown[] }).events;
-const expandedEvents = (expandedData as { events: unknown[] }).events;
-const latestEvents = (latestData as { events: unknown[] }).events;
-
-const SYSTEM_PROMPT = `You are the War Library AI — a neutral, factual analyst for the 2026 Middle East conflict (Operation Epic Fury). You have access to a verified database of ${seedEvents.length + expandedEvents.length + latestEvents.length} conflict events.
+const BASE_SYSTEM_PROMPT = `You are the War Library AI — a neutral, factual analyst for the 2026 Middle East conflict (Operation Epic Fury). You have access to a verified database of ${allEventsRaw.length} conflict events.
 
 RULES:
 1. Be factual and source-attributed. When citing information from the database, mention the source.
@@ -367,8 +463,7 @@ HARD BOUNDARIES — YOU MUST REFUSE:
 - Any request for instructions on making weapons, explosives, or harmful materials
 - If a question is off-topic, respond ONLY with: "I can only answer questions about the 2026 Middle East conflict. Please ask something related to the war."
 
-CONFLICT DATABASE:
-${EVENT_CONTEXT}`;
+`;
 
 // ---------------------------------------------------------------------------
 // Max spend guardrail — hard cap on daily API spend
@@ -478,10 +573,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // RAG: retrieve relevant events for this question
+    const relevantEvents = searchEvents(question, allEventsRaw, 20);
+    const eventContext = buildEventContext(relevantEvents);
+    const systemPrompt = BASE_SYSTEM_PROMPT + eventContext;
+
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [{ role: "user", content: question }],
     });
 
@@ -546,14 +646,9 @@ export async function POST(req: NextRequest) {
       answer.toLowerCase().includes(s.toLowerCase())
     );
     const qLower = question.toLowerCase();
-    const allEvts = [
-      ...(seedData as { events: Record<string, unknown>[] }).events,
-      ...(expandedData as { events: Record<string, unknown>[] }).events,
-      ...(latestData as { events: Record<string, unknown>[] }).events,
-    ];
     const relevantSources = [
       ...new Set(
-        allEvts
+        relevantEvents
           .filter((e) =>
             String(e.description || "")
               .toLowerCase()
