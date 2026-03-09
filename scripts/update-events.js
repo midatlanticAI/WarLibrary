@@ -18,6 +18,8 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
+const { Readability } = require("@mozilla/readability");
+const { JSDOM } = require("jsdom");
 
 // ---------------------------------------------------------------------------
 // Resolve project root (works whether invoked from project root or scripts/)
@@ -92,6 +94,7 @@ const SOURCE_TIERS = {
   tier2: [
     "Times of Israel", "Axios", "The Guardian", "PBS", "NBC News",
     "ABC News", "Sky News", "DW News", "UN News", "Naval News",
+    "France 24", "Deutsche Welle", "The Independent", "Middle East Eye",
   ],
   // Tier 3: Everything else (no explicit list needed)
 };
@@ -198,19 +201,67 @@ const VALID_EVENT_TYPES = [
  * Uses a simple approach: fetch the page and extract text from <p> tags.
  * Returns the first ~2000 chars of article body text.
  */
-async function fetchArticleBody(url) {
+/**
+ * Resolve a Google News redirect URL to the actual article URL.
+ * Google News RSS URLs are base64-encoded redirects.
+ */
+async function resolveGoogleNewsUrl(url) {
+  if (!url.includes("news.google.com/rss/articles/")) return url;
   try {
+    // Follow the redirect chain to get the real URL
     const res = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; WarLibrary/1.0; +https://warlibrary.midatlantic.ai)",
-        Accept: "text/html",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(8000),
+      redirect: "follow",
+    });
+    // The final URL after redirects is the real article
+    if (res.url && !res.url.includes("news.google.com")) {
+      return res.url;
+    }
+    // Fallback: try to extract from the response HTML
+    const html = await res.text();
+    const metaRefresh = html.match(/url=([^"'>\s]+)/i);
+    if (metaRefresh) return metaRefresh[1];
+    const canonical = html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i);
+    if (canonical) return canonical[1];
+    return url;
+  } catch {
+    return url;
+  }
+}
+
+async function fetchArticleBody(url) {
+  try {
+    // Resolve Google News redirects first
+    const resolvedUrl = await resolveGoogleNewsUrl(url);
+
+    const res = await fetch(resolvedUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      signal: AbortSignal.timeout(12000),
       redirect: "follow",
     });
     if (!res.ok) return "";
     const html = await res.text();
-    // Extract text from <p> tags
+
+    // Try Mozilla Readability first (industry standard)
+    try {
+      const dom = new JSDOM(html, { url: resolvedUrl });
+      const reader = new Readability(dom.window.document);
+      const article = reader.parse();
+      if (article && article.textContent && article.textContent.length > 100) {
+        return article.textContent.replace(/\s+/g, " ").trim().slice(0, 3000);
+      }
+    } catch {
+      // Readability failed, fall through to regex
+    }
+
+    // Fallback: extract text from <p> tags
     const paragraphs = [];
     const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
     let m;
@@ -225,43 +276,51 @@ async function fetchArticleBody(url) {
 }
 
 /**
- * Fetch articles from GDELT API (free, no key needed).
- * Returns array of { title, url, source, date, description }.
+ * Fetch articles from NewsData.io API (free tier: 200 req/day).
+ * Returns full article content — no scraping needed.
+ * Falls back gracefully if no API key is set.
  */
-async function fetchGDELT() {
+async function fetchNewsDataAPI() {
+  const apiKey = process.env.NEWSDATA_API_KEY;
+  if (!apiKey) {
+    console.warn("  NewsData: No NEWSDATA_API_KEY set, skipping (set in .env.local for article content)");
+    return [];
+  }
+
   const queries = [
-    "iran%20war%20airstrike%20OR%20missile%20OR%20strike%20OR%20military",
-    "operation%20epic%20fury%20iran",
-    "iran%20israel%20hezbollah%20houthi%20conflict%202026",
-    "strait%20hormuz%20OR%20iranian%20military%20OR%20IRGC",
+    "iran war airstrike missile",
+    "iran israel hezbollah conflict",
+    "strait hormuz military IRGC",
   ];
 
   const allArticles = [];
 
   for (const q of queries) {
-    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=30&format=json&timespan=24h`;
+    const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${encodeURIComponent(q)}&language=en&category=politics,world&size=10`;
     try {
       const res = await fetch(url, {
-        headers: { "User-Agent": "WarLibrary/1.0 (conflict-tracker)" },
+        headers: { "User-Agent": "WarLibrary/1.0" },
         signal: AbortSignal.timeout(15000),
       });
       if (!res.ok) {
-        console.warn(`  GDELT query returned ${res.status} for: ${q.slice(0, 40)}...`);
+        console.warn(`  NewsData query returned ${res.status} for: ${q}`);
         continue;
       }
       const data = await res.json();
-      const articles = data.articles || [];
+      const articles = data.results || [];
       for (const art of articles) {
         allArticles.push({
           title: art.title || "",
-          url: art.url || "",
-          source: art.domain || extractSourceFromUrl(art.url || ""),
-          date: art.seendate || "",
-          description: art.title || "",
+          url: art.link || "",
+          source: art.source_name || art.source_id || extractSourceFromUrl(art.link || ""),
+          date: art.pubDate || "",
+          description: art.description || art.title || "",
+          // NewsData provides content directly — huge advantage over RSS scraping
+          body: (art.content || art.description || "").slice(0, 3000),
         });
       }
     } catch (err) {
-      console.warn(`  GDELT fetch failed for query "${q.slice(0, 30)}...": ${err.message}`);
+      console.warn(`  NewsData fetch failed for "${q}": ${err.message}`);
     }
   }
 
@@ -344,8 +403,16 @@ async function fetchOutletRSS() {
       name: "New York Times",
     },
     {
-      url: "http://feeds.reuters.com/Reuters/worldNews",
-      name: "Reuters",
+      url: "https://www.theguardian.com/world/middleeast/rss",
+      name: "The Guardian",
+    },
+    {
+      url: "https://www.france24.com/en/middle-east/rss",
+      name: "France 24",
+    },
+    {
+      url: "https://rss.dw.com/xml/rss-en-mid",
+      name: "DW News",
     },
   ];
 
@@ -377,8 +444,14 @@ async function fetchOutletRSS() {
           text.includes("hormuz") ||
           text.includes("irgc") ||
           text.includes("epic fury") ||
+          text.includes("persian gulf") ||
+          text.includes("pentagon") ||
+          text.includes("centcom") ||
           (text.includes("strike") && (text.includes("middle east") || text.includes("israel"))) ||
-          (text.includes("missile") && (text.includes("israel") || text.includes("gulf")))
+          (text.includes("missile") && (text.includes("israel") || text.includes("gulf"))) ||
+          (text.includes("bombing") && (text.includes("iran") || text.includes("beirut"))) ||
+          (text.includes("drone") && (text.includes("iran") || text.includes("yemen"))) ||
+          (text.includes("navy") && (text.includes("carrier") || text.includes("gulf")))
         );
       });
       for (const item of relevant) {
@@ -639,21 +712,25 @@ function isDuplicate(candidate, existingEvents) {
     ) {
       return true;
     }
-    // High similarity + same date (day only) + same country
+    // High similarity + same date (day only) + same country + same event_type
     const candidateDay = (candidate.date || "").slice(0, 10);
     const existingDay = (existing.date || "").slice(0, 10);
     if (
       candidateDay === existingDay &&
       candidate.country === existing.country &&
-      similarity(candidate.description, existing.description) > 0.85
+      candidate.event_type === existing.event_type &&
+      similarity(candidate.description, existing.description) > 0.7
     ) {
       return true;
     }
-    // Same source_url
+    // Same source_url ONLY for non-liveblog URLs (liveblogs share URLs across many events)
     if (
       candidate.source_url &&
       existing.source_url &&
-      candidate.source_url === existing.source_url
+      candidate.source_url === existing.source_url &&
+      !candidate.source_url.includes("liveblog") &&
+      !candidate.source_url.includes("live-") &&
+      !candidate.source_url.includes("/live/")
     ) {
       return true;
     }
@@ -795,7 +872,7 @@ async function main() {
   const pipelineStats = {
     last_run: new Date().toISOString(),
     articles_fetched: 0,
-    articles_by_source: { "GDELT": 0, "Google News": 0, "Outlet RSS": 0 },
+    articles_by_source: { "NewsData": 0, "Google News": 0, "Outlet RSS": 0 },
     events_extracted: 0,
     events_valid: 0,
     events_unique: 0,
@@ -844,18 +921,18 @@ async function main() {
   // historical pages that cause Claude to re-extract old events and waste tokens)
   console.log("\n--- Fetching news articles ---");
 
-  console.log("Fetching from GDELT API...");
-  let gdeltArticles = [];
+  console.log("Fetching from NewsData.io API...");
+  let newsDataArticles = [];
   try {
-    gdeltArticles = await fetchGDELT();
-    pipelineStats.source_health["GDELT"] = gdeltArticles.length > 0 ? "ok" : "error";
+    newsDataArticles = await fetchNewsDataAPI();
+    pipelineStats.source_health["NewsData"] = newsDataArticles.length > 0 ? "ok" : (process.env.NEWSDATA_API_KEY ? "error" : "no_key");
   } catch (err) {
-    console.error(`GDELT fetch error: ${err.message}`);
-    pipelineStats.errors.push(`GDELT fetch error: ${err.message}`);
-    pipelineStats.source_health["GDELT"] = err.name === "TimeoutError" ? "timeout" : "error";
+    console.error(`NewsData fetch error: ${err.message}`);
+    pipelineStats.errors.push(`NewsData fetch error: ${err.message}`);
+    pipelineStats.source_health["NewsData"] = err.name === "TimeoutError" ? "timeout" : "error";
   }
-  console.log(`  GDELT: ${gdeltArticles.length} articles`);
-  pipelineStats.articles_by_source["GDELT"] = gdeltArticles.length;
+  console.log(`  NewsData: ${newsDataArticles.length} articles`);
+  pipelineStats.articles_by_source["NewsData"] = newsDataArticles.length;
 
   console.log("Fetching from Google News RSS...");
   let googleArticles = [];
@@ -875,14 +952,14 @@ async function main() {
   try {
     outletArticles = await fetchOutletRSS();
     // Track individual outlet health from fetchOutletRSS
-    for (const name of ["Al Jazeera", "BBC News", "New York Times", "Reuters"]) {
+    for (const name of ["Al Jazeera", "BBC News", "New York Times", "The Guardian", "France 24", "DW News"]) {
       const hasArticles = outletArticles.some((a) => a.source === name);
       pipelineStats.source_health[name] = hasArticles ? "ok" : "error";
     }
   } catch (err) {
     console.error(`Outlet RSS fetch error: ${err.message}`);
     pipelineStats.errors.push(`Outlet RSS fetch error: ${err.message}`);
-    for (const name of ["Al Jazeera", "BBC News", "New York Times", "Reuters"]) {
+    for (const name of ["Al Jazeera", "BBC News", "New York Times", "The Guardian", "France 24", "DW News"]) {
       pipelineStats.source_health[name] = err.name === "TimeoutError" ? "timeout" : "error";
     }
   }
@@ -890,7 +967,7 @@ async function main() {
   pipelineStats.articles_by_source["Outlet RSS"] = outletArticles.length;
 
   // Combine all articles, deduplicate by URL
-  const allArticlesRaw = [...gdeltArticles, ...googleArticles, ...outletArticles];
+  const allArticlesRaw = [...newsDataArticles, ...googleArticles, ...outletArticles];
   const seenUrls = new Set();
   const allArticles = [];
   for (const art of allArticlesRaw) {
@@ -902,28 +979,34 @@ async function main() {
   pipelineStats.articles_fetched = allArticles.length;
   console.log(`\nTotal unique articles fetched: ${allArticles.length}`);
 
-  // --- Article URL cache: skip Claude call if we've seen all these URLs before ---
+  // --- Article cache: use title+URL hash so live blog updates are detected ---
   const cacheFile = path.join(DATA_DIR, "article-url-cache.json");
-  let cachedUrls = new Set();
+  let cachedKeys = new Set();
   try {
     if (fs.existsSync(cacheFile)) {
-      cachedUrls = new Set(JSON.parse(fs.readFileSync(cacheFile, "utf-8")));
+      cachedKeys = new Set(JSON.parse(fs.readFileSync(cacheFile, "utf-8")));
     }
   } catch { /* ignore corrupt cache */ }
-  const newArticleUrls = allArticles.filter((a) => !cachedUrls.has(a.url));
-  console.log(`New article URLs not seen before: ${newArticleUrls.length} of ${allArticles.length}`);
-  // Update cache with all current URLs (keep last 2000 to prevent unbounded growth)
-  const updatedCache = [...cachedUrls, ...allArticles.map((a) => a.url)];
+  // Cache key = URL + title hash (catches live blog title changes)
+  function articleCacheKey(art) {
+    return `${art.url}|${(art.title || "").slice(0, 80)}`;
+  }
+  const newArticleUrls = allArticles.filter((a) => !cachedKeys.has(articleCacheKey(a)));
+  console.log(`New/updated articles not seen before: ${newArticleUrls.length} of ${allArticles.length}`);
+  // Update cache (keep last 3000 entries)
+  const updatedCache = [...cachedKeys, ...allArticles.map(articleCacheKey)];
   try {
-    fs.writeFileSync(cacheFile, JSON.stringify(updatedCache.slice(-2000)), "utf-8");
+    fs.writeFileSync(cacheFile, JSON.stringify([...new Set(updatedCache)].slice(-3000)), "utf-8");
   } catch (err) {
     console.error(`ERROR writing cache file: ${err.message}`);
     pipelineStats.errors.push(`Cache write failed: ${err.message}`);
   }
 
+  // Even if no new URLs, always send top headlines to catch breaking news
+  // Only skip if we TRULY have nothing (all URLs + titles identical)
   if (newArticleUrls.length === 0 && allArticles.length > 0) {
-    console.log("All articles already seen in previous run — skipping Claude API call.");
-    console.log("STATUS: NO_NEW_EVENTS");
+    console.log("All articles (URL+title) already seen — skipping Claude API call.");
+    console.log("STATUS: SKIPPED_NO_NEW_ARTICLES");
     pipelineStats.status = "SKIPPED_NO_NEW_ARTICLES";
     pipelineStats.total_events_in_dataset = allEvents.length;
     pipelineStats.duration_ms = Date.now() - startTime;
@@ -951,7 +1034,7 @@ async function main() {
     if (tierA !== tierB) return tierA - tierB;
     return (b.date || "").localeCompare(a.date || "");
   });
-  const maxArticles = 20;
+  const maxArticles = 30;
   const articlesToProcess = sortedNewArticles.slice(0, maxArticles);
 
   console.log(`\nFetching full article text for ${articlesToProcess.length} new articles...`);
@@ -966,23 +1049,33 @@ async function main() {
   const articlesWithBody = articlesToProcess.filter((a) => a.body && a.body.length > 100).length;
   console.log(`  ${articlesWithBody} articles have substantial body text.`);
 
+  // Even articles without body text can have useful headlines — include all of them
   const articleSummaries = articlesToProcess
     .map(
       (art, i) => {
-        // Trim body to 1200 chars (was 2000) — enough for key facts, saves ~40% tokens
         const bodySnippet = art.body ? `\n    Body: ${art.body.slice(0, 1200)}` : "";
         return `[${i + 1}] ${art.title}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}${bodySnippet}`;
       }
     )
     .join("\n\n");
 
-  // 4. Get the last 10 events as compact dedup context (was 20 — saves tokens)
+  if (articleSummaries.trim().length === 0) {
+    console.log("WARNING: No article content to send to Claude.");
+    pipelineStats.status = "NO_NEW_EVENTS";
+    pipelineStats.total_events_in_dataset = allEvents.length;
+    pipelineStats.duration_ms = Date.now() - startTime;
+    clearTimeout(executionTimeout);
+    writePipelineStats(pipelineStats);
+    process.exit(0);
+  }
+
+  // 4. Get the last 25 events as compact dedup context
   const sortedEvents = [...allEvents].sort((a, b) => {
     const da = a.date || "";
     const db = b.date || "";
     return db.localeCompare(da);
   });
-  const recentEvents = sortedEvents.slice(0, 10);
+  const recentEvents = sortedEvents.slice(0, 25);
 
   // 5. Build the extraction prompt
   const schemaExample = {
@@ -1004,25 +1097,31 @@ async function main() {
     civilian_impact: "12 civilians killed, hospital partially destroyed",
   };
 
-  const prompt = `Extract conflict events from articles about the 2026 US-Israel war on Iran (Operation Epic Fury). Only real events from the articles — never fabricate. Return ONLY a JSON array.
+  const prompt = `Extract ALL distinct conflict events from these articles about the 2026 US-Israel war on Iran (Operation Epic Fury). Be thorough — extract every unique event mentioned: strikes, attacks, deaths, political developments, interceptions, regional spillover. Only real events — never fabricate.
+
+CRITICAL RULES:
+- You MUST extract events even from HEADLINE-ONLY articles. A headline like "Israeli strikes hit Tehran oil depot" IS a clear event — extract it.
+- Do NOT skip articles because they lack body text. Headlines are sufficient evidence for extraction.
+- For headline-only articles: use the headline as description, infer event_type from keywords, use the article's source/date/URL.
+- Return ONLY a valid JSON array. No markdown code fences, no explanation text, no commentary.
 
 event_type: "airstrike"|"missile_attack"|"drone_attack"|"battle"|"explosion"|"violence_against_civilians"|"strategic_development"|"protest"
-verification_status: "confirmed"|"reported"|"claimed"|"disputed"|"unconfirmed" — use "claimed"/"reported" for unverified claims
+verification_status: "confirmed"|"reported"|"claimed"|"disputed"|"unconfirmed"
 location_precision: "exact"|"city"|"region"|"country"
-fatalities: exact number from article only, 0 if unknown. Cumulative tolls → strategic_development with fatalities=0.
-civilian_impact: brief phrase if mentioned, omit if not.
-confidence: 0.0–1.0 based on source reliability.
+fatalities: exact number if stated, 0 if unknown. Cumulative tolls → strategic_development with fatalities=0.
+civilian_impact: brief phrase if civilians affected.
+confidence: 0.0–1.0 based on source reliability. Headline-only = 0.5-0.7 depending on source.
 
-JSON SCHEMA:
+JSON SCHEMA (each event):
 ${JSON.stringify(schemaExample, null, 2)}
 
-ALREADY IN DATABASE (do NOT extract these again):
-${JSON.stringify(recentEvents.map((e) => ({ d: e.date?.slice(0, 10), c: e.country, t: e.event_type, s: (e.description || "").slice(0, 60) })))}
+ALREADY IN DATABASE (skip these — extract only NEW events not in this list):
+${JSON.stringify(recentEvents.map((e) => ({ d: e.date?.slice(0, 10), c: e.country, t: e.event_type, desc: (e.description || "").slice(0, 80) })))}
 
 ARTICLES:
 ${articleSummaries}
 
-Return ONLY a JSON array of new events. Empty array [] if none.`;
+Extract every distinct NEW event from ALL articles above, including headline-only ones. Include regional spillover (Bahrain, UAE, Saudi, Turkey, etc). Return ONLY a JSON array — no other text.`;
 
   // 6. Call Claude for extraction
   console.log("\nCalling Claude Haiku 4.5 to extract events from articles...");
@@ -1066,35 +1165,60 @@ Return ONLY a JSON array of new events. Empty array [] if none.`;
     process.exit(1);
   }
 
-  // 7. Parse the response
+  // 7. Parse the response — resilient extraction
   let newEvents;
-  try {
-    // Try direct parse first
-    newEvents = JSON.parse(rawText);
-  } catch {
-    // Try extracting JSON array from the response
-    const match = rawText.match(/\[[\s\S]*\]/);
-    if (match) {
-      try {
-        newEvents = JSON.parse(match[0]);
-      } catch {
-        console.error("ERROR: Could not parse JSON from Claude response.");
-        console.error("Raw response:", rawText.slice(0, 500));
-        pipelineStats.errors.push("Failed to parse JSON from Claude response");
-        pipelineStats.duration_ms = Date.now() - startTime;
-        clearTimeout(executionTimeout);
-        writePipelineStats(pipelineStats);
-        process.exit(1);
+  const parseAttempts = [
+    // 1. Direct parse
+    () => JSON.parse(rawText),
+    // 2. Extract from markdown code fences: ```json [...] ```
+    () => {
+      const fenceMatch = rawText.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
+      if (!fenceMatch) throw new Error("No fenced JSON");
+      return JSON.parse(fenceMatch[1]);
+    },
+    // 3. Find the outermost JSON array
+    () => {
+      const arrayMatch = rawText.match(/\[[\s\S]*\]/);
+      if (!arrayMatch) throw new Error("No array found");
+      return JSON.parse(arrayMatch[0]);
+    },
+    // 4. Try to fix common issues: trailing commas, unescaped newlines
+    () => {
+      let cleaned = rawText;
+      // Strip markdown fences
+      cleaned = cleaned.replace(/```(?:json)?/g, "").replace(/```/g, "");
+      // Find the array
+      const start = cleaned.indexOf("[");
+      const end = cleaned.lastIndexOf("]");
+      if (start === -1 || end === -1) throw new Error("No brackets");
+      cleaned = cleaned.slice(start, end + 1);
+      // Fix trailing commas before ] or }
+      cleaned = cleaned.replace(/,\s*([}\]])/g, "$1");
+      return JSON.parse(cleaned);
+    },
+  ];
+
+  for (let i = 0; i < parseAttempts.length; i++) {
+    try {
+      newEvents = parseAttempts[i]();
+      if (Array.isArray(newEvents)) {
+        console.log(`  JSON parsed successfully (method ${i + 1})`);
+        break;
       }
-    } else {
-      console.error("ERROR: No JSON array found in Claude response.");
-      console.error("Raw response:", rawText.slice(0, 500));
-      pipelineStats.errors.push("No JSON array found in Claude response");
-      pipelineStats.duration_ms = Date.now() - startTime;
-      clearTimeout(executionTimeout);
-      writePipelineStats(pipelineStats);
-      process.exit(1);
+      newEvents = null;
+    } catch {
+      newEvents = null;
     }
+  }
+
+  if (!newEvents || !Array.isArray(newEvents)) {
+    console.error("ERROR: Could not parse JSON from Claude response after all attempts.");
+    console.error("Raw response (first 800 chars):", rawText.slice(0, 800));
+    pipelineStats.errors.push("Failed to parse JSON from Claude response");
+    pipelineStats.duration_ms = Date.now() - startTime;
+    clearTimeout(executionTimeout);
+    writePipelineStats(pipelineStats);
+    process.exit(1);
   }
 
   if (!Array.isArray(newEvents)) {
@@ -1225,7 +1349,7 @@ Return ONLY a JSON array of new events. Empty array [] if none.`;
       generated: new Date().toISOString().split("T")[0],
       source: "multiple",
       note: `Auto-updated from real news sources. ${updatedLatest.length} total events in latest file.`,
-      sources_checked: ["GDELT API", "Google News RSS", "Al Jazeera RSS", "BBC RSS", "NYT RSS", "Reuters RSS"],
+      sources_checked: ["NewsData.io API", "Google News RSS", "Al Jazeera RSS", "BBC RSS", "NYT RSS", "The Guardian RSS", "France 24 RSS", "DW News RSS"],
     },
   };
   writeJSON(latestFile, latestWrapper);

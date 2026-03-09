@@ -37,7 +37,7 @@ function toTab(t: MobileTab): Tab {
 }
 
 export default function Home() {
-  useNotifications();
+  const { notification, dismiss: dismissNotif } = useNotifications();
   const { events, loading, error, lastUpdated } = useEvents();
   const [selectedEvent, setSelectedEvent] = useState<ConflictEvent | null>(
     null
@@ -144,6 +144,22 @@ export default function Home() {
   return (
     <div className="flex h-dvh w-screen flex-col overflow-hidden">
       <Header lastUpdated={lastUpdated} activeTab="map" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
+
+      {notification && (
+        <div className="relative z-40 flex items-center gap-3 bg-amber-600/90 px-4 py-2 text-sm text-white backdrop-blur-sm">
+          <div className="flex-1">
+            <span className="font-semibold">{notification.title}</span>
+            <span className="ml-2 opacity-90">{notification.body}</span>
+          </div>
+          <button
+            onClick={dismissNotif}
+            className="shrink-0 rounded px-2 py-0.5 text-xs hover:bg-white/20"
+            aria-label="Dismiss notification"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <OverviewBanner events={events} />
 

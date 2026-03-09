@@ -1,15 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth";
+import { readFileSync, writeFileSync } from "fs";
+import { join } from "path";
 
-// In-memory store of latest event notification
-// Clients poll this to check for new events
-let latestNotification: {
+const NOTIF_FILE = join(process.cwd(), "src", "data", "notification.json");
+
+interface NotificationData {
   id: string;
   title: string;
   body: string;
   timestamp: number;
   url: string;
-} | null = null;
+}
+
+// Load from disk on startup so notifications survive restarts
+let latestNotification: NotificationData | null = null;
+
+function loadFromDisk(): NotificationData | null {
+  try {
+    const raw = readFileSync(NOTIF_FILE, "utf-8");
+    return JSON.parse(raw) as NotificationData;
+  } catch {
+    return null;
+  }
+}
+
+function saveToDisk(data: NotificationData) {
+  try {
+    writeFileSync(NOTIF_FILE, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error("Failed to persist notification:", err);
+  }
+}
+
+// Initialize from disk
+latestNotification = loadFromDisk();
 
 // GET — clients poll for latest notification
 export async function GET(req: NextRequest) {
@@ -40,6 +65,8 @@ export async function POST(req: NextRequest) {
     timestamp: Date.now(),
     url: body.url || "/",
   };
+
+  saveToDisk(latestNotification);
 
   return NextResponse.json({ data: latestNotification });
 }

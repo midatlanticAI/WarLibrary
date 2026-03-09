@@ -1,19 +1,33 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
-// Poll for new notifications every 60 seconds
-// When a new notification arrives, show it via the Notifications API
+interface NotificationData {
+  id: string;
+  title: string;
+  body: string;
+  timestamp: number;
+  url: string;
+}
+
+/**
+ * Poll for new notifications every 30 seconds.
+ * Returns the latest notification for in-app display.
+ * Also shows browser push notifications if permission is granted.
+ */
 export function useNotifications() {
-  const lastSeenRef = useRef(Date.now());
+  const lastSeenRef = useRef(Date.now() - 5 * 60 * 1000); // Check last 5 minutes on load
+  const [notification, setNotification] = useState<NotificationData | null>(null);
+
+  const dismiss = useCallback(() => setNotification(null), []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!("Notification" in window)) return;
 
-    // Only poll if notifications are enabled
-    const enabled = localStorage.getItem("wl_notif_enabled");
-    if (!enabled && Notification.permission !== "granted") return;
+    // Request notification permission on first visit (non-blocking)
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
 
     const poll = async () => {
       try {
@@ -24,23 +38,30 @@ export function useNotifications() {
 
         lastSeenRef.current = json.data.timestamp;
 
-        // Show notification if permission granted
-        if (Notification.permission === "granted") {
-          const reg = await navigator.serviceWorker?.ready;
-          if (reg) {
-            reg.showNotification(json.data.title, {
-              body: json.data.body,
-              icon: "/icons/icon-192.png",
-              badge: "/icons/icon-192.png",
-              tag: json.data.id,
-              data: { url: json.data.url },
-            } as NotificationOptions);
-          } else {
-            new Notification(json.data.title, {
-              body: json.data.body,
-              icon: "/icons/icon-192.png",
-              tag: json.data.id,
-            });
+        // Always show in-app notification
+        setNotification(json.data);
+
+        // Also show browser notification if permitted
+        if ("Notification" in window && Notification.permission === "granted") {
+          try {
+            const reg = await navigator.serviceWorker?.ready;
+            if (reg) {
+              reg.showNotification(json.data.title, {
+                body: json.data.body,
+                icon: "/icons/icon-192.png",
+                badge: "/icons/icon-192.png",
+                tag: json.data.id,
+                data: { url: json.data.url },
+              } as NotificationOptions);
+            } else {
+              new Notification(json.data.title, {
+                body: json.data.body,
+                icon: "/icons/icon-192.png",
+                tag: json.data.id,
+              });
+            }
+          } catch {
+            // Browser notification failed, in-app still shows
           }
         }
       } catch {
@@ -48,7 +69,11 @@ export function useNotifications() {
       }
     };
 
-    const interval = setInterval(poll, 60_000);
+    // Poll immediately on mount, then every 30 seconds
+    poll();
+    const interval = setInterval(poll, 30_000);
     return () => clearInterval(interval);
   }, []);
+
+  return { notification, dismiss };
 }
