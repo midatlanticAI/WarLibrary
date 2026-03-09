@@ -255,7 +255,7 @@ async function fetchArticleBody(url) {
       const reader = new Readability(dom.window.document);
       const article = reader.parse();
       if (article && article.textContent && article.textContent.length > 100) {
-        return article.textContent.replace(/\s+/g, " ").trim().slice(0, 3000);
+        return article.textContent.replace(/\s+/g, " ").trim().slice(0, 1500);
       }
     } catch {
       // Readability failed, fall through to regex
@@ -269,7 +269,7 @@ async function fetchArticleBody(url) {
       const text = m[1].replace(/<[^>]*>/g, "").trim();
       if (text.length > 40) paragraphs.push(text);
     }
-    return paragraphs.join("\n").slice(0, 3000);
+    return paragraphs.join("\n").slice(0, 1500);
   } catch {
     return "";
   }
@@ -316,7 +316,7 @@ async function fetchNewsDataAPI() {
           date: art.pubDate || "",
           description: art.description || art.title || "",
           // NewsData provides content directly — huge advantage over RSS scraping
-          body: (art.content || art.description || "").slice(0, 3000),
+          body: (art.content || art.description || "").slice(0, 1500),
         });
       }
     } catch (err) {
@@ -857,11 +857,11 @@ function sendNewEventsNotification(uniqueEvents) {
 async function main() {
   const startTime = Date.now();
 
-  // 90-second execution timeout — force-exit if the script hangs
+  // 180-second execution timeout — force-exit if the script hangs
   const executionTimeout = setTimeout(() => {
-    console.error("FATAL: Execution timeout (90s) exceeded. Force-exiting.");
+    console.error("FATAL: Execution timeout (180s) exceeded. Force-exiting.");
     process.exit(2);
-  }, 90000);
+  }, 180000);
   executionTimeout.unref(); // Don't keep process alive just for the timer
 
   console.log("=== War Library Event Update ===");
@@ -1034,7 +1034,7 @@ async function main() {
     if (tierA !== tierB) return tierA - tierB;
     return (b.date || "").localeCompare(a.date || "");
   });
-  const maxArticles = 30;
+  const maxArticles = 20;
   const articlesToProcess = sortedNewArticles.slice(0, maxArticles);
 
   console.log(`\nFetching full article text for ${articlesToProcess.length} new articles...`);
@@ -1053,7 +1053,7 @@ async function main() {
   const articleSummaries = articlesToProcess
     .map(
       (art, i) => {
-        const bodySnippet = art.body ? `\n    Body: ${art.body.slice(0, 1200)}` : "";
+        const bodySnippet = art.body ? `\n    Body: ${art.body.slice(0, 800)}` : "";
         return `[${i + 1}] ${art.title}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}${bodySnippet}`;
       }
     )
@@ -1130,7 +1130,7 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
   try {
     response = await client.messages.create({
       model: MODEL,
-      max_tokens: 8192,
+      max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],
     });
   } catch (err) {
