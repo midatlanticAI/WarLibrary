@@ -412,6 +412,69 @@ function similarity(a, b) {
 }
 
 /**
+ * Haversine distance in kilometers between two lat/lng points.
+ */
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Spatial-temporal duplicate check.
+ * Two events are likely duplicates if ALL of:
+ * - Same country
+ * - Within 50km (Haversine)
+ * - Within 24 hours
+ * - At least one overlapping actor OR similar event_type
+ */
+function isSpatioTemporalDuplicate(candidate, existingEvents) {
+  const candidateTime = new Date(candidate.date).getTime();
+  if (isNaN(candidateTime)) return false;
+
+  for (const existing of existingEvents) {
+    // Same country
+    if (candidate.country !== existing.country) continue;
+
+    // Within 50km
+    if (
+      typeof candidate.latitude !== "number" ||
+      typeof candidate.longitude !== "number" ||
+      typeof existing.latitude !== "number" ||
+      typeof existing.longitude !== "number"
+    ) continue;
+    const dist = haversineKm(
+      candidate.latitude, candidate.longitude,
+      existing.latitude, existing.longitude
+    );
+    if (dist > 50) continue;
+
+    // Within 24 hours
+    const existingTime = new Date(existing.date).getTime();
+    if (isNaN(existingTime)) continue;
+    const timeDiffHours = Math.abs(candidateTime - existingTime) / 3600000;
+    if (timeDiffHours > 24) continue;
+
+    // Overlapping actor OR same event_type
+    const candidateActors = Array.isArray(candidate.actors) ? candidate.actors : [];
+    const existingActors = Array.isArray(existing.actors) ? existing.actors : [];
+    const hasOverlappingActor = candidateActors.some((a) =>
+      existingActors.some((b) => a.toLowerCase() === b.toLowerCase())
+    );
+    const sameEventType = candidate.event_type === existing.event_type;
+
+    if (hasOverlappingActor || sameEventType) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Check if a candidate event is a duplicate of any existing event.
  * Uses description similarity (threshold 0.7) and exact date+country match.
  */
@@ -577,7 +640,8 @@ async function main() {
     source: "Al Jazeera",
     source_url: "https://www.aljazeera.com/news/2026/3/9/example-article",
     confidence: 0.9,
-    verification_status: "verified",
+    verification_status: "reported",
+    location_precision: "city",
   };
 
   const prompt = `You are a conflict data analyst for War Library, a neutral conflict tracker.
@@ -608,9 +672,18 @@ RULES:
 9. Return ONLY a valid JSON array — no markdown, no code fences, no explanation
 10. Assign a "confidence" score (0.0 to 1.0) to each event based on source reliability and corroboration
 11. Assign a "verification_status" to each event:
-    - "verified" = event confirmed by 2+ major outlets or an official government/military source
-    - "multi-source" = reported by multiple sources but key details (casualties, scope) vary
-    - "unconfirmed" = single source or unverified claim
+    - "confirmed" = verified by 2+ independent credible sources or official statement
+    - "reported" = reported by a credible outlet but not independently verified
+    - "claimed" = based on claims by one party (e.g., "Iran claims...", "officials said...")
+    - "disputed" = conflicting reports from different parties
+    - "unconfirmed" = single unverified source or rumor
+12. CLAIM vs FACT: If the article says "claimed", "alleged", "reportedly", "according to officials", use "claimed" or "reported" — NOT "confirmed". Only use "confirmed" when multiple independent sources verify the same facts.
+13. ACTOR ATTRIBUTION: If actors are uncertain, use "unknown" or "unidentified" — do NOT assume attribution.
+14. Set "location_precision" for each event:
+    - "exact" = article mentions a specific facility, base, or address
+    - "city" = article names a specific city or town
+    - "region" = article only mentions a province, area, or general region (e.g., "northern Iran")
+    - "country" = article only mentions the country with no specific location
 
 JSON SCHEMA (every event must match this exactly):
 ${JSON.stringify(schemaExample, null, 2)}
@@ -693,14 +766,18 @@ Extract all conflict events from these articles. If no articles contain relevant
     }
   }
 
-  // 8b. Default confidence and verification_status if missing
-  const VALID_VERIFICATION_STATUSES = ["verified", "multi-source", "unconfirmed"];
+  // 8b. Default confidence, verification_status, and location_precision if missing
+  const VALID_VERIFICATION_STATUSES = ["confirmed", "reported", "claimed", "disputed", "unconfirmed"];
+  const VALID_LOCATION_PRECISIONS = ["exact", "city", "region", "country"];
   for (const event of newEvents) {
     if (typeof event.confidence !== "number" || event.confidence < 0 || event.confidence > 1) {
       event.confidence = 0.5;
     }
     if (!VALID_VERIFICATION_STATUSES.includes(event.verification_status)) {
       event.verification_status = "unconfirmed";
+    }
+    if (!VALID_LOCATION_PRECISIONS.includes(event.location_precision)) {
+      event.location_precision = "region";
     }
   }
 
@@ -718,6 +795,10 @@ Extract all conflict events from these articles. If no articles contain relevant
   const uniqueEvents = validEvents.filter((e) => {
     if (isDuplicate(e, allEvents)) {
       console.log(`  SKIP (duplicate): ${e.description?.slice(0, 60)}...`);
+      return false;
+    }
+    if (isSpatioTemporalDuplicate(e, allEvents)) {
+      console.log(`  SKIP (spatio-temporal duplicate): ${e.description?.slice(0, 60)}...`);
       return false;
     }
     return true;

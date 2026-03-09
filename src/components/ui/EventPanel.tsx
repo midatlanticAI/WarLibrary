@@ -159,6 +159,9 @@ export default function EventPanel({
                     {event.verification_status && (
                       <VerificationBadge status={event.verification_status} />
                     )}
+                    {event.location_precision === "country" && (
+                      <span className="text-zinc-600 italic">(approximate location)</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -253,11 +256,13 @@ function StatBox({
 function VerificationBadge({
   status,
 }: {
-  status: "verified" | "multi-source" | "unconfirmed";
+  status: "confirmed" | "reported" | "claimed" | "disputed" | "unconfirmed";
 }) {
   const config = {
-    verified: { color: "bg-green-500", label: "Verified" },
-    "multi-source": { color: "bg-amber-500", label: "Multi-source" },
+    confirmed: { color: "bg-green-500", label: "Confirmed" },
+    reported: { color: "bg-blue-500", label: "Reported" },
+    claimed: { color: "bg-amber-500", label: "Claimed" },
+    disputed: { color: "bg-red-500", label: "Disputed" },
     unconfirmed: { color: "bg-zinc-500", label: "Unconfirmed" },
   } as const;
 
@@ -266,7 +271,7 @@ function VerificationBadge({
   return (
     <span className="inline-flex items-center gap-1" title={label}>
       <span className={`inline-block h-1.5 w-1.5 rounded-full ${color}`} />
-      {status === "unconfirmed" && (
+      {(status === "disputed" || status === "unconfirmed") && (
         <span className="text-zinc-500">{label}</span>
       )}
     </span>

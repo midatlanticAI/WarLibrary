@@ -13,7 +13,8 @@ export interface ConflictEvent {
   source_url: string | null;
   created_at: string;
   confidence?: number;           // 0.0 to 1.0
-  verification_status?: "verified" | "multi-source" | "unconfirmed";
+  verification_status?: "confirmed" | "reported" | "claimed" | "disputed" | "unconfirmed";
+  location_precision?: "exact" | "city" | "region" | "country";
 }
 
 export interface Faction {
