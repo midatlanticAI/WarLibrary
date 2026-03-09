@@ -59,6 +59,12 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     )[0];
 
+    const civilianImpactEvents = events.filter(
+      (e) =>
+        e.event_type === "violence_against_civilians" ||
+        (e.civilian_impact && e.civilian_impact.length > 0)
+    ).length;
+
     return {
       totalKilled,
       countries,
@@ -73,6 +79,7 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
       recentEvents,
       totalEvents: events.length,
       latestEvent,
+      civilianImpactEvents,
     };
   }, [events]);
 
@@ -132,12 +139,13 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
           </p>
 
           {/* Stats grid */}
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-7">
             <StatChip label="Killed" value={`${(stats.totalKilled / 1000).toFixed(1)}k+`} color="text-red-400" />
             <StatChip label="Countries" value={String(stats.countries)} color="text-blue-400" />
             <StatChip label="Airstrikes" value={String(stats.airstrikes)} color="text-red-300" />
             <StatChip label="Missiles" value={String(stats.missiles)} color="text-orange-400" />
             <StatChip label="Drones" value={String(stats.drones)} color="text-yellow-400" />
+            <StatChip label="Civilian Impact" value={String(stats.civilianImpactEvents)} color="text-amber-400" />
             <StatChip label="Events" value={String(stats.totalEvents)} color="text-zinc-300" />
           </div>
 

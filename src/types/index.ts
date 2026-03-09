@@ -15,6 +15,7 @@ export interface ConflictEvent {
   confidence?: number;           // 0.0 to 1.0
   verification_status?: "confirmed" | "reported" | "claimed" | "disputed" | "unconfirmed";
   location_precision?: "exact" | "city" | "region" | "country";
+  civilian_impact?: string;  // e.g., "500+ displaced", "hospital damaged", "aid convoy blocked"
 }
 
 export interface Faction {

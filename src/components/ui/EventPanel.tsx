@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import type { ConflictEvent } from "@/types";
 
 const EVENT_COLORS: Record<string, string> = {
@@ -163,6 +163,13 @@ export default function EventPanel({
                       <span className="text-zinc-600 italic">(approximate location)</span>
                     )}
                   </div>
+                  {event.civilian_impact && (
+                    <div className="mt-1 flex items-center gap-1 text-xs text-amber-400">
+                      <span aria-hidden="true">&#9888;</span>
+                      <span>{event.civilian_impact}</span>
+                    </div>
+                  )}
+                  <ProvenanceRow event={event} />
                 </div>
               </div>
             </button>
@@ -275,6 +282,58 @@ function VerificationBadge({
         <span className="text-zinc-500">{label}</span>
       )}
     </span>
+  );
+}
+
+function ProvenanceRow({ event }: { event: ConflictEvent }) {
+  const parts: React.ReactNode[] = [];
+
+  if (typeof event.confidence === "number") {
+    parts.push(
+      <span key="conf">{Math.round(event.confidence * 100)}% confidence</span>
+    );
+  }
+
+  if (event.source) {
+    parts.push(
+      event.source_url ? (
+        <a
+          key="src"
+          href={event.source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-zinc-600 hover:text-zinc-300"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {event.source}
+        </a>
+      ) : (
+        <span key="src">{event.source}</span>
+      )
+    );
+  }
+
+  if (
+    event.location_precision === "region" ||
+    event.location_precision === "country"
+  ) {
+    parts.push(
+      <span key="prec" className="italic">
+        ~{event.location_precision}
+      </span>
+    );
+  }
+
+  if (parts.length === 0) return null;
+
+  return (
+    <div className="mt-1 text-xs text-zinc-500">
+      {parts.reduce<React.ReactNode[]>((acc, part, i) => {
+        if (i > 0) acc.push(<span key={`dot-${i}`}> · </span>);
+        acc.push(part);
+        return acc;
+      }, [])}
+    </div>
   );
 }
 

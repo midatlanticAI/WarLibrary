@@ -73,6 +73,41 @@ const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 const MODEL = "claude-haiku-4-5-20251001";
 
 // ---------------------------------------------------------------------------
+// Source quality tiers — not all outlets carry equal weight.
+// Tier 1 sources are major wire services and globally recognized outlets with
+// rigorous editorial standards and multi-layer fact-checking. Tier 2 sources
+// are credible regional or specialty outlets. Tier 3 is everything else —
+// single-reporter blogs, unknown domains, aggregators without original reporting.
+// Confidence adjustments reflect the likelihood that reporting is accurate
+// and independently verifiable.
+// ---------------------------------------------------------------------------
+const SOURCE_TIERS = {
+  // Tier 1: Major wire services and globally recognized outlets
+  tier1: [
+    "Reuters", "AP News", "BBC News", "Al Jazeera", "CNN",
+    "New York Times", "Washington Post", "NPR", "France 24",
+  ],
+  // Tier 2: Credible regional/specialty outlets
+  tier2: [
+    "Times of Israel", "Axios", "The Guardian", "PBS", "NBC News",
+    "ABC News", "Sky News", "DW News", "UN News", "Naval News",
+  ],
+  // Tier 3: Everything else (no explicit list needed)
+};
+
+/**
+ * Return the source tier (1, 2, or 3) for a given outlet name.
+ * Matching is case-insensitive to handle minor variations.
+ */
+function getSourceTier(sourceName) {
+  if (!sourceName) return 3;
+  const lower = sourceName.toLowerCase();
+  if (SOURCE_TIERS.tier1.some((s) => s.toLowerCase() === lower)) return 1;
+  if (SOURCE_TIERS.tier2.some((s) => s.toLowerCase() === lower)) return 2;
+  return 3;
+}
+
+// ---------------------------------------------------------------------------
 // Valid event types
 // ---------------------------------------------------------------------------
 const VALID_EVENT_TYPES = [
@@ -542,10 +577,38 @@ function isValidEvent(event) {
 // Main
 // ---------------------------------------------------------------------------
 
+/**
+ * Write pipeline stats to a JSON file so the admin health endpoint can report
+ * on how the automated pipeline is performing.
+ */
+function writePipelineStats(stats) {
+  const statsFile = path.join(DATA_DIR, "pipeline-stats.json");
+  writeJSON(statsFile, stats);
+  console.log(`Pipeline stats written to ${statsFile}`);
+}
+
 async function main() {
   console.log("=== War Library Event Update ===");
   console.log(`Time: ${new Date().toISOString()}`);
   console.log(`Data dir: ${DATA_DIR}`);
+
+  // Pipeline stats counters
+  const pipelineStats = {
+    last_run: new Date().toISOString(),
+    articles_fetched: 0,
+    articles_by_source: { "GDELT": 0, "Google News": 0, "Outlet RSS": 0 },
+    events_extracted: 0,
+    events_valid: 0,
+    events_unique: 0,
+    events_rejected_invalid: 0,
+    events_rejected_duplicate: 0,
+    events_rejected_spatiotemporal: 0,
+    avg_confidence: 0,
+    source_mix: {},
+    verification_breakdown: { "confirmed": 0, "reported": 0, "claimed": 0, "disputed": 0, "unconfirmed": 0 },
+    total_events_in_dataset: 0,
+    status: "NO_NEW_EVENTS",
+  };
 
   // 1. Read existing events from all 3 files
   const eventsFile = path.join(DATA_DIR, "events.json");
@@ -579,14 +642,17 @@ async function main() {
   console.log("Fetching from GDELT API...");
   const gdeltArticles = await fetchGDELT();
   console.log(`  GDELT: ${gdeltArticles.length} articles`);
+  pipelineStats.articles_by_source["GDELT"] = gdeltArticles.length;
 
   console.log("Fetching from Google News RSS...");
   const googleArticles = await fetchGoogleNewsRSS();
   console.log(`  Google News: ${googleArticles.length} articles`);
+  pipelineStats.articles_by_source["Google News"] = googleArticles.length;
 
   console.log("Fetching from outlet RSS feeds...");
   const outletArticles = await fetchOutletRSS();
   console.log(`  Outlet RSS: ${outletArticles.length} articles`);
+  pipelineStats.articles_by_source["Outlet RSS"] = outletArticles.length;
 
   // Combine all articles, deduplicate by URL
   const allArticlesRaw = [...gdeltArticles, ...googleArticles, ...outletArticles];
@@ -598,11 +664,14 @@ async function main() {
     allArticles.push(art);
   }
 
+  pipelineStats.articles_fetched = allArticles.length;
   console.log(`\nTotal unique articles fetched: ${allArticles.length}`);
 
   if (allArticles.length === 0) {
     console.log("WARNING: No articles fetched from any source. All sources may be down.");
     console.log("STATUS: NO_NEW_EVENTS");
+    pipelineStats.total_events_in_dataset = allEvents.length;
+    writePipelineStats(pipelineStats);
     process.exit(0);
   }
 
@@ -642,6 +711,7 @@ async function main() {
     confidence: 0.9,
     verification_status: "reported",
     location_precision: "city",
+    civilian_impact: "12 civilians killed, hospital partially destroyed",
   };
 
   const prompt = `You are a conflict data analyst for War Library, a neutral conflict tracker.
@@ -679,7 +749,8 @@ RULES:
     - "unconfirmed" = single unverified source or rumor
 12. CLAIM vs FACT: If the article says "claimed", "alleged", "reportedly", "according to officials", use "claimed" or "reported" — NOT "confirmed". Only use "confirmed" when multiple independent sources verify the same facts.
 13. ACTOR ATTRIBUTION: If actors are uncertain, use "unknown" or "unidentified" — do NOT assume attribution.
-14. Set "location_precision" for each event:
+14. If the article mentions civilian casualties, displacement, infrastructure damage (hospitals, schools, water), or humanitarian aid disruption, capture it in "civilian_impact" as a brief phrase (e.g., "500+ displaced", "hospital damaged", "aid convoy blocked"). Omit the field if no civilian/humanitarian impact is mentioned.
+15. Set "location_precision" for each event:
     - "exact" = article mentions a specific facility, base, or address
     - "city" = article names a specific city or town
     - "region" = article only mentions a province, area, or general region (e.g., "northern Iran")
@@ -751,6 +822,7 @@ Extract all conflict events from these articles. If no articles contain relevant
     process.exit(1);
   }
 
+  pipelineStats.events_extracted = newEvents.length;
   console.log(`Claude extracted ${newEvents.length} candidate events from articles.`);
 
   // 8. Normalize source fields — ensure source_url is present and source is a name
@@ -781,28 +853,64 @@ Extract all conflict events from these articles. If no articles contain relevant
     }
   }
 
+  // 8c. Adjust confidence based on source tier.
+  // Tier 1 (wire services, major outlets) get a small boost because their
+  // editorial processes make reporting more reliable. Tier 3 (unknown or
+  // lesser-known outlets) are penalized because single-source reports from
+  // unestablished outlets carry higher uncertainty.
+  for (const event of newEvents) {
+    const tier = getSourceTier(event.source);
+    if (tier === 1) {
+      event.confidence = Math.min(event.confidence + 0.1, 1.0);
+    } else if (tier === 3) {
+      event.confidence = Math.max(event.confidence - 0.15, 0.1);
+    }
+    // Tier 2: no adjustment
+  }
+
   // 9. Validate and deduplicate
   const validEvents = newEvents.filter((e) => {
     if (!isValidEvent(e)) {
       console.log(
         `  SKIP (invalid schema): ${e.description?.slice(0, 60) || "no description"}...`
       );
+      pipelineStats.events_rejected_invalid++;
       return false;
     }
     return true;
   });
 
+  pipelineStats.events_valid = validEvents.length;
+
   const uniqueEvents = validEvents.filter((e) => {
     if (isDuplicate(e, allEvents)) {
       console.log(`  SKIP (duplicate): ${e.description?.slice(0, 60)}...`);
+      pipelineStats.events_rejected_duplicate++;
       return false;
     }
     if (isSpatioTemporalDuplicate(e, allEvents)) {
       console.log(`  SKIP (spatio-temporal duplicate): ${e.description?.slice(0, 60)}...`);
+      pipelineStats.events_rejected_spatiotemporal++;
       return false;
     }
     return true;
   });
+
+  pipelineStats.events_unique = uniqueEvents.length;
+
+  // Compute stats from accepted (unique) events
+  if (uniqueEvents.length > 0) {
+    const confidenceSum = uniqueEvents.reduce((sum, e) => sum + (e.confidence || 0), 0);
+    pipelineStats.avg_confidence = Math.round((confidenceSum / uniqueEvents.length) * 100) / 100;
+  }
+  for (const e of uniqueEvents) {
+    const src = e.source || "Unknown";
+    pipelineStats.source_mix[src] = (pipelineStats.source_mix[src] || 0) + 1;
+    const vs = e.verification_status || "unconfirmed";
+    if (vs in pipelineStats.verification_breakdown) {
+      pipelineStats.verification_breakdown[vs]++;
+    }
+  }
 
   console.log(
     `After validation: ${validEvents.length} valid, ${uniqueEvents.length} unique new events.`
@@ -812,6 +920,8 @@ Extract all conflict events from these articles. If no articles contain relevant
   if (uniqueEvents.length === 0) {
     console.log("No new events to add.");
     console.log("STATUS: NO_NEW_EVENTS");
+    pipelineStats.total_events_in_dataset = allEvents.length;
+    writePipelineStats(pipelineStats);
     process.exit(0);
   }
 
@@ -837,6 +947,11 @@ Extract all conflict events from these articles. If no articles contain relevant
     );
     console.log(`    Source: ${e.source} — ${e.source_url}`);
   }
+
+  pipelineStats.status = "EVENTS_ADDED";
+  pipelineStats.total_events_in_dataset = allEvents.length + uniqueEvents.length;
+  writePipelineStats(pipelineStats);
+
   console.log(`\nSTATUS: EVENTS_ADDED=${uniqueEvents.length}`);
 }
 
