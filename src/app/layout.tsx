@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import JsonLd from "@/components/seo/JsonLd";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 const siteUrl = "https://warlibrary.midatlantic.ai";
 const siteTitle = "War Library — Live Conflict Tracker";
 const siteDescription =
-  "A neutral, factual tracker of the 2026 US-Israel war on Iran. 124 verified events across 17+ countries. Source-verified, open to anyone. 100% of proceeds to humanitarian aid.";
+  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). 150+ verified conflict events mapped across 28 countries — airstrikes, missile attacks, drone strikes, and strategic developments. Every event is source-attributed from Al Jazeera, BBC, Reuters, CNN, and AP with confidence scoring. Includes AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
 const ogImage = `${siteUrl}/icons/icon-512.png`;
 
 export const metadata: Metadata = {
@@ -35,7 +36,18 @@ export const metadata: Metadata = {
     "humanitarian",
     "live map",
     "verified events",
+    "airstrike tracker",
+    "missile attack map",
+    "Iran war map",
+    "OSINT",
+    "open source intelligence",
+    "conflict data",
+    "real-time war tracker",
+    "civilian casualties",
+    "drone strikes Iran",
   ],
+  category: "News",
+  classification: "Conflict Tracking / Open Source Intelligence",
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/",
@@ -106,6 +118,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <JsonLd />
         {children}
       </body>
     </html>

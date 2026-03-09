@@ -46,6 +46,19 @@ interface LatestEvent {
   source?: string;
 }
 
+interface AnalyticsData {
+  totalViews: number;
+  todayViews: number;
+  todayUnique: number;
+  aiQuestions: number;
+  pageViews: Record<string, number>;
+  daily: Array<{
+    date: string;
+    views: Record<string, number>;
+    uniqueVisitors: number;
+  }>;
+}
+
 interface DashboardResponse {
   data: {
     pipeline: {
@@ -228,6 +241,7 @@ function LoginScreen({ onAuth }: { onAuth: () => void }) {
 
 function Dashboard() {
   const [resp, setResp] = useState<DashboardResponse | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [fetchErr, setFetchErr] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionMsg, setActionMsg] = useState("");
@@ -238,11 +252,18 @@ function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/dashboard", { credentials: "include" });
-      if (res.status === 401) { window.location.reload(); return; }
-      if (!res.ok) throw new Error(`${res.status}`);
-      const json: DashboardResponse = await res.json();
+      const [dashRes, analyticsRes] = await Promise.all([
+        fetch("/api/admin/dashboard", { credentials: "include" }),
+        fetch("/api/analytics", { credentials: "include" }),
+      ]);
+      if (dashRes.status === 401) { window.location.reload(); return; }
+      if (!dashRes.ok) throw new Error(`${dashRes.status}`);
+      const json: DashboardResponse = await dashRes.json();
       setResp(json);
+      if (analyticsRes.ok) {
+        const aJson = await analyticsRes.json();
+        setAnalytics(aJson.data);
+      }
       setFetchErr("");
     } catch (e) {
       setFetchErr(e instanceof Error ? e.message : "Failed to fetch");
@@ -518,6 +539,80 @@ function Dashboard() {
             </>
           ) : (
             <div className="text-sm text-zinc-500">No history yet. Pipeline history builds after the first run with the new tracking.</div>
+          )}
+        </Card>
+
+        {/* ── Site Analytics ── */}
+        <Card title="Site Analytics">
+          {analytics ? (
+            <>
+              <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                <Stat label="Total Views" value={analytics.totalViews.toLocaleString()} />
+                <Stat label="Today Views" value={analytics.todayViews.toLocaleString()} />
+                <Stat label="Unique Today" value={analytics.todayUnique.toLocaleString()} />
+                <Stat label="AI Questions" value={analytics.aiQuestions.toLocaleString()} />
+              </div>
+
+              {/* Page popularity bar chart */}
+              <div className="mb-4">
+                <div className="mb-2 text-xs text-zinc-500">Page Popularity</div>
+                <div className="space-y-2">
+                  {Object.entries(analytics.pageViews)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([page, views]) => {
+                      const maxViews = Math.max(...Object.values(analytics.pageViews), 1);
+                      const pct = (views / maxViews) * 100;
+                      return (
+                        <div key={page} className="flex items-center gap-3">
+                          <span className="w-16 text-xs text-zinc-400 capitalize">{page}</span>
+                          <div className="flex-1 h-5 bg-[#0a0a0a] rounded overflow-hidden">
+                            <div
+                              className="h-full bg-amber-600/60 rounded"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="w-12 text-right text-xs text-zinc-300">{views.toLocaleString()}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Daily breakdown */}
+              {analytics.daily.length > 0 && (
+                <div>
+                  <div className="mb-2 text-xs text-zinc-500">Last 7 Days</div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-[#262626] text-zinc-500">
+                          <th className="pb-2 pr-3 font-medium">Date</th>
+                          <th className="pb-2 pr-3 font-medium">Views</th>
+                          <th className="pb-2 pr-3 font-medium">Unique</th>
+                          <th className="pb-2 font-medium">Top Page</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {analytics.daily.slice(0, 7).map((day) => {
+                          const totalViews = Object.values(day.views).reduce((a, b) => a + b, 0);
+                          const topPage = Object.entries(day.views).sort((a, b) => b[1] - a[1])[0];
+                          return (
+                            <tr key={day.date} className="border-b border-[#262626]/50">
+                              <td className="py-1.5 pr-3 text-zinc-400">{day.date}</td>
+                              <td className="py-1.5 pr-3 text-zinc-300">{totalViews}</td>
+                              <td className="py-1.5 pr-3 text-zinc-300">{day.uniqueVisitors}</td>
+                              <td className="py-1.5 text-zinc-400 capitalize">{topPage ? `${topPage[0]} (${topPage[1]})` : "-"}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-sm text-zinc-500">No analytics data yet. Views are tracked automatically.</div>
           )}
         </Card>
 

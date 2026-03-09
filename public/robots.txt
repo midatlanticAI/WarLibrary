@@ -1,5 +1,31 @@
 User-agent: *
 Allow: /
-Disallow: /api/
+Disallow: /api/admin
+Disallow: /api/stats
+Disallow: /admin
+
+# Allow AI crawlers to access public API for dataset indexing
+User-agent: GPTBot
+Allow: /api/events
+Allow: /api/health
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /api/events
+Allow: /api/health
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /api/events
+Allow: /api/health
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /api/events
+Allow: /api/health
+Allow: /
+
+User-agent: Googlebot
+Allow: /
 
 Sitemap: https://warlibrary.midatlantic.ai/sitemap.xml
