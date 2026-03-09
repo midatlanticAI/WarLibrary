@@ -161,5 +161,548 @@
     "duration_ms": 32254,
     "api_input_tokens": 4366,
     "api_output_tokens": 1503
+  },
+  {
+    "last_run": "2026-03-09T18:00:01.315Z",
+    "articles_fetched": 313,
+    "articles_by_source": {
+      "GDELT": 0,
+      "Google News": 222,
+      "Outlet RSS": 91
+    },
+    "events_extracted": 0,
+    "events_valid": 0,
+    "events_unique": 0,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0,
+    "source_mix": {},
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 0,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 0,
+    "status": "NO_NEW_EVENTS",
+    "errors": [
+      "Failed to parse JSON from Claude response"
+    ],
+    "source_health": {
+      "GDELT": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 16738,
+    "api_input_tokens": 2651,
+    "api_output_tokens": 211
+  },
+  {
+    "last_run": "2026-03-09T18:30:01.424Z",
+    "articles_fetched": 319,
+    "articles_by_source": {
+      "GDELT": 0,
+      "Google News": 226,
+      "Outlet RSS": 93
+    },
+    "events_extracted": 1,
+    "events_valid": 1,
+    "events_unique": 1,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.95,
+    "source_mix": {
+      "Al Jazeera": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 1,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 160,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "GDELT": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 16938,
+    "api_input_tokens": 4411,
+    "api_output_tokens": 262
+  },
+  {
+    "last_run": "2026-03-09T18:40:19.781Z",
+    "articles_fetched": 316,
+    "articles_by_source": {
+      "GDELT": 0,
+      "Google News": 223,
+      "Outlet RSS": 93
+    },
+    "events_extracted": 0,
+    "events_valid": 0,
+    "events_unique": 0,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0,
+    "source_mix": {},
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 0,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 160,
+    "status": "NO_NEW_EVENTS",
+    "errors": [],
+    "source_health": {
+      "GDELT": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 3645,
+    "api_input_tokens": 1345,
+    "api_output_tokens": 9
+  },
+  {
+    "last_run": "2026-03-09T18:41:50.640Z",
+    "articles_fetched": 349,
+    "articles_by_source": {
+      "GDELT": 33,
+      "Google News": 223,
+      "Outlet RSS": 93
+    },
+    "events_extracted": 5,
+    "events_valid": 5,
+    "events_unique": 0,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 5,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0,
+    "source_mix": {},
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 0,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 160,
+    "status": "NO_NEW_EVENTS",
+    "errors": [],
+    "source_health": {
+      "GDELT": "ok",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 39401,
+    "api_input_tokens": 9369,
+    "api_output_tokens": 1456
+  },
+  {
+    "last_run": "2026-03-09T18:43:33.873Z",
+    "articles_fetched": 308,
+    "articles_by_source": {
+      "GDELT": 0,
+      "Google News": 215,
+      "Outlet RSS": 93
+    },
+    "events_extracted": 5,
+    "events_valid": 5,
+    "events_unique": 2,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 3,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.77,
+    "source_mix": {
+      "npr": 1,
+      "BBC News": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 1,
+      "claimed": 1,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 162,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "GDELT": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 22875,
+    "api_input_tokens": 10081,
+    "api_output_tokens": 1582
+  },
+  {
+    "last_run": "2026-03-09T18:45:41.375Z",
+    "articles_fetched": 315,
+    "articles_by_source": {
+      "GDELT": 0,
+      "Google News": 223,
+      "Outlet RSS": 92
+    },
+    "events_extracted": 11,
+    "events_valid": 9,
+    "events_unique": 8,
+    "events_rejected_invalid": 2,
+    "events_rejected_duplicate": 1,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.68,
+    "source_mix": {
+      "NBC News": 1,
+      "Anadolu Ajansı": 1,
+      "Al Jazeera": 1,
+      "Chattanooga Times Free Press": 1,
+      "debuglies.com": 1,
+      "fortune": 1,
+      "CSIS | Center for Strategic and International Studies": 1,
+      "Small Wars Journal": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 1,
+      "reported": 6,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 1
+    },
+    "total_events_in_dataset": 170,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "GDELT": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 77900,
+    "api_input_tokens": 9677,
+    "api_output_tokens": 4851
+  },
+  {
+    "last_run": "2026-03-09T19:00:02.054Z",
+    "articles_fetched": 317,
+    "articles_by_source": {
+      "GDELT": 0,
+      "Google News": 226,
+      "Outlet RSS": 91
+    },
+    "events_extracted": 5,
+    "events_valid": 4,
+    "events_unique": 4,
+    "events_rejected_invalid": 1,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.83,
+    "source_mix": {
+      "New York Times": 2,
+      "DW News": 1,
+      "kurdistan24": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 4,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 174,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "GDELT": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 38737,
+    "api_input_tokens": 5782,
+    "api_output_tokens": 1735
+  },
+  {
+    "last_run": "2026-03-09T19:30:02.119Z",
+    "articles_fetched": 315,
+    "articles_by_source": {
+      "GDELT": 0,
+      "Google News": 224,
+      "Outlet RSS": 91
+    },
+    "events_extracted": 3,
+    "events_valid": 2,
+    "events_unique": 2,
+    "events_rejected_invalid": 1,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.85,
+    "source_mix": {
+      "Al Jazeera": 1,
+      "Oregon Public Broadcasting": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 1,
+      "reported": 1,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 176,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "GDELT": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 21147,
+    "api_input_tokens": 3413,
+    "api_output_tokens": 1111
+  },
+  {
+    "last_run": "2026-03-09T20:00:01.959Z",
+    "articles_fetched": 313,
+    "articles_by_source": {
+      "GDELT": 0,
+      "Google News": 222,
+      "Outlet RSS": 91
+    },
+    "events_extracted": 2,
+    "events_valid": 2,
+    "events_unique": 2,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.85,
+    "source_mix": {
+      "New York Times": 1,
+      "Al Jazeera": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 1,
+      "claimed": 1,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 178,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "GDELT": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "Reuters": "error"
+    },
+    "duration_ms": 23009,
+    "api_input_tokens": 3200,
+    "api_output_tokens": 487
+  },
+  {
+    "last_run": "2026-03-09T20:06:30.602Z",
+    "articles_fetched": 360,
+    "articles_by_source": {
+      "NewsData": 0,
+      "Google News": 222,
+      "Outlet RSS": 138
+    },
+    "events_extracted": 10,
+    "events_valid": 10,
+    "events_unique": 10,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.79,
+    "source_mix": {
+      "France 24": 8,
+      "The Guardian": 2
+    },
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 10,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 188,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "no_key",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 17456,
+    "api_input_tokens": 4591,
+    "api_output_tokens": 2249
+  },
+  {
+    "last_run": "2026-03-09T20:13:15.326Z",
+    "articles_fetched": 360,
+    "articles_by_source": {
+      "NewsData": 0,
+      "Google News": 222,
+      "Outlet RSS": 138
+    },
+    "events_extracted": 2,
+    "events_valid": 2,
+    "events_unique": 2,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.43,
+    "source_mix": {
+      "wjtv": 2
+    },
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 2,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 190,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "no_key",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 8472,
+    "api_input_tokens": 2171,
+    "api_output_tokens": 1309
+  },
+  {
+    "last_run": "2026-03-09T20:30:03.802Z",
+    "articles_fetched": 357,
+    "articles_by_source": {
+      "NewsData": 0,
+      "Google News": 221,
+      "Outlet RSS": 136
+    },
+    "events_extracted": 4,
+    "events_valid": 4,
+    "events_unique": 4,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.89,
+    "source_mix": {
+      "Al Jazeera": 3,
+      "The Guardian": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 1,
+      "reported": 2,
+      "claimed": 1,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 194,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "no_key",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 14680,
+    "api_input_tokens": 3091,
+    "api_output_tokens": 1045
+  },
+  {
+    "last_run": "2026-03-09T21:00:03.856Z",
+    "articles_fetched": 359,
+    "articles_by_source": {
+      "NewsData": 0,
+      "Google News": 223,
+      "Outlet RSS": 136
+    },
+    "events_extracted": 8,
+    "events_valid": 7,
+    "events_unique": 7,
+    "events_rejected_invalid": 1,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.71,
+    "source_mix": {
+      "Al Jazeera": 2,
+      "The Jerusalem Post": 1,
+      "wion": 1,
+      "WPLG Local 10": 1,
+      "LSE Blogs": 1,
+      "Fox Business": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 1,
+      "reported": 6,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 201,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "no_key",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 48687,
+    "api_input_tokens": 6000,
+    "api_output_tokens": 3562
   }
 ]

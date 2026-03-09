@@ -1,1 +1,26 @@
-{"totalViews":0,"aiQuestions":0,"pageViews":{"map":0,"feed":0,"ask":0,"donate":0,"sources":0,"about":0},"daily":[]}
+{
+  "totalViews": 5,
+  "aiQuestions": 0,
+  "pageViews": {
+    "map": 3,
+    "feed": 0,
+    "ask": 1,
+    "donate": 0,
+    "sources": 1,
+    "about": 0
+  },
+  "daily": [
+    {
+      "date": "2026-03-09",
+      "views": {
+        "map": 3,
+        "feed": 0,
+        "ask": 1,
+        "donate": 0,
+        "sources": 1,
+        "about": 0
+      },
+      "uniqueVisitors": 0
+    }
+  ]
+}

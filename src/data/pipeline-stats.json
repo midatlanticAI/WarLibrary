@@ -1,43 +1,47 @@
 {
-  "last_run": "2026-03-09T17:30:01.333Z",
-  "articles_fetched": 314,
+  "last_run": "2026-03-09T21:00:03.856Z",
+  "articles_fetched": 359,
   "articles_by_source": {
-    "GDELT": 0,
+    "NewsData": 0,
     "Google News": 223,
-    "Outlet RSS": 91
+    "Outlet RSS": 136
   },
-  "events_extracted": 4,
-  "events_valid": 4,
-  "events_unique": 4,
-  "events_rejected_invalid": 0,
+  "events_extracted": 8,
+  "events_valid": 7,
+  "events_unique": 7,
+  "events_rejected_invalid": 1,
   "events_rejected_duplicate": 0,
   "events_rejected_spatiotemporal": 0,
-  "avg_confidence": 0.74,
+  "avg_confidence": 0.71,
   "source_mix": {
-    "AP News": 1,
-    "France 24": 1,
-    "Al Jazeera": 1,
-    "Middle East Forum": 1
+    "Al Jazeera": 2,
+    "The Jerusalem Post": 1,
+    "wion": 1,
+    "WPLG Local 10": 1,
+    "LSE Blogs": 1,
+    "Fox Business": 1
   },
   "verification_breakdown": {
-    "confirmed": 0,
-    "reported": 3,
-    "claimed": 1,
+    "confirmed": 1,
+    "reported": 6,
+    "claimed": 0,
     "disputed": 0,
     "unconfirmed": 0
   },
-  "total_events_in_dataset": 159,
+  "total_events_in_dataset": 201,
   "status": "EVENTS_ADDED",
   "errors": [],
   "source_health": {
-    "GDELT": "error",
+    "NewsData": "no_key",
     "Google News": "ok",
     "Al Jazeera": "ok",
     "BBC News": "ok",
     "New York Times": "ok",
-    "Reuters": "error"
+    "The Guardian": "ok",
+    "France 24": "ok",
+    "DW News": "error"
   },
-  "duration_ms": 32254,
-  "api_input_tokens": 4366,
-  "api_output_tokens": 1503
+  "duration_ms": 48687,
+  "api_input_tokens": 6000,
+  "api_output_tokens": 3562
 }

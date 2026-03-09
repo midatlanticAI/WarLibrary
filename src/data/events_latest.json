@@ -845,19 +845,857 @@
       "verification_status": "reported",
       "location_precision": "city",
       "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli attacks on Iranian oil facilities. WHO chief raises alarm about damage to Iranian petroleum facilities, with particular risk to children and the elderly.",
+      "latitude": 35.6892,
+      "longitude": 51.389,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/who-chief-raises-alarm-after-israeli-attacks-on-iranian-oil-facilities?traffic_source=rss",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "Children and elderly at particular risk from damage to petroleum facilities"
+    },
+    {
+      "date": "2026-01-27T00:00:00Z",
+      "event_type": "violence_against_civilians",
+      "description": "At least 6,126 people killed in Iran's crackdown on nationwide protests, according to activists",
+      "latitude": 35.68,
+      "longitude": 51.39,
+      "country": "Iran",
+      "region": "Nationwide",
+      "actors": [
+        "Iranian security forces"
+      ],
+      "fatalities": 6126,
+      "source": "npr",
+      "source_url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPaEo3VG1QZExVUndKZi02UFNMVW1qd05JaHk4V2dOQ2NQM29halFrVHF2WnF0QjRnSThuS0JVSW1vdVEzMEs4bmluRHZyWjllb2tJM3ZHZGx1UC1MWE1sSnNZYnpsWC1EcE1xeUdZZU83WjNCdWEwblFLZVg3dkxUX2tKb0dodGVxRkFaQW1B?oc=5",
+      "confidence": 0.7999999999999999,
+      "verification_status": "claimed",
+      "location_precision": "country",
+      "civilian_impact": "6,126 deaths during crackdown on nationwide protests"
+    },
+    {
+      "date": "2026-03-04T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Gulf states weigh response to Iranian strikes; escalating tensions over 'red lines'",
+      "latitude": 26,
+      "longitude": 50,
+      "country": "Saudi Arabia",
+      "region": "Gulf region",
+      "actors": [
+        "Gulf Cooperation Council states",
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/articles/cjrqqd8lw2wo?at_medium=RSS&at_campaign=rss",
+      "confidence": 0.75,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": "Regional diplomatic tensions; potential for expanded conflict"
+    },
+    {
+      "date": "2026-02-28T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Joint U.S.-Israeli 'Operation Epic Fury' officially launched, targeting military and security targets in Iran",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "US Military",
+        "Israeli Military"
+      ],
+      "fatalities": 0,
+      "source": "NBC News",
+      "source_url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNSWxCSHRiTzlZUVU3SjdKb1ZjUFRna0hSTjlNODlFSVI5WUdrODZTelFSdmk3eHFWVEVnRzZMWUE5WEZvdHdMMFNTRGdNT0J6RGZ5X3JMVWx6VGI1VXc3WXdQeTRsVWlmMnV1dWp5MzVLU25oMUttVTAxemV1TEdBTUFmZG5ManY0eklrOXdoR3ZiWWZoTnJoY0dtYXZoNkZKR1RRdnJRWVhoU0kwc0pacGJpLW5GMGlDZHBRVkVqSFdtY18z?oc=5",
+      "confidence": 0.95,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-01T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "CENTCOM reports US targets numerous Iranian military assets in first 24 hours of Operation Epic Fury",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "US Military",
+        "CENTCOM"
+      ],
+      "fatalities": 0,
+      "source": "Anadolu Ajansı",
+      "source_url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOcXFTanZVRVl5US1LNUVGVzh5YlhRYmZ4dldtakdYVnFYQkJmLVVDU2RwV0hSZ3ljZVoyV2NIR0ZjbWN0SHZLUTk1WTZlWExfR1EwcTJjWFgtNW5NYy1MdmdHbDhGSkltdS1oSV9OZFFTWWY5VmdPNEJjM2NLd0wwM0RjOU5CM0xFUjZkSGtfTDZ6bExLbkpLUk8xcDFiQ2twRWREUXhpRHg1akxfVDloeV9jR2E5dEc2dEdpSkctSnNsY2xOS3c3cTdLeFI0YVE?oc=5",
+      "confidence": 0.7,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-07T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran launches strikes on the Gulf states, described as 'burning the bridges of good neighbourliness'",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": "Persian Gulf",
+      "actors": [
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPQmFmdkVhdHpxNkRrc2x6S1hlUWlIXzY2VGZSUXVqNlJvbGhCMWotUy1pLWk5ejd4OWVYa3Zub2JkczlEMmhsUEdQWFMwZ0J1ZmFUNHpTYnROOUZtaGhMRV91TkVjRzhlaVgyVmx2blJTNmZzalVTYmpxTFpPdnRQRlhQbjdDek1MVDBvMGdLZVpURHdQSmFicDFacTJwS0x1d1MwYWlSSlNKRGstWld5Qm5QUdIBuAFBVV95cUxNSFNrQ1BxSDZ4akdwOHk5NFNwUjFGeDhQcDhqREhISldhVWtHQVpaeVQ4dF9OdVEzcktHX3hWTXVXZUs1NklLZ2VFMm1tTG11S0o5VDBWYkZ6VFNLZDBPUVc5RTFnSkN0UVo1aUY0d1ZUNk5rQWtIVl9IekVTVVlsVjQyWHJ0bjhJc0VSOTNLMV9hUWVGYW1lZGhOeWNQUzJPYVhfMVRSdTl2UE5Fbk9INWtsRW0yYmU4?oc=5",
+      "confidence": 0.7999999999999999,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-02-26T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran-backed militias in Iraq and Yemen threaten new attacks as US aircraft carrier arrives in region",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iraq",
+      "region": null,
+      "actors": [
+        "Iran-backed militias",
+        "US Military"
+      ],
+      "fatalities": 0,
+      "source": "Chattanooga Times Free Press",
+      "source_url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxQc0FWS3NYQ0dGbEd1d0pwVlI1R2tMRzR3eVUtMEhxMUdXMUowT3VNNGpmMktkZ2tJNVlTNkp0TVlOLW04OFc0RGRhTWhVNDNJUHdNeWRWanJESDVzRW9qRHZfbHZGWmg0aVBsWjFzczNsMXFlaHdiRmpKMFlaN2ZEOENBa0UxNk5BbGNEdW5ZUGw5ekd3akRzMDBpdVVmVzloUDZLRmFiOV85d3ZETUR5ZWRYdzBwNVJQdXVuS3BkVzNHUUc4aVA2RDRCb0puTGFCVVMzcWJR?oc=5",
+      "confidence": 0.6,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-02-24T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran-US-Israel escalation includes nuclear leverage, military buildup and retaliatory postures as of February 2026",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "Iran",
+        "US",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "debuglies.com",
+      "source_url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxQa0haNTcyclBTeHVvQVhlWlZFNmhranVoazRQa2ZmMm1vSlJoWFQxTVRiTi1YcmJBV2VidlAxWElLNnhQNElWdW5UTUJnbGxNV3YwQmpNWFRIU0hhQ1pyU0I1UEptOWZLNHdSUjBVa1BDT3lZekdCaHBJY082XzJwNk14aWZkMHR1WHNvYU94cWVEaTQzTHpmeW1MOVZPOXNfdUF1bkI2djFZTmlaSVZVdU9CaVp4SVBZUW90V0N6SVRicmdJT2cxdHNQbWhkeDlicGJVZ3dZMHQ?oc=5",
+      "confidence": 0.5,
+      "verification_status": "unconfirmed",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-02T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Trump's strikes on Iran could cost American economy as much as $210 billion, according to top budget expert analysis",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "United States",
+      "region": null,
+      "actors": [
+        "US Government"
+      ],
+      "fatalities": 0,
+      "source": "fortune",
+      "source_url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxNWEZKZkxrQ3hmUXktZVRiYnpyakVULU9CbjVFR3lWT1UzcHBDS2lCdVFkS0ZIU0p3TWxuRjYyRXNPN1ZqYVQ0Tl9JbzNBdng3OHp1emxRclV6X1ZKbmFFOEdTXzJwZF9OV1FQOGxXTWtUelJMSVFZdFE1X1EtUTRQTm13Q19vRGZnbDBtMkgxVnBkNWIw?oc=5",
+      "confidence": 0.65,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-02-28T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Operation Epic Fury analysis of impact on Iran's nuclear program and military capabilities",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "US",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "CSIS | Center for Strategic and International Studies",
+      "source_url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxOSmg3bmNNdjhIaVdzcW1aUzB1b0hPNWlsd3ZSTm9FZ0NOdzM3d2hwYTVSM2ZneW9Vc3FWa2QyMEV0b3RKYkRrSlJuMmd0RlprcldNZ3VCd3JPay1ST2hFM1dmOHdLWmw0Q290MF9QVXVsTWJrVEdIMkg4dzVsZGd0amxUX1hocEpzWHlwUg?oc=5",
+      "confidence": 0.65,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-02T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Analysis indicates potential incorrect military targeting during Operation Epic Fury ('We Bombed the Wrong Target')",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "US",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "Small Wars Journal",
+      "source_url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9WLUstQi1adkU2RlFFd2VDSHYzdDFYUVFxYy1xYXNqc3B6bVR5NUZUNVBPMTJxNndpQ2dHY3NZanpDUGQwa0VzSk1HZWtfM0lrU1lzME1DYlRpRlRrdHVxcjJ0OGFocWtJaTZtallzeF9jTEtQU0E?oc=5",
+      "confidence": 0.5499999999999999,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Fresh graves and angry slogans observed at cemetery in Tehran following Israeli strikes",
+      "latitude": 35.68,
+      "longitude": 51.39,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "Iran",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "New York Times",
+      "source_url": "https://www.nytimes.com/live/2026/03/09/world/iran-war-israel-trump-oil/at-a-cemetery-in-tehran-fresh-graves-and-angry-slogans",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "Multiple civilian deaths inferred from graves"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli Forces raid new area in southern Lebanon and bombard near Beirut",
+      "latitude": 33.31,
+      "longitude": 35.5,
+      "country": "Lebanon",
+      "region": "Southern Lebanon",
+      "actors": [
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "New York Times",
+      "source_url": "https://www.nytimes.com/2026/03/09/world/middleeast/israeli-forces-raid-southern-lebanon.html",
+      "confidence": 0.98,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": "Unknown civilian casualties from bombard near Beirut"
+    },
+    {
+      "date": "2026-03-05T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Iranian missile headed towards Turkey destroyed, according to Defense Ministry reports",
+      "latitude": 39,
+      "longitude": 35,
+      "country": "Turkey",
+      "region": "Turkey",
+      "actors": [
+        "Iran",
+        "Turkey"
+      ],
+      "fatalities": 0,
+      "source": "DW News",
+      "source_url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQSEl0dnA4ODVFWUZLNHpzTHZpek5mcU9sZGhYNXR0UTNadHcycVBvd1hnTTFjM01WQ1RlT0ZoNzJrWFZXMW9ySEw2UktORVJOdGljZk8yMkgtLUdYUml0dW5udVpXLXRsbzhITGtYaVpKX3VOMEF5b3pzMzM5TmgzbENaTVhla1RF",
+      "confidence": 0.75,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-05T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "US Secretary of War Pete Hegseth declares 'Iran Will Not Win' and praises 'Devastating' strikes of Operation Epic Fury",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "United States",
+      "region": "United States",
+      "actors": [
+        "United States",
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "kurdistan24",
+      "source_url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxONFlnbGRDd1RUNnhZOHNvSjdVakdZMGwxaXZtVzNoMVNNYjZhNl92anNMOWpjTHJuWXpLLXV0MlFOUUVlcXRjZjdjM29uWVdUYXJ4czV5c1luZ0xLZWYxTFA1MHdKRHdrOER2QVI4aVF6d3ltMWNDVjcxVDlkMkcwMzFUVnlPbjBObUJQT3pzVV93bERnamZBZ1p2cUhGdGU4dHVNVTdMbGxCdnhFX3dmbXhfTlJ0ek5QWkJOSkQyR2JOMUxWSHB2WHhORlNQQnlfblJpQi1Wb2lrdmJ5UDIyazQ4N3JCTnJDbVE",
+      "confidence": 0.65,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran's Assembly of Experts confirms Mojtaba Khamenei (son of slain Supreme Leader Ali Khamenei) as new Supreme Leader to lead Iran through ongoing conflict",
+      "latitude": 35.6892,
+      "longitude": 51.389,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "Iran's Assembly of Experts",
+        "Mojtaba Khamenei"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/video/newsfeed/2026/3/9/what-to-know-about-irans-new-supreme-leader-mojtaba-khamenei",
+      "confidence": 1,
+      "verification_status": "confirmed",
+      "location_precision": "city",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "US military announces attacks on Iran will continue for weeks and intensify according to Pentagon statements",
+      "latitude": 38.8951,
+      "longitude": -77.0369,
+      "country": "United States",
+      "region": "Washington DC",
+      "actors": [
+        "US Pentagon",
+        "US Military"
+      ],
+      "fatalities": 0,
+      "source": "Oregon Public Broadcasting",
+      "source_url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOMmphd3JfVVlGQ0tYYXBPNExNc1A0QUJvTDVEYlNLR19uS05wQmdwN0daLWZJWEM2OV9WSUFFLVpOWXFZczdISnZuRlZua2ZyYVVNVFF1bGg4bDdJczVBVDFnWmxhdVZOdW5DQm9iN2xHNTZISFhXN1JQeXBUSDlWLUw2amJONThlWnRXMURKcTFhNFZrWjgzTVpVcm9JckVwRElLQVdvMC01c0RJUXg1b1NMaWYzUEkxdV9yMA",
+      "confidence": 0.7,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "France announces deployment of large naval force to the Middle East in response to US-Israel war on Iran.",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "France",
+      "region": "Middle East",
+      "actors": [
+        "France"
+      ],
+      "fatalities": 0,
+      "source": "New York Times",
+      "source_url": "https://www.nytimes.com/2026/03/09/world/middleeast/france-warships-middle-east.html",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-08T00:00:00Z",
+      "event_type": "violence_against_civilians",
+      "description": "Five Iranian women footballers targeted; Trump states Australia has 'taken care of' them following criticism for not singing national anthem at AFC Women's Asian Cup.",
+      "latitude": -28,
+      "longitude": 153.4,
+      "country": "Australia",
+      "region": "Gold Coast",
+      "actors": [
+        "Australia",
+        "Iranian National Football Team"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/trump-says-australia-has-taken-care-of-iranian-women-football-players?traffic_source=rss",
+      "confidence": 0.75,
+      "verification_status": "claimed",
+      "location_precision": "city",
+      "civilian_impact": "Five Iranian female athletes subjected to unspecified action by Australian authorities"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Iranian missile intercepted over Turkey according to Erdogan's warning against provocative steps",
+      "latitude": 39,
+      "longitude": 35,
+      "country": "Turkey",
+      "region": "Turkey",
+      "actors": [
+        "Iran",
+        "Turkey"
+      ],
+      "fatalities": 0,
+      "source": "France 24",
+      "source_url": "https://www.france24.com/en/erdogan-warns-iran-against-provocative-steps-after-second-missile-intercepted",
+      "confidence": 0.75,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "explosion",
+      "description": "Explosions heard across Doha with sirens sounding in Bahrain as Iran strikes Gulf neighbours",
+      "latitude": 25.2854,
+      "longitude": 51.531,
+      "country": "Qatar",
+      "region": "Doha",
+      "actors": [
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "France 24",
+      "source_url": "https://www.france24.com/en/explosions-heard-across-doha-sirens-sound-in-bahrain-as-iran-strikes-gulf-neighbours",
+      "confidence": 0.7999999999999999,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "Explosions and sirens indicate widespread area impact"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Iranian missile intercepted over Qatar",
+      "latitude": 25.35,
+      "longitude": 51.18,
+      "country": "Qatar",
+      "region": "Qatar",
+      "actors": [
+        "Iran",
+        "Qatar"
+      ],
+      "fatalities": 0,
+      "source": "The Guardian",
+      "source_url": "https://www.theguardian.com/world/live/2026/mar/09/iran-war-live-updates-new-supreme-leader-mojtaba-khamenei-oil-prices-soar",
+      "confidence": 0.7,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Macron announces 'purely defensive' mission to reopen Strait of Hormuz with France and allies",
+      "latitude": 26,
+      "longitude": 56.5,
+      "country": "Iran",
+      "region": "Strait of Hormuz",
+      "actors": [
+        "France",
+        "Allied forces"
+      ],
+      "fatalities": 0,
+      "source": "France 24",
+      "source_url": "https://www.france24.com/en/macron-announces-purely-defensive-mission-to-reopen-strait-of-hormuz",
+      "confidence": 0.85,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "battle",
+      "description": "Hezbollah reports clash with overnight Israeli raid in east Lebanon",
+      "latitude": 33.8,
+      "longitude": 36.2,
+      "country": "Lebanon",
+      "region": "East Lebanon",
+      "actors": [
+        "Israel",
+        "Hezbollah"
+      ],
+      "fatalities": 0,
+      "source": "France 24",
+      "source_url": "https://www.france24.com/en/hezbollah-reports-clash-with-overnight-israeli-raid-in-east-lebanon",
+      "confidence": 0.7999999999999999,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "US and Gulf states turn to Ukraine to counter Iranian drone attacks",
+      "latitude": 0,
+      "longitude": 0,
+      "country": "Multiple",
+      "region": "Gulf States / Ukraine",
+      "actors": [
+        "United States",
+        "Gulf states",
+        "Ukraine"
+      ],
+      "fatalities": 0,
+      "source": "France 24",
+      "source_url": "https://www.france24.com/en/us-and-gulf-states-turn-to-ukraine-to-counter-iranian-drone-attacks",
+      "confidence": 0.7999999999999999,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "G7 leaders to discuss release of strategic oil reserves as crisis looms",
+      "latitude": 0,
+      "longitude": 0,
+      "country": "Multiple",
+      "region": "Global",
+      "actors": [
+        "G7 leaders"
+      ],
+      "fatalities": 0,
+      "source": "France 24",
+      "source_url": "https://www.france24.com/en/g7-leaders-to-discuss-release-of-strategic-oil-reserves-as-crisis-looms",
+      "confidence": 0.7999999999999999,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Gulf countries targeted by fresh Iranian attacks as repatriation still underway",
+      "latitude": 25,
+      "longitude": 51,
+      "country": "Saudi Arabia",
+      "region": "Gulf",
+      "actors": [
+        "Iran",
+        "Gulf countries"
+      ],
+      "fatalities": 0,
+      "source": "France 24",
+      "source_url": "https://www.france24.com/en/gulf-countries-targeted-by-fresh-iranian-attacks-as-repatriation-still-underway",
+      "confidence": 0.75,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": "Repatriation operations underway"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Half a million displaced in Lebanon amid intensifying Israeli strikes",
+      "latitude": 33.8,
+      "longitude": 35.5,
+      "country": "Lebanon",
+      "region": "Lebanon",
+      "actors": [
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "France 24",
+      "source_url": "https://www.france24.com/en/half-a-million-displaced-in-lebanon-amid-intensifying-israeli-strikes",
+      "confidence": 0.85,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "500,000 people displaced"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran's foreign minister Abbas Araghchi mocks US operation, brands it 'Operation Epic Mistake' and warns of Iranian surprises in store",
+      "latitude": 35.6892,
+      "longitude": 51.389,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "Iran",
+        "United States"
+      ],
+      "fatalities": 0,
+      "source": "The Guardian",
+      "source_url": "https://www.theguardian.com/world/live/2026/mar/09/iran-war-live-updates-new-supreme-leader-mojtaba-khamenei-oil-prices-soar",
+      "confidence": 0.8,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T19:11:29Z",
+      "event_type": "strategic_development",
+      "description": "Oil prices soar as Iran names a new supreme leader and launches more attacks",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "wjtv",
+      "source_url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQUGdDZ1o0Y3ZpYUE5aE1MQkhYQWo3UWpfLTVkVFBBRGQxMDI2UzFHWTZNdGlraVRlUEV3ZERmaFlDSGc1emowQ2otS21ZZlZuTTBMRVBMcWhSLXl0dEVveE5DUlhOYmNYLV9oQVoySHhjQkVNakpCOEhMbTVJbktrcmdlbTZDQ3NXN1BoZll4bzE5ZnNhSGFsQWwxWDhQcUdCZ3AxUkVZb2xQbkd5Si04MkRsZ2p6Z1NzRGfSAb8BQVVfeXFMTzQtbktURzI4akVsQXVRSXZPRnJkN2o2aWJoQl9xRFp6MEFScWxuTFhxQXItNzdPdllRZHdvTktobDRtbG1PbFNCVHV3WlVjVXpRMHBNeWpVX29OWkIxUnFkZFRTd2p3YWRBT0NaZUQ5Q2MxU1o3UTBEWGl1T3FReV9DZGkwMi02bVpRSHF3SlZyZVJObm9MbEtEemdkTjlERHZsWS1IV1NOa3pkZzduUG91TnloakNiU2FaN3l2a2c?oc=5",
+      "confidence": 0.44999999999999996,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T19:11:29Z",
+      "event_type": "missile_attack",
+      "description": "Iran launches more attacks as part of escalated response following new supreme leader appointment",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "wjtv",
+      "source_url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQUGdDZ1o0Y3ZpYUE5aE1MQkhYQWo3UWpfLTVkVFBBRGQxMDI2UzFHWTZNdGlraVRlUEV3ZERmaFlDSGc1emowQ2otS21ZZlZuTTBMRVBMcWhSLXl0dEVveE5DUlhOYmNYLV9oQVoySHhjQkVNakpCOEhMbTVJbktrcmdlbTZDQ3NXN1BoZll4bzE5ZnNhSGFsQWwxWDhQcUdCZ3AxUkVZb2xQbkd5Si04MkRsZ2p6Z1NzRGfSAb8BQVVfeXFMTzQtbktURzI4akVsQXVRSXZPRnJkN2o2aWJoQl9xRFp6MEFScWxuTFhxQXItNzdPdllRZHdvTktobDRtbG1PbFNCVHV3WlVjVXpRMHBNeWpVX29OWkIxUnFkZFRTd2p3YWRBT0NaZUQ5Q2MxU1o3UTBEWGl1T3FReV9DZGkwMi02bVpRSHF3SlZyZVJObm9MbEtEemdkTjlERHZsWS1IV1NOa3pkZzduUG91TnloakNiU2FaN3l2a2c?oc=5",
+      "confidence": 0.4,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "US forces have struck nearly 2,000 targets in Iran since the war began, eliminating several top Iranian officials including Supreme Leader Ali Khamenei in Tehran. Attacks targeted nuclear facilities, civilian areas, oil refineries and desalination plants.",
+      "latitude": 35.6892,
+      "longitude": 51.389,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "US Forces",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/what-is-the-us-endgame-in-iran-as-the-war-escalates?traffic_source=rss",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "Attacks on civilian areas reported"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran reports 1,255 people killed in US-Israeli attacks, with majority being civilians.",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": "Iran",
+      "actors": [
+        "Iran",
+        "US",
+        "Israel"
+      ],
+      "fatalities": 1255,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/what-is-the-us-endgame-in-iran-as-the-war-escalates?traffic_source=rss",
+      "confidence": 0.85,
+      "verification_status": "claimed",
+      "location_precision": "country",
+      "civilian_impact": "1,255 people killed, mostly civilians"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Five members of Iranian women's football team granted humanitarian visas and asylum in Australia after escaping government minders following tournament, with fears of punishment if they returned home.",
+      "latitude": -25.2744,
+      "longitude": 133.7751,
+      "country": "Australia",
+      "region": "Australia",
+      "actors": [
+        "Australia",
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "The Guardian",
+      "source_url": "https://www.theguardian.com/football/2026/mar/09/iran-women-football-team-australia-asian-cup",
+      "confidence": 0.9,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": "Five female athletes granted asylum due to political pressure"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Analysis questions US endgame in Iran war, noting contradictory positions articulated by President Trump on war objectives as missile strikes mount.",
+      "latitude": 38.8951,
+      "longitude": -77.0369,
+      "country": "United States",
+      "region": "Washington D.C.",
+      "actors": [
+        "Trump Administration",
+        "US Media"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/what-is-the-us-endgame-in-iran-as-the-war-escalates?traffic_source=rss",
+      "confidence": 0.85,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-02-28T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "US-Israeli strike on elementary school in Minab, southern Iran during opening strikes, killing at least 170 people including school children",
+      "latitude": 27.18,
+      "longitude": 57.08,
+      "country": "Iran",
+      "region": "Minab",
+      "actors": [
+        "US Air Force",
+        "Israel"
+      ],
+      "fatalities": 170,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/us-senators-demand-probe-into-appalling-attack-on-girlss-school-in-iran",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "170 people killed, including elementary school children; US senators demanded investigation"
+    },
+    {
+      "date": "2026-02-28T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Ayatollah Ali Khamenei assassinated on first day of US-Israeli war, killed in initial strikes",
+      "latitude": 35.69,
+      "longitude": 51.38,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "US Air Force",
+        "Israel",
+        "Iran"
+      ],
+      "fatalities": 1,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/video/inside-story/2026/3/9/who-is-irans-new-supreme-leader",
+      "confidence": 1,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": "Supreme Leader assassinated"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Trump states military campaign against Iran is 'ahead of schedule' and 'war pretty much complete'",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "United States",
+      "region": null,
+      "actors": [
+        "United States",
+        "Trump Administration"
+      ],
+      "fatalities": 0,
+      "source": "The Jerusalem Post",
+      "source_url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBkNFNRaXpCZ09QXzBUOW41YkF1bTRfS284b281anlyUVlZWVNrOTZTOUJSMl9lblo0azJ1TF9ac21YRjZBQWlabVQzTHRuZ1lNNTZLeWFhTVZsbTRzYXB3bzdDZHYyTnpicnc",
+      "confidence": 0.7,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Houthis and Hezbollah pledge backing for Iran's new supreme leader Mojtaba Khamenei",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "Houthis",
+        "Hezbollah",
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "wion",
+      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOWWFEUXQ3T1lFM2pQX1ZXcFAtZmlQSWlwNzhqdVdvQkdxMWdGWEZlaDN6dmVuWHVjbUtKN1VUZGNCM3RsRk9GM1dDQzNSVG1OVi1hYzNycmtzZGZ0bUJ4ZkQwOEQwb0tvS1BEX3NtNElMVFlCTjg2LW9NY0loZ3Vha1kxRWU1ZFBpSGVwV2Y3c09JN2N6aC1SWlJoeWxZM3FGUzNma3BIa29PdUNwODBHaUFlRUxtVzBLcVVJZHYxRUJtMFdLakHSAcsBQVVfeXFMTW80YVdwczBmTGZVVW9fV2daQ0VZNXBGZldmQXlPanlUbzA3bHYzVzhBR2dvVi1mT0ZsQW5aTFd3a2hjMmlxdjZsYnNhUVN0aW1mYzVFelNmTzNqamY5WkVIR2w4bXJNVEhpQTc0c3h5N1lSTXBjY2dqOXdsdlhmZHNhRGdWcGxpZlh5d25Vakx3WnlEeUNxb2pLX0p4eFdZSkFKYzZwS0FfR1hnYW12elJBYUhpTUhFVWlyaDRBeUlzRGp1blkySTdBa1U",
+      "confidence": 0.5499999999999999,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Trump and Putin discuss Iran war during phone call",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "United States",
+      "region": null,
+      "actors": [
+        "United States",
+        "Russia",
+        "Trump",
+        "Putin"
+      ],
+      "fatalities": 0,
+      "source": "WPLG Local 10",
+      "source_url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPTmNFc3RkVUVwcGxxSjE1U1Y3UGxPU2lWOEIyenBueE95dVlEYVZCaDA2SGpCa2kzVTJTOXN3TEVrWnczWG04VWFrLTdXQzJJYTFtMy1CMmRYZkxpbGphb2F2d2hlNHQyWnpjOVIxOERsaE82S29Gc2huSlIyV0hMMXBwQ2VndElOZ0VRMFBmMlFZRUcxOWNkZUQ1MWo3ZzluZ3pFaTlkV0N2b3FUSldlSkpHbHp2VTFPa1djQnpBcks",
+      "confidence": 0.6,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "US strikes on Iran may have transformed Iran from state with latent nuclear capability into one with nuclear grievance",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "United States",
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "LSE Blogs",
+      "source_url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxPOVA1ZGE3Ykt5bjc1akRUOVVsbFVWd2FWOHdGbkhxc1pCR2VXT1BEZ2hHM3lycWx1bzNnSlFrU3NLRHJENTZmTndVT2MteFRtRXR4Ml9PYTlRMkhEUjd2MGJ2NkNfM3N6dGRIZEtUN1JkN3dKOXZ5aFoxUnVQZWNFV3ltajN3N2xBcS1DMTkxSzBMM2FKZ2kyTHNCdjRaZ2hpak1JYWxCWHlMSHUzSS1pSm1XMkx1eDJSZHotOVlFWEpsUEJYTWMtcTg3ZzFKUmtwZ1l2ck4tT3hlLTNoRHdZNUJjZXZEdTZsMDZJ",
+      "confidence": 0.5499999999999999,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Trump suggests short-term oil price spike from Iran war is 'small price to pay' for peace",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "United States",
+      "region": null,
+      "actors": [
+        "United States",
+        "Trump Administration"
+      ],
+      "fatalities": 0,
+      "source": "Fox Business",
+      "source_url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNZVNDSHRrOUZhNUJKZ3Y5OVRjOEQ1S0FlV2Z2NVR3UVlMalQwY2hvWG83WkhvdnRueXR3ZnQ4Z2JObDR0ZjZVZkp4MlFoclpLRVg2djY2X2lyMVhFaDMzS0hOTlg2emJmSUdKc3JoVWY0MEx4ZWU5Mk1UMnhVTkozQU50dnRkVDl5eGQwMlplVTFzejE5OF8yM0lRNGxrYklxbTNDb09RSWlib3NjLTZVYmRVTHBwT3hrZVhudlBFaVdpZ9IBxwFBVV95cUxQX3ZCSHBDRUVjci1LZ2ZpSkJlMEo3ZEdfb1dqOXE2cDNlbjNHazluUURYLU56a1hEWGtGemVKT3ZGUVZzRzhlWU9FYmtHdzBySERVWGctVV9qODRXMzVmZWZsYl82amlNWHZzZDVxc2JWa3N5OFVRS0VUTlpCMUpoT1RpTFJfZHFrXzFkbnl4ZEtwYWVfMGRnTW1UQUZzbHhxdTduaGc5SEZON3N6NXRjcFNCdWk0emtHVXR0M3Bmc05sWUZfdFdF",
+      "confidence": 0.65,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
     }
   ],
   "metadata": {
     "generated": "2026-03-09",
     "source": "multiple",
-    "note": "Auto-updated from real news sources. 46 total events in latest file.",
+    "note": "Auto-updated from real news sources. 88 total events in latest file.",
     "sources_checked": [
-      "GDELT API",
+      "NewsData.io API",
       "Google News RSS",
       "Al Jazeera RSS",
       "BBC RSS",
       "NYT RSS",
-      "Reuters RSS"
+      "The Guardian RSS",
+      "France 24 RSS",
+      "DW News RSS"
     ]
   }
 }
