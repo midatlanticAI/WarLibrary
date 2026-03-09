@@ -1,40 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { createHash, timingSafeEqual } from "crypto";
+import { createHash } from "crypto";
+import { isAdmin } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "",
 });
-
-// ---------------------------------------------------------------------------
-// Admin bypass — owner is never rate-limited
-// The ADMIN_SECRET is a separate env var. Auth via header: X-Admin-Token
-// We compare hashes to avoid timing attacks.
-// ---------------------------------------------------------------------------
-function isAdmin(req: NextRequest): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-
-  // Method 1: httpOnly cookie (set via /api/admin)
-  const cookie = req.cookies.get("wl_admin")?.value;
-  if (cookie) {
-    const expectedHash = createHash("sha256").update(secret).digest("hex");
-    if (cookie === expectedHash) return true;
-  }
-
-  // Method 2: X-Admin-Token header (for API/curl usage)
-  const token = req.headers.get("x-admin-token");
-  if (!token) return false;
-  try {
-    const a = createHash("sha256").update(secret).digest();
-    const b = createHash("sha256").update(token).digest();
-    return timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Rate limiting — in-memory, per-IP, resets on server restart

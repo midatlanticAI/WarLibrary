@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "crypto";
+import { isAdmin } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
 
@@ -11,7 +11,8 @@ function readEventCount(filePath: string): number {
     const raw = fs.readFileSync(filePath, "utf-8");
     const parsed: { events?: unknown[] } = JSON.parse(raw);
     return Array.isArray(parsed.events) ? parsed.events.length : 0;
-  } catch {
+  } catch (err) {
+    console.error(`[stats] Failed to read ${filePath}:`, err);
     return 0;
   }
 }
@@ -45,14 +46,7 @@ export async function POST(req: NextRequest) {
 
 // Admin-only stats endpoint
 export async function GET(req: NextRequest) {
-  // Check admin cookie
-  const cookie = req.cookies.get("wl_admin")?.value;
-  const secret = process.env.ADMIN_SECRET;
-  if (!cookie || !secret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const expectedHash = createHash("sha256").update(secret).digest("hex");
-  if (cookie !== expectedHash) {
+  if (!isAdmin(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -77,7 +71,7 @@ export async function GET(req: NextRequest) {
       server: {
         uptime_seconds: process.uptime(),
         node_version: process.version,
-        memory_mb: Math.round(process.memoryUsage.rss() / 1024 / 1024),
+        memory_mb: Math.round(process.memoryUsage().rss / 1024 / 1024),
       },
     },
   });

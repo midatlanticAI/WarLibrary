@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAdmin } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
 
@@ -56,7 +57,8 @@ function readJSONFile(filePath: string): RawEvent[] {
     const raw = fs.readFileSync(filePath, "utf-8");
     const parsed: { events?: RawEvent[] } = JSON.parse(raw);
     return Array.isArray(parsed.events) ? parsed.events : [];
-  } catch {
+  } catch (err) {
+    console.error(`[events] Failed to read ${filePath}:`, err);
     return [];
   }
 }
@@ -66,7 +68,8 @@ function getFileMtime(filePath: string): Date | null {
   try {
     const stat = fs.statSync(filePath);
     return stat.mtime;
-  } catch {
+  } catch (err) {
+    console.error(`[events] Failed to stat ${filePath}:`, err);
     return null;
   }
 }
@@ -142,8 +145,7 @@ function isValidEvent(event: unknown): event is AdminConflictEvent {
 // ---------------------------------------------------------------------------
 
 function isAuthenticated(request: NextRequest): boolean {
-  const adminCookie = request.cookies.get("wl_admin");
-  return !!adminCookie?.value;
+  return isAdmin(request);
 }
 
 // ---------------------------------------------------------------------------

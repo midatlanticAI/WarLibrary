@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash, timingSafeEqual } from "crypto";
+import { createHash } from "crypto";
+import { isAdmin } from "@/lib/auth";
 
 // ---------------------------------------------------------------------------
 // Privacy-respecting analytics — no PII, no cookies, no fingerprinting
@@ -61,28 +62,6 @@ function hashVisitor(ip: string, date: string): string {
   return createHash("sha256").update(`${ip}:${date}`).digest("hex").slice(0, 16);
 }
 
-function isAdmin(req: NextRequest): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-
-  // Method 1: httpOnly cookie (set via /api/admin)
-  const cookie = req.cookies.get("wl_admin")?.value;
-  if (cookie) {
-    const expectedHash = createHash("sha256").update(secret).digest("hex");
-    if (cookie === expectedHash) return true;
-  }
-
-  // Method 2: X-Admin-Token header (for API/curl usage)
-  const token = req.headers.get("x-admin-token");
-  if (!token) return false;
-  try {
-    const a = createHash("sha256").update(secret).digest();
-    const b = createHash("sha256").update(token).digest();
-    return timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
-}
 
 function isValidPage(page: string): page is PageName {
   return (VALID_PAGES as readonly string[]).includes(page);

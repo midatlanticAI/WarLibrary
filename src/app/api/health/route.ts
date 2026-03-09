@@ -10,7 +10,8 @@ function readEventCount(filePath: string): number {
     const raw = fs.readFileSync(filePath, "utf-8");
     const parsed: { events?: unknown[] } = JSON.parse(raw);
     return Array.isArray(parsed.events) ? parsed.events.length : 0;
-  } catch {
+  } catch (err) {
+    console.error(`[health] Failed to read ${filePath}:`, err);
     return 0;
   }
 }
@@ -38,7 +39,8 @@ function readPipelineStats(): PipelineStats | null {
     if (!fs.existsSync(statsPath)) return null;
     const raw = fs.readFileSync(statsPath, "utf-8");
     return JSON.parse(raw) as PipelineStats;
-  } catch {
+  } catch (err) {
+    console.error("[health] Failed to read pipeline stats:", err);
     return null;
   }
 }

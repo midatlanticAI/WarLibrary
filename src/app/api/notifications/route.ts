@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash, timingSafeEqual } from "crypto";
+import { isAdmin } from "@/lib/auth";
 
 // In-memory store of latest event notification
 // Clients poll this to check for new events
@@ -10,20 +10,6 @@ let latestNotification: {
   timestamp: number;
   url: string;
 } | null = null;
-
-function isAdmin(req: NextRequest): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-  const token = req.headers.get("x-admin-token");
-  if (!token) return false;
-  try {
-    const a = createHash("sha256").update(secret).digest();
-    const b = createHash("sha256").update(token).digest();
-    return timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
-}
 
 // GET — clients poll for latest notification
 export async function GET(req: NextRequest) {

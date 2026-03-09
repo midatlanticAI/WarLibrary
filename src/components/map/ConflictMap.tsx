@@ -9,21 +9,11 @@ import Map, {
   MapRef,
 } from "react-map-gl/mapbox";
 import type { ConflictEvent } from "@/types";
+import { EVENT_COLORS } from "@/lib/constants";
 import MapLegend from "./MapLegend";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
-
-const EVENT_COLORS: Record<string, string> = {
-  airstrike: "#ef4444",
-  missile_attack: "#f97316",
-  drone_attack: "#eab308",
-  battle: "#dc2626",
-  explosion: "#f59e0b",
-  violence_against_civilians: "#a855f7",
-  strategic_development: "#3b82f6",
-  protest: "#22c55e",
-};
 
 const EVENT_ICONS: Record<string, string> = {
   airstrike: "💥",
@@ -79,9 +69,11 @@ export default function ConflictMap({
   const filteredEvents = useMemo(() => {
     let filtered = events;
     if (dateRange) {
+      const startTs = new Date(dateRange.start).getTime();
+      const endTs = new Date(dateRange.end).getTime();
       filtered = filtered.filter((e) => {
-        const d = e.date.split("T")[0];
-        return d >= dateRange.start && d <= dateRange.end;
+        const t = new Date(e.date).getTime();
+        return t >= startTs && t <= endTs;
       });
     }
     if (hiddenTypes.size > 0) {

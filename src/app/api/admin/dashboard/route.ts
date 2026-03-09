@@ -1,20 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "crypto";
+import { isAdmin } from "@/lib/auth";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
-
-// ---------------------------------------------------------------------------
-// Auth
-// ---------------------------------------------------------------------------
-
-function isAdmin(req: NextRequest): boolean {
-  const cookie = req.cookies.get("wl_admin")?.value;
-  const secret = process.env.ADMIN_SECRET;
-  if (!cookie || !secret) return false;
-  const expectedHash = createHash("sha256").update(secret).digest("hex");
-  return cookie === expectedHash;
-}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -73,7 +61,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const cacheRaw = readJsonFile<unknown>("article-url-cache.json");
     if (Array.isArray(cacheRaw)) articleCacheSize = cacheRaw.length;
     else if (cacheRaw && typeof cacheRaw === "object") articleCacheSize = Object.keys(cacheRaw).length;
-  } catch { /* ignore */ }
+  } catch (err) { console.error("[dashboard] Failed to read article cache:", err); }
 
   // 4. PM2 process info
   let pm2Processes: unknown[] = [];
@@ -82,7 +70,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     if (!pm2Raw.startsWith("ERROR:")) {
       pm2Processes = JSON.parse(pm2Raw) as unknown[];
     }
-  } catch {
+  } catch (err) {
+    console.error("[dashboard] Failed to get PM2 info:", err);
     pm2Processes = [];
   }
 
@@ -101,7 +90,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       logLines = runCommand(`tail -n 50 ${LOG_PATH}`)
         .split("\n")
         .filter(Boolean);
-    } catch {
+    } catch (err) {
+      console.error("[dashboard] Failed to read logs:", err);
       logLines = [];
     }
   }
@@ -121,8 +111,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         available: parseInt(parts[6], 10),
       };
     }
-  } catch {
-    // keep defaults
+  } catch (err) {
+    console.error("[dashboard] Failed to parse memory info:", err);
   }
 
   const diskRaw = runCommand("df -B1 /");
@@ -138,8 +128,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         use_percent: parts[4],
       };
     }
-  } catch {
-    // keep defaults
+  } catch (err) {
+    console.error("[dashboard] Failed to parse disk info:", err);
   }
 
   // 8. Event counts from all 3 files
@@ -159,7 +149,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     if (latestData?.events) {
       latestEvents = latestData.events.slice(-10);
     }
-  } catch {
+  } catch (err) {
+    console.error("[dashboard] Failed to read latest events:", err);
     latestEvents = [];
   }
 

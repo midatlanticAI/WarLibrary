@@ -47,8 +47,8 @@ export default function Home() {
   const [mobileTab, setMobileTab] = useState<MobileTab>("map");
   const [panelOpen, setPanelOpen] = useState(false);
   const [dateRange, setDateRange] = useState({
-    start: "2026-02-28",
-    end: new Date().toISOString().split("T")[0],
+    start: "2026-02-28T00:00:00Z",
+    end: new Date().toISOString(),
   });
 
   const daysOfConflict = Math.ceil(
