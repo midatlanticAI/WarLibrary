@@ -3,8 +3,10 @@
 /**
  * War Library - Automated Event Update Script
  *
- * Uses Claude Haiku 4.5 to generate new conflict events based on its knowledge,
- * deduplicates against existing events, and appends to events_latest.json.
+ * Fetches REAL news articles from free sources (GDELT API, Google News RSS),
+ * then uses Claude Haiku 4.5 to EXTRACT structured events from those articles.
+ *
+ * No fabricated events — every event must trace back to a real article URL.
  *
  * Usage:
  *   node scripts/update-events.js
@@ -71,7 +73,303 @@ const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 const MODEL = "claude-haiku-4-5-20251001";
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Valid event types
+// ---------------------------------------------------------------------------
+const VALID_EVENT_TYPES = [
+  "airstrike",
+  "missile_attack",
+  "drone_attack",
+  "battle",
+  "explosion",
+  "violence_against_civilians",
+  "strategic_development",
+  "protest",
+];
+
+// ---------------------------------------------------------------------------
+// News Source Fetchers
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch articles from GDELT API (free, no key needed).
+ * Returns array of { title, url, source, date, description }.
+ */
+async function fetchGDELT() {
+  const queries = [
+    "iran%20war%20airstrike%20OR%20missile%20OR%20strike%20OR%20military",
+    "operation%20epic%20fury%20iran",
+    "iran%20israel%20hezbollah%20houthi%20conflict%202026",
+    "strait%20hormuz%20OR%20iranian%20military%20OR%20IRGC",
+  ];
+
+  const allArticles = [];
+
+  for (const q of queries) {
+    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=30&format=json&timespan=24h`;
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": "WarLibrary/1.0 (conflict-tracker)" },
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) {
+        console.warn(`  GDELT query returned ${res.status} for: ${q.slice(0, 40)}...`);
+        continue;
+      }
+      const data = await res.json();
+      const articles = data.articles || [];
+      for (const art of articles) {
+        allArticles.push({
+          title: art.title || "",
+          url: art.url || "",
+          source: art.domain || extractSourceFromUrl(art.url || ""),
+          date: art.seendate || "",
+          description: art.title || "",
+        });
+      }
+    } catch (err) {
+      console.warn(`  GDELT fetch failed for query "${q.slice(0, 30)}...": ${err.message}`);
+    }
+  }
+
+  // Deduplicate by URL
+  const seen = new Set();
+  const unique = [];
+  for (const art of allArticles) {
+    if (!art.url || seen.has(art.url)) continue;
+    seen.add(art.url);
+    unique.push(art);
+  }
+
+  return unique;
+}
+
+/**
+ * Fetch articles from Google News RSS (free, no key needed).
+ * Parses RSS XML with simple regex — no xml2js dependency.
+ * Returns array of { title, url, source, date, description }.
+ */
+async function fetchGoogleNewsRSS() {
+  const feeds = [
+    "https://news.google.com/rss/search?q=iran+war+operation+epic+fury+2026&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=iran+airstrike+missile+2026&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=hezbollah+houthi+iran+war+2026&hl=en-US&gl=US&ceid=US:en",
+  ];
+
+  const allArticles = [];
+
+  for (const feedUrl of feeds) {
+    try {
+      const res = await fetch(feedUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; WarLibrary/1.0)",
+          Accept: "application/rss+xml, application/xml, text/xml",
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) {
+        console.warn(`  Google News RSS returned ${res.status}`);
+        continue;
+      }
+      const xml = await res.text();
+      const items = parseRSSItems(xml);
+      for (const item of items) {
+        allArticles.push(item);
+      }
+    } catch (err) {
+      console.warn(`  Google News RSS fetch failed: ${err.message}`);
+    }
+  }
+
+  // Deduplicate by URL
+  const seen = new Set();
+  const unique = [];
+  for (const art of allArticles) {
+    if (!art.url || seen.has(art.url)) continue;
+    seen.add(art.url);
+    unique.push(art);
+  }
+
+  return unique;
+}
+
+/**
+ * Fetch from specific outlet RSS feeds (free, no key needed).
+ */
+async function fetchOutletRSS() {
+  const feeds = [
+    {
+      url: "https://www.aljazeera.com/xml/rss/all.xml",
+      name: "Al Jazeera",
+    },
+    {
+      url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml",
+      name: "BBC News",
+    },
+    {
+      url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml",
+      name: "New York Times",
+    },
+    {
+      url: "http://feeds.reuters.com/Reuters/worldNews",
+      name: "Reuters",
+    },
+  ];
+
+  const allArticles = [];
+
+  for (const feed of feeds) {
+    try {
+      const res = await fetch(feed.url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; WarLibrary/1.0)",
+          Accept: "application/rss+xml, application/xml, text/xml",
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        console.warn(`  ${feed.name} RSS returned ${res.status}`);
+        continue;
+      }
+      const xml = await res.text();
+      const items = parseRSSItems(xml);
+      // Filter for Iran/war-related articles only
+      const relevant = items.filter((item) => {
+        const text = `${item.title} ${item.description}`.toLowerCase();
+        return (
+          text.includes("iran") ||
+          text.includes("tehran") ||
+          text.includes("hezbollah") ||
+          text.includes("houthi") ||
+          text.includes("hormuz") ||
+          text.includes("irgc") ||
+          text.includes("epic fury") ||
+          (text.includes("strike") && (text.includes("middle east") || text.includes("israel"))) ||
+          (text.includes("missile") && (text.includes("israel") || text.includes("gulf")))
+        );
+      });
+      for (const item of relevant) {
+        item.source = feed.name;
+        allArticles.push(item);
+      }
+    } catch (err) {
+      console.warn(`  ${feed.name} RSS fetch failed: ${err.message}`);
+    }
+  }
+
+  return allArticles;
+}
+
+// ---------------------------------------------------------------------------
+// RSS XML Parser (simple regex, no dependencies)
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse RSS XML into an array of { title, url, source, date, description }.
+ * Uses simple regex — handles standard RSS 2.0 <item> elements.
+ */
+function parseRSSItems(xml) {
+  const items = [];
+  // Match each <item>...</item> block
+  const itemRegex = /<item[\s>]([\s\S]*?)<\/item>/gi;
+  let match;
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const block = match[1];
+    const title = extractTag(block, "title");
+    const link = extractTag(block, "link");
+    const pubDate = extractTag(block, "pubDate");
+    const description = extractTag(block, "description");
+    const source = extractTag(block, "source") || extractSourceFromUrl(link);
+
+    if (title && link) {
+      items.push({
+        title: decodeHTMLEntities(title),
+        url: link.trim(),
+        source: decodeHTMLEntities(source),
+        date: pubDate || "",
+        description: decodeHTMLEntities(description || title),
+      });
+    }
+  }
+  return items;
+}
+
+/**
+ * Extract text content of an XML tag. Handles CDATA.
+ */
+function extractTag(xml, tagName) {
+  // Try with CDATA first
+  const cdataRegex = new RegExp(
+    `<${tagName}[^>]*>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*</${tagName}>`,
+    "i"
+  );
+  const cdataMatch = xml.match(cdataRegex);
+  if (cdataMatch) return cdataMatch[1].trim();
+
+  // Try plain text content
+  const plainRegex = new RegExp(
+    `<${tagName}[^>]*>([\\s\\S]*?)</${tagName}>`,
+    "i"
+  );
+  const plainMatch = xml.match(plainRegex);
+  if (plainMatch) return plainMatch[1].trim();
+
+  return "";
+}
+
+/**
+ * Decode basic HTML entities.
+ */
+function decodeHTMLEntities(str) {
+  if (!str) return "";
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/<[^>]*>/g, ""); // Strip any remaining HTML tags
+}
+
+/**
+ * Extract a human-readable source name from a URL.
+ */
+function extractSourceFromUrl(url) {
+  if (!url) return "Unknown";
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, "");
+    // Map common domains to outlet names
+    const domainMap = {
+      "aljazeera.com": "Al Jazeera",
+      "bbc.com": "BBC News",
+      "bbc.co.uk": "BBC News",
+      "cnn.com": "CNN",
+      "reuters.com": "Reuters",
+      "nytimes.com": "New York Times",
+      "washingtonpost.com": "Washington Post",
+      "apnews.com": "AP News",
+      "npr.org": "NPR",
+      "france24.com": "France 24",
+      "timesofisrael.com": "Times of Israel",
+      "axios.com": "Axios",
+      "theguardian.com": "The Guardian",
+      "pbs.org": "PBS",
+      "nbcnews.com": "NBC News",
+      "abcnews.go.com": "ABC News",
+      "foxnews.com": "Fox News",
+      "sky.com": "Sky News",
+      "news.sky.com": "Sky News",
+      "dw.com": "DW News",
+      "news.un.org": "UN News",
+    };
+    return domainMap[hostname] || hostname;
+  } catch {
+    return "Unknown";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers (dedup, validation — kept from original)
 // ---------------------------------------------------------------------------
 
 function readJSON(filePath) {
@@ -136,6 +434,14 @@ function isDuplicate(candidate, existingEvents) {
     ) {
       return true;
     }
+    // Same source_url
+    if (
+      candidate.source_url &&
+      existing.source_url &&
+      candidate.source_url === existing.source_url
+    ) {
+      return true;
+    }
   }
   return false;
 }
@@ -151,15 +457,21 @@ function isValidEvent(event) {
     "latitude",
     "longitude",
     "country",
+    "source_url",
   ];
   for (const field of requiredFields) {
-    if (event[field] === undefined || event[field] === null) return false;
+    if (event[field] === undefined || event[field] === null || event[field] === "")
+      return false;
   }
   // Date should look like a date string
   if (!/^\d{4}-\d{2}-\d{2}/.test(event.date)) return false;
   // Lat/lng should be numbers
   if (typeof event.latitude !== "number" || typeof event.longitude !== "number")
     return false;
+  // event_type must be valid
+  if (!VALID_EVENT_TYPES.includes(event.event_type)) return false;
+  // source_url must look like a URL
+  if (!event.source_url.startsWith("http")) return false;
   return true;
 }
 
@@ -182,9 +494,15 @@ async function main() {
   const latestRaw = readJSON(latestFile);
 
   // Extract .events array from each file (they wrap in { events: [...] })
-  const events = Array.isArray(eventsRaw) ? eventsRaw : (eventsRaw.events || []);
-  const eventsExpanded = Array.isArray(expandedRaw) ? expandedRaw : (expandedRaw.events || []);
-  const eventsLatest = Array.isArray(latestRaw) ? latestRaw : (latestRaw.events || []);
+  const events = Array.isArray(eventsRaw)
+    ? eventsRaw
+    : eventsRaw.events || [];
+  const eventsExpanded = Array.isArray(expandedRaw)
+    ? expandedRaw
+    : expandedRaw.events || [];
+  const eventsLatest = Array.isArray(latestRaw)
+    ? latestRaw
+    : latestRaw.events || [];
 
   // Combine all events for deduplication
   const allEvents = [...events, ...eventsExpanded, ...eventsLatest];
@@ -192,7 +510,51 @@ async function main() {
     `Existing events: ${events.length} (base) + ${eventsExpanded.length} (expanded) + ${eventsLatest.length} (latest) = ${allEvents.length} total`
   );
 
-  // 2. Get the last 20 events as context (sorted by date descending)
+  // 2. Fetch real news articles from multiple sources
+  console.log("\n--- Fetching news articles ---");
+
+  console.log("Fetching from GDELT API...");
+  const gdeltArticles = await fetchGDELT();
+  console.log(`  GDELT: ${gdeltArticles.length} articles`);
+
+  console.log("Fetching from Google News RSS...");
+  const googleArticles = await fetchGoogleNewsRSS();
+  console.log(`  Google News: ${googleArticles.length} articles`);
+
+  console.log("Fetching from outlet RSS feeds...");
+  const outletArticles = await fetchOutletRSS();
+  console.log(`  Outlet RSS: ${outletArticles.length} articles`);
+
+  // Combine all articles, deduplicate by URL
+  const allArticlesRaw = [...gdeltArticles, ...googleArticles, ...outletArticles];
+  const seenUrls = new Set();
+  const allArticles = [];
+  for (const art of allArticlesRaw) {
+    if (!art.url || seenUrls.has(art.url)) continue;
+    seenUrls.add(art.url);
+    allArticles.push(art);
+  }
+
+  console.log(`\nTotal unique articles fetched: ${allArticles.length}`);
+
+  if (allArticles.length === 0) {
+    console.log("WARNING: No articles fetched from any source. All sources may be down.");
+    console.log("STATUS: NO_NEW_EVENTS");
+    process.exit(0);
+  }
+
+  // 3. Prepare article summaries for Claude (limit to avoid token bloat)
+  const maxArticles = 75;
+  const articlesToProcess = allArticles.slice(0, maxArticles);
+
+  const articleSummaries = articlesToProcess
+    .map(
+      (art, i) =>
+        `[${i + 1}] Title: ${art.title}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}\n    Description: ${(art.description || "").slice(0, 200)}`
+    )
+    .join("\n\n");
+
+  // 4. Get the last 20 events as context for dedup
   const sortedEvents = [...allEvents].sort((a, b) => {
     const da = a.date || "";
     const db = b.date || "";
@@ -200,24 +562,28 @@ async function main() {
   });
   const recentEvents = sortedEvents.slice(0, 20);
 
-  // 3. Build the prompt — SCOPED TO THE 2026 IRAN WAR ONLY
+  // 5. Build the extraction prompt
   const schemaExample = {
     date: "2026-03-09T00:00:00Z",
     event_type: "airstrike",
     description:
-      "Factual description of what happened, with location and outcome details",
-    latitude: 35.69,
-    longitude: 51.39,
+      "US Air Force conducted strikes on IRGC missile storage facilities near Isfahan, destroying multiple underground bunkers according to CENTCOM.",
+    latitude: 32.65,
+    longitude: 51.68,
     country: "Iran",
-    region: "Tehran",
+    region: "Isfahan",
     actors: ["US Air Force", "IRGC"],
     fatalities: 0,
     source: "Al Jazeera",
+    source_url: "https://www.aljazeera.com/news/2026/3/9/example-article",
   };
 
-  const prompt = `You are a conflict data analyst for War Library, tracking ONLY the 2026 US-Israel war on Iran (Operation Epic Fury) which began February 28, 2026.
+  const prompt = `You are a conflict data analyst for War Library, a neutral conflict tracker.
 
-SCOPE: ONLY events related to this specific conflict — including:
+Your job is to EXTRACT real conflict events from the news articles provided below.
+Do NOT invent or fabricate any events. Only extract events that are clearly described in the articles.
+
+SCOPE: ONLY events related to the 2026 US-Israel war on Iran (Operation Epic Fury), including:
 - US/Israeli strikes on Iran
 - Iranian retaliatory strikes on Israel, Gulf states, US bases
 - Hezbollah-Israel fighting in Lebanon
@@ -225,40 +591,33 @@ SCOPE: ONLY events related to this specific conflict — including:
 - Strait of Hormuz/shipping disruptions
 - Diplomatic developments (UN, ceasefire talks)
 - Humanitarian impact (displacement, civilian casualties)
-- Economic impact (oil prices, sanctions) directly tied to this war
 - Protests related to this conflict
 - NATO/European military deployments in response
 
-DO NOT include events from Ukraine, Sudan, Myanmar, Gaza (unless directly tied to the Iran war), or any other unrelated conflict.
+RULES:
+1. ONLY extract events that are clearly described in the articles below
+2. Each event MUST have source_url set to the actual article URL it came from
+3. Each event MUST have source set to the outlet name
+4. Do NOT duplicate events already in our database (recent events listed below)
+5. event_type MUST be one of: "airstrike", "missile_attack", "drone_attack", "battle", "explosion", "violence_against_civilians", "strategic_development", "protest"
+6. Use real geographic coordinates for the location mentioned in the article
+7. actors must be a JSON array of strings
+8. If an article does not describe a specific conflict event, SKIP it
+9. Return ONLY a valid JSON array — no markdown, no code fences, no explanation
 
-IMPORTANT RULES:
-- Only report events you are confident are real and sourced from: Al Jazeera, CNN, BBC, Reuters, NPR, AP, Washington Post, Times of Israel, Axios, France 24, Naval News, or other credible outlets
-- Follow the EXACT JSON schema below
-- Do NOT duplicate events already in our database (the most recent 20 are listed below)
-- actors field must be a JSON array of strings, not a semicolon-separated string
-- Return ONLY a valid JSON array — no markdown, no code fences, no explanation text
-
-JSON SCHEMA:
+JSON SCHEMA (every event must match this exactly):
 ${JSON.stringify(schemaExample, null, 2)}
 
-Field notes:
-- date: ISO 8601 format (2026-03-09T00:00:00Z)
-- event_type: MUST be one of: "airstrike", "missile_attack", "drone_attack", "battle", "explosion", "violence_against_civilians", "strategic_development", "protest"
-- description: 1-3 sentences, factual, includes location specifics and outcomes
-- latitude/longitude: Real geographic coordinates (numbers)
-- country: Full country name
-- region: City or province
-- actors: JSON array of strings — parties involved
-- fatalities: Integer (use 0 if unknown, null if not applicable)
-- source: News outlet name(s)
-
 EXISTING RECENT EVENTS (do NOT duplicate these):
-${JSON.stringify(recentEvents, null, 2)}
+${JSON.stringify(recentEvents.map((e) => ({ date: e.date, country: e.country, description: e.description })), null, 2)}
 
-Generate 5-10 new events related to Operation Epic Fury / the 2026 Iran war. Return ONLY a JSON array.`;
+NEWS ARTICLES TO EXTRACT FROM:
+${articleSummaries}
 
-  // 4. Call Claude
-  console.log("Calling Claude Haiku 4.5 for new events...");
+Extract all conflict events from these articles. If no articles contain relevant conflict events, return an empty array []. Return ONLY a JSON array.`;
+
+  // 6. Call Claude for extraction
+  console.log("\nCalling Claude Haiku 4.5 to extract events from articles...");
 
   let response;
   try {
@@ -284,7 +643,7 @@ Generate 5-10 new events related to Operation Epic Fury / the 2026 Iran war. Ret
     process.exit(1);
   }
 
-  // 5. Parse the response
+  // 7. Parse the response
   let newEvents;
   try {
     // Try direct parse first
@@ -312,12 +671,27 @@ Generate 5-10 new events related to Operation Epic Fury / the 2026 Iran war. Ret
     process.exit(1);
   }
 
-  console.log(`Claude returned ${newEvents.length} candidate events.`);
+  console.log(`Claude extracted ${newEvents.length} candidate events from articles.`);
 
-  // 6. Validate and deduplicate
+  // 8. Normalize source fields — ensure source_url is present and source is a name
+  for (const event of newEvents) {
+    // If source is a URL-like domain, map it to a name
+    if (event.source && !event.source.includes(" ")) {
+      event.source = extractSourceFromUrl(`https://${event.source}`);
+    }
+    // Ensure source_url is set from the article
+    if (!event.source_url && event.url) {
+      event.source_url = event.url;
+      delete event.url;
+    }
+  }
+
+  // 9. Validate and deduplicate
   const validEvents = newEvents.filter((e) => {
     if (!isValidEvent(e)) {
-      console.log(`  SKIP (invalid schema): ${e.description?.slice(0, 60)}...`);
+      console.log(
+        `  SKIP (invalid schema): ${e.description?.slice(0, 60) || "no description"}...`
+      );
       return false;
     }
     return true;
@@ -335,10 +709,9 @@ Generate 5-10 new events related to Operation Epic Fury / the 2026 Iran war. Ret
     `After validation: ${validEvents.length} valid, ${uniqueEvents.length} unique new events.`
   );
 
-  // 7. Append to events_latest.json
+  // 10. Append to events_latest.json
   if (uniqueEvents.length === 0) {
     console.log("No new events to add.");
-    // Exit with code 0 but signal no changes via a special message
     console.log("STATUS: NO_NEW_EVENTS");
     process.exit(0);
   }
@@ -349,19 +722,21 @@ Generate 5-10 new events related to Operation Epic Fury / the 2026 Iran war. Ret
     metadata: {
       generated: new Date().toISOString().split("T")[0],
       source: "multiple",
-      note: `Auto-updated. ${updatedLatest.length} total events in latest file.`,
+      note: `Auto-updated from real news sources. ${updatedLatest.length} total events in latest file.`,
+      sources_checked: ["GDELT API", "Google News RSS", "Al Jazeera RSS", "BBC RSS", "NYT RSS", "Reuters RSS"],
     },
   };
   writeJSON(latestFile, latestWrapper);
 
   console.log(
-    `Added ${uniqueEvents.length} new events to events_latest.json (total: ${updatedLatest.length}).`
+    `\nAdded ${uniqueEvents.length} new events to events_latest.json (total: ${updatedLatest.length}).`
   );
   console.log("\nNew events added:");
   for (const e of uniqueEvents) {
     console.log(
       `  [${e.date}] ${e.country} - ${e.event_type}: ${e.description?.slice(0, 80)}`
     );
+    console.log(`    Source: ${e.source} — ${e.source_url}`);
   }
   console.log(`\nSTATUS: EVENTS_ADDED=${uniqueEvents.length}`);
 }

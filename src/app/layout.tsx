@@ -12,33 +12,66 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = "https://warlibrary.midatlantic.ai";
+const siteTitle = "War Library — Live Conflict Tracker";
+const siteDescription =
+  "A neutral, factual tracker of the 2026 US-Israel war on Iran. 124 verified events across 17+ countries. Source-verified, open to anyone. 100% of proceeds to humanitarian aid.";
+const ogImage = `${siteUrl}/icons/icon-512.png`;
+
 export const metadata: Metadata = {
-  title: "War Library — Live Conflict Tracker",
-  description:
-    "Neutral, source-verified tracking of the 2026 Middle East conflict. 124+ events across 17 countries. AI-powered analysis. 100% of proceeds to humanitarian aid.",
+  title: {
+    default: siteTitle,
+    template: "%s | War Library",
+  },
+  description: siteDescription,
   keywords: [
-    "war",
+    "war library",
+    "conflict tracker",
     "middle east",
-    "conflict",
     "iran",
     "israel",
-    "map",
-    "analysis",
+    "operation epic fury",
+    "2026 war",
     "humanitarian",
-    "tracker",
+    "live map",
+    "verified events",
   ],
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "War Library — Live Conflict Tracker",
-    description:
-      "Neutral, source-verified tracking of the 2026 Middle East conflict. 124+ events across 17 countries. AI-powered analysis. 100% of proceeds to humanitarian aid.",
+    title: siteTitle,
+    description: siteDescription,
     type: "website",
+    url: siteUrl,
     siteName: "War Library",
+    locale: "en_US",
+    images: [
+      {
+        url: ogImage,
+        width: 512,
+        height: 512,
+        alt: "War Library — Live Conflict Tracker",
+      },
+    ],
   },
   twitter: {
     card: "summary",
-    title: "War Library — Live Conflict Tracker",
-    description:
-      "Neutral, source-verified tracking of the 2026 Middle East conflict. 124+ events across 17 countries. AI-powered analysis.",
+    title: siteTitle,
+    description: siteDescription,
+    images: [ogImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   other: {
     "theme-color": "#0a0a0a",

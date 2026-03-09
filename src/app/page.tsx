@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import type { ConflictEvent } from "@/types";
 import { useEvents } from "@/hooks/useEvents";
@@ -54,6 +54,16 @@ export default function Home() {
   const daysOfConflict = Math.ceil(
     (Date.now() - new Date(CONFLICT_START).getTime()) / 86400000
   );
+
+  // Privacy-respecting analytics — fire-and-forget page view tracking
+  useEffect(() => {
+    if (!showApp) return;
+    fetch("/api/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ page: activeTab }),
+    }).catch(() => {});
+  }, [activeTab, showApp]);
 
   function navigate(tab: Tab) {
     setActiveTab(tab);
