@@ -1,36 +1,139 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# War Library
+
+A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on Iran (Operation Epic Fury). Open to anyone in the world.
+
+**Live at:** [warlibrary.midatlantic.ai](https://warlibrary.midatlantic.ai)
+
+100% of monetization proceeds go to humanitarian aid.
+
+---
+
+## What It Does
+
+- **Interactive conflict map** — Mapbox-powered map with event markers, country filtering, and a timeline slider to scrub through events by date
+- **124 verified events** across 17+ countries, sourced from Al Jazeera, CNN, BBC, Reuters, NPR, Washington Post, and 20+ other outlets
+- **AI-powered Q&A** — Ask questions about the conflict and get sourced, guardrailed answers via Claude Haiku 4.5
+- **Donation directory** — 8 verified humanitarian organizations (ICRC, UNHCR, MSF, UNICEF, IRC, Direct Relief, WFP, Save the Children)
+- **PWA** — Installable as a native app on any device, with push notification support
+- **Mobile-first** — Designed for phones, fully responsive
+
+## Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Framework | Next.js 16.1.6 / React 19 / TypeScript (strict) |
+| Styling | Tailwind CSS 4 |
+| Map | Mapbox GL JS via react-map-gl v8 |
+| AI Chat | Claude Haiku 4.5 via @anthropic-ai/sdk |
+| Testing | Vitest + Testing Library (129 tests) |
+| Hosting | DigitalOcean + Caddy (auto-SSL) + PM2 |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- A [Mapbox access token](https://account.mapbox.com/access-tokens/) (free tier works)
+- An [Anthropic API key](https://console.anthropic.com/) (for AI chat — optional)
+
+### Setup
 
 ```bash
+# Clone
+git clone https://github.com/midatlanticAI/WarLibrary.git
+cd WarLibrary
+
+# Install dependencies
+npm install
+
+# Copy environment variables
+cp .env.example .env.local
+# Edit .env.local with your Mapbox token and (optionally) Anthropic API key
+
+# Run dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app runs at `http://localhost:3000` by default.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Running Tests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test            # Run all 129 tests
+npm run test:watch  # Watch mode
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── page.tsx                # Main page — tab router
+│   ├── layout.tsx              # Root layout, dark theme
+│   └── api/
+│       ├── chat/route.ts       # Claude AI chat endpoint (guardrailed)
+│       ├── notifications/      # Push notification endpoint
+│       └── admin/route.ts      # Admin auth
+├── components/
+│   ├── map/                    # ConflictMap + MapLegend
+│   ├── timeline/               # TimelineSlider with histogram
+│   ├── chat/                   # AskPanel (AI Q&A interface)
+│   ├── pwa/                    # PWAProvider (install + notifications)
+│   └── ui/                     # Header, EventPanel, DonationPanel, etc.
+├── data/
+│   ├── events.json             # 48 original events
+│   ├── events_expanded.json    # 64 expanded events
+│   └── events_latest.json     # 12 latest verified events
+├── hooks/                      # useEvents, useNotifications
+├── lib/                        # API client
+└── types/                      # TypeScript types
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## AI Chat System
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The Ask AI feature uses a 3-tier cost model:
 
-## Deploy on Vercel
+1. **Precomputed** — 12 suggested questions with instant, zero-cost answers
+2. **Cached** — (planned) Frequently asked questions served from cache
+3. **Live Claude** — Haiku 4.5 responses (~$0.001/question), rate limited to 10/hr per IP
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+All AI responses are guardrailed:
+- Jailbreak detection (prompt injection, role-play attempts)
+- Off-topic rejection (non-conflict questions filtered)
+- Weapon/violence content blocking
+- Output validation (catches off-rails responses)
+- Daily spend cap (2M tokens/day)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Security
+
+- API keys server-side only — never sent to browser
+- Admin auth via httpOnly cookies with timing-safe comparison
+- Input sanitization on all user-facing endpoints
+- Rate limiting on all API routes (stricter on AI)
+- CSP, HSTS, X-Frame-Options headers
+
+## Editorial Policy
+
+- **Neutral** — No sides taken. All perspectives presented with source attribution.
+- **Verified** — Every event cites at least one source. Unconfirmed reports are labeled.
+- **Accessible** — Plain language. Mobile-first. Available to anyone worldwide.
+- **Humanitarian** — 100% of any monetization proceeds go to verified aid organizations.
+
+## Contributing
+
+Contributions welcome. Please:
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit with clear messages
+4. Open a PR
+
+For event data contributions, include source URLs for verification.
+
+## License
+
+MIT
+
+---
+
+Built with care during a difficult time. If this project helps you understand what's happening, please consider donating to one of the [humanitarian organizations](https://warlibrary.midatlantic.ai) listed on the site.
