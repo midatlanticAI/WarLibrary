@@ -101,7 +101,7 @@ export default function TimelineSlider({
       <div className="flex gap-1.5">
         {[
           { label: "All", start: minDate, end: maxDate },
-          { label: "Today", start: todayISO(), end: todayISO() },
+          { label: "Last 24h", start: daysAgoISO(1), end: todayISO() },
           { label: "Last 3d", start: daysAgoISO(3), end: maxDate },
           { label: "Last 7d", start: daysAgoISO(7), end: maxDate },
         ].map((preset) => (

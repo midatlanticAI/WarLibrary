@@ -1,9 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, timingSafeEqual } from "crypto";
-import seedData from "@/data/events.json";
-import expandedData from "@/data/events_expanded.json";
-import latestData from "@/data/events_latest.json";
+import fs from "fs";
+import path from "path";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "",
@@ -395,42 +394,63 @@ function searchEvents(
 }
 
 // ---------------------------------------------------------------------------
-// Load all events once at module level
+// Load events from disk (cached for 30s to avoid reading on every request)
 // ---------------------------------------------------------------------------
-const allEventsRaw: EventRecord[] = [
-  ...(seedData as { events: EventRecord[] }).events,
-  ...(expandedData as { events: EventRecord[] }).events,
-  ...(latestData as { events: EventRecord[] }).events,
-];
+const DATA_DIR = path.join(process.cwd(), "src", "data");
+let _cachedEvents: EventRecord[] = [];
+let _cachedSummary = "";
+let _cacheTime = 0;
 
-// ---------------------------------------------------------------------------
-// Build summary stats (computed once, used in system prompt)
-// ---------------------------------------------------------------------------
-function buildDatabaseSummary(): string {
-  const countries = [...new Set(allEventsRaw.map((e) => String(e.country)))];
-  const totalFatalities = allEventsRaw.reduce(
+function readEventsFile(filePath: string): EventRecord[] {
+  try {
+    if (!fs.existsSync(filePath)) return [];
+    const raw = fs.readFileSync(filePath, "utf-8");
+    const parsed: { events?: EventRecord[] } = JSON.parse(raw);
+    return Array.isArray(parsed.events) ? parsed.events : [];
+  } catch {
+    return [];
+  }
+}
+
+function getAllEvents(): EventRecord[] {
+  const now = Date.now();
+  if (_cachedEvents.length > 0 && now - _cacheTime < 30_000) return _cachedEvents;
+  _cachedEvents = [
+    ...readEventsFile(path.join(DATA_DIR, "events.json")),
+    ...readEventsFile(path.join(DATA_DIR, "events_expanded.json")),
+    ...readEventsFile(path.join(DATA_DIR, "events_latest.json")),
+  ];
+  _cacheTime = now;
+  _cachedSummary = "";
+  return _cachedEvents;
+}
+
+function getDatabaseSummary(): string {
+  const allEvents = getAllEvents();
+  if (_cachedSummary) return _cachedSummary;
+  const countries = [...new Set(allEvents.map((e) => String(e.country)))];
+  const totalFatalities = allEvents.reduce(
     (sum, e) => sum + (Number(e.fatalities) || 0),
     0
   );
   const eventTypes = [
-    ...new Set(allEventsRaw.map((e) => String(e.event_type))),
+    ...new Set(allEvents.map((e) => String(e.event_type))),
   ];
-
-  let summary = `CONFLICT DATABASE — Operation Epic Fury (US-Israel War on Iran)\n`;
-  summary += `Period: Feb 28 – Mar 8, 2026 | ${allEventsRaw.length} verified events | ${totalFatalities.toLocaleString()}+ fatalities reported\n`;
-  summary += `Countries affected: ${countries.join(", ")}\n`;
-  summary += `Event types: ${eventTypes.map((t) => t.replace(/_/g, " ")).join(", ")}\n`;
-  return summary;
+  const dates = allEvents.map((e) => e.date?.split("T")[0]).filter(Boolean).sort();
+  const dateRange = dates.length > 0 ? `${dates[0]} – ${dates[dates.length - 1]}` : "unknown";
+  _cachedSummary = `CONFLICT DATABASE — Operation Epic Fury (US-Israel War on Iran)\n`;
+  _cachedSummary += `Period: ${dateRange} | ${allEvents.length} verified events | ${totalFatalities.toLocaleString()}+ fatalities reported\n`;
+  _cachedSummary += `Countries affected: ${countries.join(", ")}\n`;
+  _cachedSummary += `Event types: ${eventTypes.map((t) => t.replace(/_/g, " ")).join(", ")}\n`;
+  return _cachedSummary;
 }
-
-const DATABASE_SUMMARY = buildDatabaseSummary();
 
 // ---------------------------------------------------------------------------
 // Build event context from a subset of relevant events
 // ---------------------------------------------------------------------------
 function buildEventContext(relevantEvents: EventRecord[]): string {
-  let context = DATABASE_SUMMARY + "\n";
-  context += `Based on the most relevant events from our database (${relevantEvents.length} of ${allEventsRaw.length} total):\n\n`;
+  let context = getDatabaseSummary() + "\n";
+  context += `Based on the most relevant events from our database (${relevantEvents.length} of ${getAllEvents().length} total):\n\n`;
 
   for (const e of relevantEvents) {
     context += `[${e.date}] ${String(e.event_type || "").replace(/_/g, " ").toUpperCase()} — ${e.region}, ${e.country}: ${e.description}`;
@@ -443,7 +463,8 @@ function buildEventContext(relevantEvents: EventRecord[]): string {
   return context;
 }
 
-const BASE_SYSTEM_PROMPT = `You are the War Library AI — a neutral, factual analyst for the 2026 Middle East conflict (Operation Epic Fury). You have access to a verified database of ${allEventsRaw.length} conflict events.
+function getBaseSystemPrompt(): string {
+  return `You are the War Library AI — a neutral, factual analyst for the 2026 Middle East conflict (Operation Epic Fury). You have access to a verified database of ${getAllEvents().length} conflict events.
 
 RULES:
 1. Be factual and source-attributed. When citing information from the database, mention the source.
@@ -464,6 +485,7 @@ HARD BOUNDARIES — YOU MUST REFUSE:
 - If a question is off-topic, respond ONLY with: "I can only answer questions about the 2026 Middle East conflict. Please ask something related to the war."
 
 `;
+}
 
 // ---------------------------------------------------------------------------
 // Max spend guardrail — hard cap on daily API spend
@@ -574,9 +596,9 @@ export async function POST(req: NextRequest) {
     }
 
     // RAG: retrieve relevant events for this question
-    const relevantEvents = searchEvents(question, allEventsRaw, 20);
+    const relevantEvents = searchEvents(question, getAllEvents(), 20);
     const eventContext = buildEventContext(relevantEvents);
-    const systemPrompt = BASE_SYSTEM_PROMPT + eventContext;
+    const systemPrompt = getBaseSystemPrompt() + eventContext;
 
     const message = await client.messages.create({
       model: "claude-haiku-4-5-20251001",

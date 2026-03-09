@@ -29,7 +29,7 @@ export function useEvents(): UseEventsReturn {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/api/events");
+      const res = await fetch("/api/events", { cache: "no-store" });
       if (!res.ok) {
         throw new Error(`Failed to load events (${res.status})`);
       }
@@ -52,6 +52,12 @@ export function useEvents(): UseEventsReturn {
 
   useEffect(() => {
     fetchEvents();
+
+    const interval = setInterval(() => {
+      fetchEvents();
+    }, 60_000);
+
+    return () => clearInterval(interval);
   }, [fetchEvents]);
 
   return { events, loading, error, lastUpdated, refresh: fetchEvents };

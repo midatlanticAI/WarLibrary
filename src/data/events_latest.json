@@ -724,12 +724,133 @@
       "verification_status": "claimed",
       "location_precision": "region",
       "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T15:09:05Z",
+      "event_type": "missile_attack",
+      "description": "US missile struck military base near Iran school, according to BBC video analysis",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "US"
+      ],
+      "fatalities": 0,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/articles/cvg548lyjnyo?at_medium=RSS",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "strike near school"
+    },
+    {
+      "date": "2026-03-04T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Iranian ballistic missile intercepted by NATO air defences over southern Turkey. Turkish Ministry of National Defence reports no casualties or damage reported.",
+      "latitude": 37.23,
+      "longitude": 36.21,
+      "country": "Turkey",
+      "region": "Gaziantep",
+      "actors": [
+        "Iran",
+        "NATO",
+        "Turkey"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/turkiye-says-iranian-ballistic-missile-intercepted-by-nato-air-defences?traffic_source=rss",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-05T02:45:00Z",
+      "event_type": "missile_attack",
+      "description": "Iran launches missiles at Israel and US bases as part of escalating response",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "Iran",
+        "Israel",
+        "US"
+      ],
+      "fatalities": 0,
+      "source": "AP News",
+      "source_url": "https://news.google.com/rss/articles/CBMikgFBVV95cUxPSHNncUlOcDBNNmVnOE00S3hLWW1MSWhjZlhPMVZabUlNUDl2a1FEemxZaGlwUUNMXzAzc19NS2RwLUYwQ2thSkdUZHBtZS1tSERJcjRuSmp4WmtCSS0yRGMzbUhYcnlyc1M1U1Q2cHpscUpLWGJSeHRqaDB1aE9RN0N4VnBFSGhXLUtENWZyQk1ldw?oc=5",
+      "confidence": 0.9,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-02-28T08:00:00Z",
+      "event_type": "airstrike",
+      "description": "US-Israeli strike on girls' school in Minab kills at least 85 students according to Iran's judiciary",
+      "latitude": 27.1924,
+      "longitude": 57.084,
+      "country": "Iran",
+      "region": "Minab",
+      "actors": [
+        "US Air Force",
+        "Israeli Air Force"
+      ],
+      "fatalities": 85,
+      "source": "France 24",
+      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOMl9ZT21XZG4zb3BMaV9YWmdBRVNwQWFKcnBlSE1FZ0xLMk9LbUk3amdNN25DYmtnc3RxQklhb2JyUkJQYVFsSVJ0SC14WG5GSkJ6TkZZdjQtNTVNTHRKV3U5d0xRU1RZUVhtcGFURHRoX2JRYlJiSl9sRjBzT052eEZkSjliOFdEMm1vejNDYXY2UVRDUWdLRTNhWTBPSDZPRWxrRjNWMXkzZkxhRjgxMzk2SURzTE5HYzFsUjBrR2tFanRkdkNzQkdn?oc=5",
+      "confidence": 0.7999999999999999,
+      "verification_status": "claimed",
+      "location_precision": "city",
+      "civilian_impact": "85 students killed in school strike"
+    },
+    {
+      "date": "2026-03-03T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Strike on school in Minab kills at least 170 people according to sources, referenced in US senators' call for investigation",
+      "latitude": 27.1924,
+      "longitude": 57.084,
+      "country": "Iran",
+      "region": "Minab",
+      "actors": [
+        "US Air Force",
+        "Israeli Air Force"
+      ],
+      "fatalities": 170,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/us-senators-demand-probe-into-appalling-attack-on-girlss-school-in-iran?traffic_source=rss",
+      "confidence": 0.7,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "At least 170 people killed in school bombing"
+    },
+    {
+      "date": "2026-03-06T14:50:36Z",
+      "event_type": "airstrike",
+      "description": "Airstrikes intensify over Tehran as Iran's missile barrages decline in frequency and scale",
+      "latitude": 35.6892,
+      "longitude": 51.389,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "US Air Force",
+        "Israeli Air Force"
+      ],
+      "fatalities": 0,
+      "source": "Middle East Forum",
+      "source_url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOci1EYmFhLTlpMnFmUlEzNl9YcnVCX050RDhzQjYzWGNQd081VEFqbUx4Tl9iQWs5amk5VFhwTUxVMlpvcl80UnlhQUJWS1ZGYk5xejI1WjJzMDFya3Fhek8yemVpMXZJbTBpNFlhY3RreHk1QXhxS0NtZDRNb1VsZUV0MU5Qd0huYUhhVG4tRjd0TVoxMHNIWDVUUjZ1QmxpLVU5c0Nn?oc=5",
+      "confidence": 0.5499999999999999,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": null
     }
   ],
   "metadata": {
     "generated": "2026-03-09",
     "source": "multiple",
-    "note": "Auto-updated from real news sources. 40 total events in latest file.",
+    "note": "Auto-updated from real news sources. 46 total events in latest file.",
     "sources_checked": [
       "GDELT API",
       "Google News RSS",

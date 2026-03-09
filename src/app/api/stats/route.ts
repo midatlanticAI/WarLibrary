@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
-import seedData from "@/data/events.json";
-import expandedData from "@/data/events_expanded.json";
-import latestData from "@/data/events_latest.json";
+import fs from "fs";
+import path from "path";
+
+const DATA_DIR = path.join(process.cwd(), "src", "data");
+
+function readEventCount(filePath: string): number {
+  try {
+    if (!fs.existsSync(filePath)) return 0;
+    const raw = fs.readFileSync(filePath, "utf-8");
+    const parsed: { events?: unknown[] } = JSON.parse(raw);
+    return Array.isArray(parsed.events) ? parsed.events.length : 0;
+  } catch {
+    return 0;
+  }
+}
 
 // Simple in-memory page view counter (resets on restart, but that's fine)
 const pageViews = {
@@ -44,9 +56,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const seedCount = (seedData as { events: unknown[] }).events.length;
-  const expandedCount = (expandedData as { events: unknown[] }).events.length;
-  const latestCount = (latestData as { events: unknown[] }).events.length;
+  const seedCount = readEventCount(path.join(DATA_DIR, "events.json"));
+  const expandedCount = readEventCount(path.join(DATA_DIR, "events_expanded.json"));
+  const latestCount = readEventCount(path.join(DATA_DIR, "events_latest.json"));
 
   return NextResponse.json({
     data: {

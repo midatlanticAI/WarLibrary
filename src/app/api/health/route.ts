@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import seedData from "@/data/events.json";
-import expandedData from "@/data/events_expanded.json";
-import latestData from "@/data/events_latest.json";
+
+const DATA_DIR = path.join(process.cwd(), "src", "data");
+
+function readEventCount(filePath: string): number {
+  try {
+    if (!fs.existsSync(filePath)) return 0;
+    const raw = fs.readFileSync(filePath, "utf-8");
+    const parsed: { events?: unknown[] } = JSON.parse(raw);
+    return Array.isArray(parsed.events) ? parsed.events.length : 0;
+  } catch {
+    return 0;
+  }
+}
 
 interface PipelineStats {
   last_run: string;
@@ -35,9 +45,9 @@ function readPipelineStats(): PipelineStats | null {
 
 // Health check endpoint for uptime monitoring
 export async function GET() {
-  const seed = (seedData as { events: unknown[] }).events.length;
-  const expanded = (expandedData as { events: unknown[] }).events.length;
-  const latest = (latestData as { events: unknown[] }).events.length;
+  const seed = readEventCount(path.join(DATA_DIR, "events.json"));
+  const expanded = readEventCount(path.join(DATA_DIR, "events_expanded.json"));
+  const latest = readEventCount(path.join(DATA_DIR, "events_latest.json"));
 
   return NextResponse.json({
     status: "ok",
