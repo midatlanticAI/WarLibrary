@@ -17,6 +17,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
 
 // ---------------------------------------------------------------------------
 // Resolve project root (works whether invoked from project root or scripts/)
@@ -105,6 +106,73 @@ function getSourceTier(sourceName) {
   if (SOURCE_TIERS.tier1.some((s) => s.toLowerCase() === lower)) return 1;
   if (SOURCE_TIERS.tier2.some((s) => s.toLowerCase() === lower)) return 2;
   return 3;
+}
+
+// ---------------------------------------------------------------------------
+// Known location coordinates — fallback when Claude omits lat/lng
+// ---------------------------------------------------------------------------
+const KNOWN_LOCATIONS = {
+  "tehran": { lat: 35.6892, lng: 51.3890 },
+  "isfahan": { lat: 32.6546, lng: 51.6680 },
+  "shiraz": { lat: 29.5918, lng: 52.5837 },
+  "tabriz": { lat: 38.0800, lng: 46.2919 },
+  "mashhad": { lat: 36.2605, lng: 59.6168 },
+  "natanz": { lat: 33.5131, lng: 51.9163 },
+  "bushehr": { lat: 28.9234, lng: 50.8203 },
+  "bandar abbas": { lat: 27.1865, lng: 56.2808 },
+  "kermanshah": { lat: 34.3142, lng: 47.0650 },
+  "sanandaj": { lat: 35.3219, lng: 46.9862 },
+  "minab": { lat: 27.1058, lng: 57.0780 },
+  "fars": { lat: 29.1043, lng: 53.0450 },
+  "khuzestan": { lat: 31.3203, lng: 48.6693 },
+  "beirut": { lat: 33.8938, lng: 35.5018 },
+  "southern lebanon": { lat: 33.2721, lng: 35.2033 },
+  "sidon": { lat: 33.5633, lng: 35.3697 },
+  "tyre": { lat: 33.2705, lng: 35.1968 },
+  "baalbek": { lat: 34.0047, lng: 36.2110 },
+  "tel aviv": { lat: 32.0853, lng: 34.7818 },
+  "haifa": { lat: 32.7940, lng: 34.9896 },
+  "jerusalem": { lat: 31.7683, lng: 35.2137 },
+  "baghdad": { lat: 33.3152, lng: 44.3661 },
+  "erbil": { lat: 36.2021, lng: 44.0089 },
+  "strait of hormuz": { lat: 26.5667, lng: 56.2500 },
+  "indian ocean": { lat: 15.0000, lng: 65.0000 },
+  "riyadh": { lat: 24.7136, lng: 46.6753 },
+  "bahrain": { lat: 26.0667, lng: 50.5577 },
+  "kuwait": { lat: 29.3759, lng: 47.9774 },
+  "doha": { lat: 25.2854, lng: 51.5310 },
+  "dubai": { lat: 25.2048, lng: 55.2708 },
+  "abu dhabi": { lat: 24.4539, lng: 54.3773 },
+  "damascus": { lat: 33.5138, lng: 36.2765 },
+  "sanaa": { lat: 15.3694, lng: 44.1910 },
+  "aden": { lat: 12.7855, lng: 45.0187 },
+  "al-kharj": { lat: 24.1500, lng: 47.3000 },
+  "iran": { lat: 32.4279, lng: 53.6880 },
+  "iraq": { lat: 33.2232, lng: 43.6793 },
+  "lebanon": { lat: 33.8547, lng: 35.8623 },
+  "israel": { lat: 31.0461, lng: 34.8516 },
+  "saudi arabia": { lat: 23.8859, lng: 45.0792 },
+  "yemen": { lat: 15.5527, lng: 48.5164 },
+  "syria": { lat: 34.8021, lng: 38.9968 },
+};
+
+/**
+ * Try to fill in missing latitude/longitude from the event's region, country, or description.
+ */
+function geocodeFallback(event) {
+  if (typeof event.latitude === "number" && typeof event.longitude === "number") return;
+  const searchText = `${event.region || ""} ${event.country || ""} ${event.description || ""}`.toLowerCase();
+  for (const [place, coords] of Object.entries(KNOWN_LOCATIONS)) {
+    if (searchText.includes(place)) {
+      event.latitude = coords.lat;
+      event.longitude = coords.lng;
+      if (!event.location_precision || event.location_precision === "exact") {
+        event.location_precision = "region";
+      }
+      console.log(`  GEOCODE: Set ${place} coords for: ${(event.description || "").slice(0, 50)}...`);
+      return;
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -453,7 +521,14 @@ function readJSON(filePath) {
 }
 
 function writeJSON(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error(`ERROR writing ${filePath}: ${err.message}`);
+    if (typeof pipelineStats !== "undefined" && Array.isArray(pipelineStats.errors)) {
+      pipelineStats.errors.push(`Write failed: ${filePath}: ${err.message}`);
+    }
+  }
 }
 
 /**
@@ -494,9 +569,10 @@ function haversineKm(lat1, lon1, lat2, lon2) {
  * Spatial-temporal duplicate check.
  * Two events are likely duplicates if ALL of:
  * - Same country
- * - Within 50km (Haversine)
- * - Within 24 hours
- * - At least one overlapping actor OR similar event_type
+ * - Within 10km (Haversine) — tighter radius since multiple strikes hit nearby targets
+ * - Within 6 hours — wars have multiple events per day in the same area
+ * - At least one overlapping actor AND same event_type (require BOTH, not either)
+ * - AND description similarity > 0.5 (to distinguish different strikes in same area)
  */
 function isSpatioTemporalDuplicate(candidate, existingEvents) {
   const candidateTime = new Date(candidate.date).getTime();
@@ -506,7 +582,7 @@ function isSpatioTemporalDuplicate(candidate, existingEvents) {
     // Same country
     if (candidate.country !== existing.country) continue;
 
-    // Within 50km
+    // Within 10km (tightened from 50km — multiple targets in same city are distinct events)
     if (
       typeof candidate.latitude !== "number" ||
       typeof candidate.longitude !== "number" ||
@@ -517,15 +593,15 @@ function isSpatioTemporalDuplicate(candidate, existingEvents) {
       candidate.latitude, candidate.longitude,
       existing.latitude, existing.longitude
     );
-    if (dist > 50) continue;
+    if (dist > 10) continue;
 
-    // Within 24 hours
+    // Within 6 hours (tightened from 24h — wars have many events per day)
     const existingTime = new Date(existing.date).getTime();
     if (isNaN(existingTime)) continue;
     const timeDiffHours = Math.abs(candidateTime - existingTime) / 3600000;
-    if (timeDiffHours > 24) continue;
+    if (timeDiffHours > 6) continue;
 
-    // Overlapping actor OR same event_type
+    // Require BOTH: overlapping actor AND same event_type (was OR — way too aggressive)
     const candidateActors = Array.isArray(candidate.actors) ? candidate.actors : [];
     const existingActors = Array.isArray(existing.actors) ? existing.actors : [];
     const hasOverlappingActor = candidateActors.some((a) =>
@@ -533,8 +609,12 @@ function isSpatioTemporalDuplicate(candidate, existingEvents) {
     );
     const sameEventType = candidate.event_type === existing.event_type;
 
-    if (hasOverlappingActor || sameEventType) {
-      return true;
+    if (hasOverlappingActor && sameEventType) {
+      // Final check: descriptions must also be somewhat similar
+      const descSim = similarity(candidate.description, existing.description);
+      if (descSim > 0.5) {
+        return true;
+      }
     }
   }
   return false;
@@ -542,7 +622,11 @@ function isSpatioTemporalDuplicate(candidate, existingEvents) {
 
 /**
  * Check if a candidate event is a duplicate of any existing event.
- * Uses description similarity (threshold 0.7) and exact date+country match.
+ * Uses description similarity threshold of 0.85 (raised from 0.7 — in an active
+ * war, many distinct events share common words like "Israeli", "strikes", "Iran",
+ * "killed" which inflate Jaccard similarity between genuinely different events).
+ * Date matching compares only the date portion (YYYY-MM-DD) not full timestamps,
+ * since Claude may assign slightly different times to the same event.
  */
 function isDuplicate(candidate, existingEvents) {
   for (const existing of existingEvents) {
@@ -555,11 +639,13 @@ function isDuplicate(candidate, existingEvents) {
     ) {
       return true;
     }
-    // High similarity + same date + same country
+    // High similarity + same date (day only) + same country
+    const candidateDay = (candidate.date || "").slice(0, 10);
+    const existingDay = (existing.date || "").slice(0, 10);
     if (
-      candidate.date === existing.date &&
+      candidateDay === existingDay &&
       candidate.country === existing.country &&
-      similarity(candidate.description, existing.description) > 0.7
+      similarity(candidate.description, existing.description) > 0.85
     ) {
       return true;
     }
@@ -616,9 +702,91 @@ function writePipelineStats(stats) {
   const statsFile = path.join(DATA_DIR, "pipeline-stats.json");
   writeJSON(statsFile, stats);
   console.log(`Pipeline stats written to ${statsFile}`);
+  appendPipelineHistory(stats);
+}
+
+/**
+ * Append a pipeline stats entry to pipeline-history.json, keeping the last 100 entries.
+ */
+function appendPipelineHistory(stats) {
+  const historyFile = path.join(DATA_DIR, "pipeline-history.json");
+  let history = [];
+  try {
+    if (fs.existsSync(historyFile)) {
+      const raw = fs.readFileSync(historyFile, "utf-8");
+      history = JSON.parse(raw);
+      if (!Array.isArray(history)) history = [];
+    }
+  } catch {
+    history = [];
+  }
+  history.push(stats);
+  // Keep only the last 100 entries
+  if (history.length > 100) {
+    history = history.slice(-100);
+  }
+  try {
+    fs.writeFileSync(historyFile, JSON.stringify(history, null, 2), "utf-8");
+    console.log(`Pipeline history appended (${history.length} entries).`);
+  } catch (err) {
+    console.error(`ERROR writing pipeline history: ${err.message}`);
+  }
+}
+
+/**
+ * Send a notification about new events via HTTP POST.
+ */
+function sendNewEventsNotification(uniqueEvents) {
+  try {
+    const adminToken = process.env.ADMIN_SECRET;
+    if (!adminToken) {
+      console.log("No ADMIN_SECRET set, skipping notification.");
+      return;
+    }
+    const title = `${uniqueEvents.length} New Event${uniqueEvents.length === 1 ? "" : "s"}`;
+    const summaryLines = uniqueEvents.slice(0, 5).map(
+      (e) => `- [${e.country}] ${e.event_type}: ${(e.description || "").slice(0, 80)}`
+    );
+    const body = summaryLines.join("\n");
+    const payload = JSON.stringify({ title, body });
+    const url = new URL("http://localhost:3000/api/notifications");
+    const req = http.request(
+      {
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": adminToken,
+          "Content-Length": Buffer.byteLength(payload),
+        },
+        timeout: 5000,
+      },
+      (res) => {
+        console.log(`Notification POST responded with status ${res.statusCode}`);
+      }
+    );
+    req.on("error", (err) => {
+      console.warn(`Notification POST failed: ${err.message}`);
+    });
+    req.write(payload);
+    req.end();
+  } catch (err) {
+    console.warn(`Failed to send notification: ${err.message}`);
+  }
 }
 
 async function main() {
+  const startTime = Date.now();
+
+  // 90-second execution timeout — force-exit if the script hangs
+  const executionTimeout = setTimeout(() => {
+    console.error("FATAL: Execution timeout (90s) exceeded. Force-exiting.");
+    process.exit(2);
+  }, 90000);
+  executionTimeout.unref(); // Don't keep process alive just for the timer
+
   console.log("=== War Library Event Update ===");
   console.log(`Time: ${new Date().toISOString()}`);
   console.log(`Data dir: ${DATA_DIR}`);
@@ -639,6 +807,11 @@ async function main() {
     verification_breakdown: { "confirmed": 0, "reported": 0, "claimed": 0, "disputed": 0, "unconfirmed": 0 },
     total_events_in_dataset: 0,
     status: "NO_NEW_EVENTS",
+    errors: [],
+    source_health: {},
+    duration_ms: 0,
+    api_input_tokens: 0,
+    api_output_tokens: 0,
   };
 
   // 1. Read existing events from all 3 files
@@ -667,51 +840,52 @@ async function main() {
     `Existing events: ${events.length} (base) + ${eventsExpanded.length} (expanded) + ${eventsLatest.length} (latest) = ${allEvents.length} total`
   );
 
-  // 2. Fetch real news articles from multiple sources
-  // Start with high-priority authoritative articles that have detailed event listings
-  console.log("\n--- Fetching priority authoritative sources ---");
-  const priorityUrls = [
-    "https://en.wikipedia.org/wiki/List_of_attacks_during_the_2026_Iran_war",
-    "https://en.wikipedia.org/wiki/Casualties_of_the_Twelve-Day_War",
-    "https://en.wikipedia.org/wiki/2026_Hezbollah%E2%80%93Israel_strikes",
-    "https://www.aljazeera.com/news/2026/3/1/us-israel-attacks-on-iran-death-toll-and-injuries-live-tracker",
-    "https://www.aljazeera.com/news/2026/3/4/death-toll-in-iran-surpasses-1000-as-israel-us-strikes-continue",
-    "https://www.aljazeera.com/news/2026/3/6/death-toll-in-israels-lebanon-attacks-over-120-as-beirut-south-east-hit",
-    "https://www.aljazeera.com/news/2026/3/2/iran-death-toll-reaches-555-as-us-israel-escalate-attacks",
-    "https://eu.detroitnews.com/story/news/world/2026/03/08/iran-crisis-lebanon/89052569007/",
-  ];
-  const priorityArticles = [];
-  for (const url of priorityUrls) {
-    const body = await fetchArticleBody(url);
-    if (body && body.length > 100) {
-      const source = extractSourceFromUrl(url);
-      priorityArticles.push({
-        title: `Authoritative source: ${source}`,
-        url,
-        source,
-        date: new Date().toISOString(),
-        description: body.slice(0, 200),
-        body,
-      });
-      console.log(`  ${source}: ${body.length} chars`);
-    }
-  }
-  console.log(`  Got ${priorityArticles.length} priority sources with article text.`);
-
+  // 2. Fetch news articles from RSS/GDELT (skip priority URLs — they are static
+  // historical pages that cause Claude to re-extract old events and waste tokens)
   console.log("\n--- Fetching news articles ---");
 
   console.log("Fetching from GDELT API...");
-  const gdeltArticles = await fetchGDELT();
+  let gdeltArticles = [];
+  try {
+    gdeltArticles = await fetchGDELT();
+    pipelineStats.source_health["GDELT"] = gdeltArticles.length > 0 ? "ok" : "error";
+  } catch (err) {
+    console.error(`GDELT fetch error: ${err.message}`);
+    pipelineStats.errors.push(`GDELT fetch error: ${err.message}`);
+    pipelineStats.source_health["GDELT"] = err.name === "TimeoutError" ? "timeout" : "error";
+  }
   console.log(`  GDELT: ${gdeltArticles.length} articles`);
   pipelineStats.articles_by_source["GDELT"] = gdeltArticles.length;
 
   console.log("Fetching from Google News RSS...");
-  const googleArticles = await fetchGoogleNewsRSS();
+  let googleArticles = [];
+  try {
+    googleArticles = await fetchGoogleNewsRSS();
+    pipelineStats.source_health["Google News"] = googleArticles.length > 0 ? "ok" : "error";
+  } catch (err) {
+    console.error(`Google News fetch error: ${err.message}`);
+    pipelineStats.errors.push(`Google News fetch error: ${err.message}`);
+    pipelineStats.source_health["Google News"] = err.name === "TimeoutError" ? "timeout" : "error";
+  }
   console.log(`  Google News: ${googleArticles.length} articles`);
   pipelineStats.articles_by_source["Google News"] = googleArticles.length;
 
   console.log("Fetching from outlet RSS feeds...");
-  const outletArticles = await fetchOutletRSS();
+  let outletArticles = [];
+  try {
+    outletArticles = await fetchOutletRSS();
+    // Track individual outlet health from fetchOutletRSS
+    for (const name of ["Al Jazeera", "BBC News", "New York Times", "Reuters"]) {
+      const hasArticles = outletArticles.some((a) => a.source === name);
+      pipelineStats.source_health[name] = hasArticles ? "ok" : "error";
+    }
+  } catch (err) {
+    console.error(`Outlet RSS fetch error: ${err.message}`);
+    pipelineStats.errors.push(`Outlet RSS fetch error: ${err.message}`);
+    for (const name of ["Al Jazeera", "BBC News", "New York Times", "Reuters"]) {
+      pipelineStats.source_health[name] = err.name === "TimeoutError" ? "timeout" : "error";
+    }
+  }
   console.log(`  Outlet RSS: ${outletArticles.length} articles`);
   pipelineStats.articles_by_source["Outlet RSS"] = outletArticles.length;
 
@@ -728,27 +902,59 @@ async function main() {
   pipelineStats.articles_fetched = allArticles.length;
   console.log(`\nTotal unique articles fetched: ${allArticles.length}`);
 
-  if (allArticles.length === 0) {
-    console.log("WARNING: No articles fetched from any source. All sources may be down.");
+  // --- Article URL cache: skip Claude call if we've seen all these URLs before ---
+  const cacheFile = path.join(DATA_DIR, "article-url-cache.json");
+  let cachedUrls = new Set();
+  try {
+    if (fs.existsSync(cacheFile)) {
+      cachedUrls = new Set(JSON.parse(fs.readFileSync(cacheFile, "utf-8")));
+    }
+  } catch { /* ignore corrupt cache */ }
+  const newArticleUrls = allArticles.filter((a) => !cachedUrls.has(a.url));
+  console.log(`New article URLs not seen before: ${newArticleUrls.length} of ${allArticles.length}`);
+  // Update cache with all current URLs (keep last 2000 to prevent unbounded growth)
+  const updatedCache = [...cachedUrls, ...allArticles.map((a) => a.url)];
+  try {
+    fs.writeFileSync(cacheFile, JSON.stringify(updatedCache.slice(-2000)), "utf-8");
+  } catch (err) {
+    console.error(`ERROR writing cache file: ${err.message}`);
+    pipelineStats.errors.push(`Cache write failed: ${err.message}`);
+  }
+
+  if (newArticleUrls.length === 0 && allArticles.length > 0) {
+    console.log("All articles already seen in previous run — skipping Claude API call.");
     console.log("STATUS: NO_NEW_EVENTS");
+    pipelineStats.status = "SKIPPED_NO_NEW_ARTICLES";
     pipelineStats.total_events_in_dataset = allEvents.length;
+    pipelineStats.duration_ms = Date.now() - startTime;
+    clearTimeout(executionTimeout);
     writePipelineStats(pipelineStats);
     process.exit(0);
   }
 
-  // 3. Fetch full article bodies for top articles (prioritize Tier 1 sources)
-  // Include priority authoritative articles first
-  const maxArticles = 40;
+  if (allArticles.length === 0) {
+    console.log("WARNING: No articles fetched from any source. All sources may be down.");
+    console.log("STATUS: NO_NEW_EVENTS");
+    pipelineStats.errors.push("No articles fetched from any source");
+    pipelineStats.total_events_in_dataset = allEvents.length;
+    pipelineStats.duration_ms = Date.now() - startTime;
+    clearTimeout(executionTimeout);
+    writePipelineStats(pipelineStats);
+    process.exit(0);
+  }
+
+  // 3. Fetch full article bodies — only for NEW articles (not seen in cache), max 15
   // Sort: Tier 1 sources first, then by date
-  const sortedArticles = [...allArticles].sort((a, b) => {
+  const sortedNewArticles = [...newArticleUrls].sort((a, b) => {
     const tierA = getSourceTier(a.source);
     const tierB = getSourceTier(b.source);
     if (tierA !== tierB) return tierA - tierB;
     return (b.date || "").localeCompare(a.date || "");
   });
-  const articlesToProcess = sortedArticles.slice(0, maxArticles);
+  const maxArticles = 20;
+  const articlesToProcess = sortedNewArticles.slice(0, maxArticles);
 
-  console.log(`\nFetching full article text for top ${articlesToProcess.length} articles...`);
+  console.log(`\nFetching full article text for ${articlesToProcess.length} new articles...`);
   const CONCURRENT_FETCHES = 5;
   for (let i = 0; i < articlesToProcess.length; i += CONCURRENT_FETCHES) {
     const batch = articlesToProcess.slice(i, i + CONCURRENT_FETCHES);
@@ -756,30 +962,27 @@ async function main() {
     for (let j = 0; j < batch.length; j++) {
       batch[j].body = bodies[j];
     }
-    if (i % 10 === 0 && i > 0) console.log(`  Fetched ${i}/${articlesToProcess.length} article bodies...`);
   }
   const articlesWithBody = articlesToProcess.filter((a) => a.body && a.body.length > 100).length;
   console.log(`  ${articlesWithBody} articles have substantial body text.`);
 
-  // Combine priority articles (full text) with regular articles
-  const allArticlesForClaude = [...priorityArticles, ...articlesToProcess];
-
-  const articleSummaries = allArticlesForClaude
+  const articleSummaries = articlesToProcess
     .map(
       (art, i) => {
-        const bodySnippet = art.body ? `\n    Body: ${art.body.slice(0, 2000)}` : "";
-        return `[${i + 1}] Title: ${art.title}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}\n    Description: ${(art.description || "").slice(0, 200)}${bodySnippet}`;
+        // Trim body to 1200 chars (was 2000) — enough for key facts, saves ~40% tokens
+        const bodySnippet = art.body ? `\n    Body: ${art.body.slice(0, 1200)}` : "";
+        return `[${i + 1}] ${art.title}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}${bodySnippet}`;
       }
     )
     .join("\n\n");
 
-  // 4. Get the last 20 events as context for dedup
+  // 4. Get the last 10 events as compact dedup context (was 20 — saves tokens)
   const sortedEvents = [...allEvents].sort((a, b) => {
     const da = a.date || "";
     const db = b.date || "";
     return db.localeCompare(da);
   });
-  const recentEvents = sortedEvents.slice(0, 20);
+  const recentEvents = sortedEvents.slice(0, 10);
 
   // 5. Build the extraction prompt
   const schemaExample = {
@@ -801,60 +1004,25 @@ async function main() {
     civilian_impact: "12 civilians killed, hospital partially destroyed",
   };
 
-  const prompt = `You are a conflict data analyst for War Library, a neutral conflict tracker.
+  const prompt = `Extract conflict events from articles about the 2026 US-Israel war on Iran (Operation Epic Fury). Only real events from the articles — never fabricate. Return ONLY a JSON array.
 
-Your job is to EXTRACT real conflict events from the news articles provided below.
-Do NOT invent or fabricate any events. Only extract events that are clearly described in the articles.
+event_type: "airstrike"|"missile_attack"|"drone_attack"|"battle"|"explosion"|"violence_against_civilians"|"strategic_development"|"protest"
+verification_status: "confirmed"|"reported"|"claimed"|"disputed"|"unconfirmed" — use "claimed"/"reported" for unverified claims
+location_precision: "exact"|"city"|"region"|"country"
+fatalities: exact number from article only, 0 if unknown. Cumulative tolls → strategic_development with fatalities=0.
+civilian_impact: brief phrase if mentioned, omit if not.
+confidence: 0.0–1.0 based on source reliability.
 
-SCOPE: ONLY events related to the 2026 US-Israel war on Iran (Operation Epic Fury), including:
-- US/Israeli strikes on Iran
-- Iranian retaliatory strikes on Israel, Gulf states, US bases
-- Hezbollah-Israel fighting in Lebanon
-- Houthi activity related to this war
-- Strait of Hormuz/shipping disruptions
-- Diplomatic developments (UN, ceasefire talks)
-- Humanitarian impact (displacement, civilian casualties)
-- Protests related to this conflict
-- NATO/European military deployments in response
-
-RULES:
-1. ONLY extract events that are clearly described in the articles below
-2. Each event MUST have source_url set to the actual article URL it came from
-3. Each event MUST have source set to the outlet name
-4. Do NOT duplicate events already in our database (recent events listed below)
-5. event_type MUST be one of: "airstrike", "missile_attack", "drone_attack", "battle", "explosion", "violence_against_civilians", "strategic_development", "protest"
-6. Use real geographic coordinates for the location mentioned in the article
-7. actors must be a JSON array of strings
-8. If an article does not describe a specific conflict event, SKIP it
-9. Return ONLY a valid JSON array — no markdown, no code fences, no explanation
-10. Assign a "confidence" score (0.0 to 1.0) to each event based on source reliability and corroboration
-11. FATALITIES: Extract the EXACT number of fatalities mentioned in the article. If the article says "at least 41 killed", set fatalities to 41. If it says "dozens killed" with no number, use 0 and note in description. Do NOT make up or estimate fatality numbers — use ONLY what the article explicitly states. This is critical for credibility.
-12. CUMULATIVE DEATH TOLLS: If an article reports a cumulative death toll (e.g., "death toll in Iran reaches 1,332"), create a strategic_development event with the total in the description and fatalities set to 0 (since it's cumulative, not from a single event).
-13. Assign a "verification_status" to each event:
-    - "confirmed" = verified by 2+ independent credible sources or official statement
-    - "reported" = reported by a credible outlet but not independently verified
-    - "claimed" = based on claims by one party (e.g., "Iran claims...", "officials said...")
-    - "disputed" = conflicting reports from different parties
-    - "unconfirmed" = single unverified source or rumor
-12. CLAIM vs FACT: If the article says "claimed", "alleged", "reportedly", "according to officials", use "claimed" or "reported" — NOT "confirmed". Only use "confirmed" when multiple independent sources verify the same facts.
-13. ACTOR ATTRIBUTION: If actors are uncertain, use "unknown" or "unidentified" — do NOT assume attribution.
-14. If the article mentions civilian casualties, displacement, infrastructure damage (hospitals, schools, water), or humanitarian aid disruption, capture it in "civilian_impact" as a brief phrase (e.g., "500+ displaced", "hospital damaged", "aid convoy blocked"). Omit the field if no civilian/humanitarian impact is mentioned.
-15. Set "location_precision" for each event:
-    - "exact" = article mentions a specific facility, base, or address
-    - "city" = article names a specific city or town
-    - "region" = article only mentions a province, area, or general region (e.g., "northern Iran")
-    - "country" = article only mentions the country with no specific location
-
-JSON SCHEMA (every event must match this exactly):
+JSON SCHEMA:
 ${JSON.stringify(schemaExample, null, 2)}
 
-EXISTING RECENT EVENTS (do NOT duplicate these):
-${JSON.stringify(recentEvents.map((e) => ({ date: e.date, country: e.country, description: e.description })), null, 2)}
+ALREADY IN DATABASE (do NOT extract these again):
+${JSON.stringify(recentEvents.map((e) => ({ d: e.date?.slice(0, 10), c: e.country, t: e.event_type, s: (e.description || "").slice(0, 60) })))}
 
-NEWS ARTICLES TO EXTRACT FROM:
+ARTICLES:
 ${articleSummaries}
 
-Extract all conflict events from these articles. If no articles contain relevant conflict events, return an empty array []. Return ONLY a JSON array.`;
+Return ONLY a JSON array of new events. Empty array [] if none.`;
 
   // 6. Call Claude for extraction
   console.log("\nCalling Claude Haiku 4.5 to extract events from articles...");
@@ -868,7 +1036,18 @@ Extract all conflict events from these articles. If no articles contain relevant
     });
   } catch (err) {
     console.error("ERROR calling Anthropic API:", err.message);
+    pipelineStats.errors.push(`Claude API error: ${err.message}`);
+    pipelineStats.duration_ms = Date.now() - startTime;
+    clearTimeout(executionTimeout);
+    writePipelineStats(pipelineStats);
     process.exit(1);
+  }
+
+  // Track API token usage
+  if (response.usage) {
+    pipelineStats.api_input_tokens = response.usage.input_tokens || 0;
+    pipelineStats.api_output_tokens = response.usage.output_tokens || 0;
+    console.log(`  API tokens used: ${pipelineStats.api_input_tokens} input, ${pipelineStats.api_output_tokens} output`);
   }
 
   const rawText =
@@ -880,6 +1059,10 @@ Extract all conflict events from these articles. If no articles contain relevant
 
   if (!rawText) {
     console.error("ERROR: Empty response from Claude.");
+    pipelineStats.errors.push("Empty response from Claude API");
+    pipelineStats.duration_ms = Date.now() - startTime;
+    clearTimeout(executionTimeout);
+    writePipelineStats(pipelineStats);
     process.exit(1);
   }
 
@@ -897,17 +1080,29 @@ Extract all conflict events from these articles. If no articles contain relevant
       } catch {
         console.error("ERROR: Could not parse JSON from Claude response.");
         console.error("Raw response:", rawText.slice(0, 500));
+        pipelineStats.errors.push("Failed to parse JSON from Claude response");
+        pipelineStats.duration_ms = Date.now() - startTime;
+        clearTimeout(executionTimeout);
+        writePipelineStats(pipelineStats);
         process.exit(1);
       }
     } else {
       console.error("ERROR: No JSON array found in Claude response.");
       console.error("Raw response:", rawText.slice(0, 500));
+      pipelineStats.errors.push("No JSON array found in Claude response");
+      pipelineStats.duration_ms = Date.now() - startTime;
+      clearTimeout(executionTimeout);
+      writePipelineStats(pipelineStats);
       process.exit(1);
     }
   }
 
   if (!Array.isArray(newEvents)) {
     console.error("ERROR: Response is not an array.");
+    pipelineStats.errors.push("Claude response is not an array");
+    pipelineStats.duration_ms = Date.now() - startTime;
+    clearTimeout(executionTimeout);
+    writePipelineStats(pipelineStats);
     process.exit(1);
   }
 
@@ -957,11 +1152,18 @@ Extract all conflict events from these articles. If no articles contain relevant
     // Tier 2: no adjustment
   }
 
+  // 8d. Geocode fallback — fill in missing lat/lng from known locations
+  for (const event of newEvents) {
+    geocodeFallback(event);
+  }
+
   // 9. Validate and deduplicate
   const validEvents = newEvents.filter((e) => {
     if (!isValidEvent(e)) {
+      const missing = ["date","event_type","description","latitude","longitude","country","source_url"]
+        .filter((f) => e[f] === undefined || e[f] === null || e[f] === "");
       console.log(
-        `  SKIP (invalid schema): ${e.description?.slice(0, 60) || "no description"}...`
+        `  SKIP (invalid schema, missing: ${missing.join(",")}): ${e.description?.slice(0, 60) || "no description"}...`
       );
       pipelineStats.events_rejected_invalid++;
       return false;
@@ -1010,6 +1212,8 @@ Extract all conflict events from these articles. If no articles contain relevant
     console.log("No new events to add.");
     console.log("STATUS: NO_NEW_EVENTS");
     pipelineStats.total_events_in_dataset = allEvents.length;
+    pipelineStats.duration_ms = Date.now() - startTime;
+    clearTimeout(executionTimeout);
     writePipelineStats(pipelineStats);
     process.exit(0);
   }
@@ -1039,7 +1243,12 @@ Extract all conflict events from these articles. If no articles contain relevant
 
   pipelineStats.status = "EVENTS_ADDED";
   pipelineStats.total_events_in_dataset = allEvents.length + uniqueEvents.length;
+  pipelineStats.duration_ms = Date.now() - startTime;
+  clearTimeout(executionTimeout);
   writePipelineStats(pipelineStats);
+
+  // Send notification about new events
+  sendNewEventsNotification(uniqueEvents);
 
   console.log(`\nSTATUS: EVENTS_ADDED=${uniqueEvents.length}`);
 }

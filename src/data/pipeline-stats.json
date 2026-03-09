@@ -1,29 +1,26 @@
 {
-  "last_run": "2026-03-09T06:45:25.157Z",
-  "articles_fetched": 307,
+  "last_run": "2026-03-09T15:30:01.801Z",
+  "articles_fetched": 318,
   "articles_by_source": {
     "GDELT": 0,
-    "Google News": 221,
-    "Outlet RSS": 86
+    "Google News": 229,
+    "Outlet RSS": 89
   },
-  "events_extracted": 8,
-  "events_valid": 8,
-  "events_unique": 2,
+  "events_extracted": 0,
+  "events_valid": 0,
+  "events_unique": 0,
   "events_rejected_invalid": 0,
-  "events_rejected_duplicate": 2,
-  "events_rejected_spatiotemporal": 4,
-  "avg_confidence": 0.77,
-  "source_mix": {
-    "en.wikipedia.org": 1,
-    "Al Jazeera": 1
-  },
+  "events_rejected_duplicate": 0,
+  "events_rejected_spatiotemporal": 0,
+  "avg_confidence": 0,
+  "source_mix": {},
   "verification_breakdown": {
-    "confirmed": 1,
-    "reported": 1,
+    "confirmed": 0,
+    "reported": 0,
     "claimed": 0,
     "disputed": 0,
     "unconfirmed": 0
   },
-  "total_events_in_dataset": 134,
-  "status": "EVENTS_ADDED"
+  "total_events_in_dataset": 153,
+  "status": "NO_NEW_EVENTS"
 }

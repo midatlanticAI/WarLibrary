@@ -216,7 +216,167 @@ describe("Cross-file consistency", () => {
 });
 
 // =========================================================================
-// 4. PWA manifest validation
+// 4. Pipeline & cache data validation
+// =========================================================================
+
+describe("Pipeline stats schema validation", () => {
+  const statsPath = path.resolve(__dirname, "..", "data", "pipeline-stats.json");
+  const statsExists = fs.existsSync(statsPath);
+
+  it.skipIf(!statsExists)(
+    "pipeline-stats.json is valid JSON with expected fields",
+    () => {
+      const raw = fs.readFileSync(statsPath, "utf-8");
+      let parsed: Record<string, unknown>;
+      expect(() => {
+        parsed = JSON.parse(raw);
+      }).not.toThrow();
+      parsed = JSON.parse(raw);
+
+      expect(parsed).toHaveProperty("last_run");
+      expect(parsed).toHaveProperty("articles_fetched");
+      expect(parsed).toHaveProperty("status");
+
+      // last_run should be a valid ISO date string
+      expect(
+        isNaN(new Date(parsed.last_run as string).getTime()),
+        `Invalid last_run date: ${parsed.last_run}`,
+      ).toBe(false);
+
+      // articles_fetched should be a non-negative number
+      expect(typeof parsed.articles_fetched).toBe("number");
+      expect(parsed.articles_fetched as number).toBeGreaterThanOrEqual(0);
+
+      // status should be a non-empty string
+      expect(typeof parsed.status).toBe("string");
+      expect((parsed.status as string).length).toBeGreaterThan(0);
+    },
+  );
+
+  it.skipIf(!statsExists)(
+    "pipeline-stats.json has valid numeric event counts",
+    () => {
+      const raw = fs.readFileSync(statsPath, "utf-8");
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+
+      const numericFields = [
+        "events_extracted",
+        "events_valid",
+        "events_unique",
+        "events_rejected_invalid",
+        "events_rejected_duplicate",
+        "events_rejected_spatiotemporal",
+        "total_events_in_dataset",
+      ];
+
+      for (const field of numericFields) {
+        if (field in parsed) {
+          expect(
+            typeof parsed[field],
+            `${field} should be a number`,
+          ).toBe("number");
+          expect(
+            parsed[field] as number,
+            `${field} should be non-negative`,
+          ).toBeGreaterThanOrEqual(0);
+        }
+      }
+    },
+  );
+});
+
+describe("Pipeline history validation", () => {
+  const historyPath = path.resolve(
+    __dirname,
+    "..",
+    "data",
+    "pipeline-history.json",
+  );
+  const historyExists = fs.existsSync(historyPath);
+
+  it.skipIf(!historyExists)(
+    "pipeline-history.json is a valid JSON array",
+    () => {
+      const raw = fs.readFileSync(historyPath, "utf-8");
+      let parsed: unknown;
+      expect(() => {
+        parsed = JSON.parse(raw);
+      }).not.toThrow();
+      parsed = JSON.parse(raw);
+
+      expect(
+        Array.isArray(parsed),
+        "pipeline-history.json should be an array",
+      ).toBe(true);
+    },
+  );
+
+  it.skipIf(!historyExists)(
+    "pipeline-history.json has at most 100 entries",
+    () => {
+      const raw = fs.readFileSync(historyPath, "utf-8");
+      const parsed = JSON.parse(raw) as unknown[];
+      expect(parsed.length).toBeLessThanOrEqual(100);
+    },
+  );
+
+  it.skipIf(!historyExists)(
+    "each history entry has last_run and status fields",
+    () => {
+      const raw = fs.readFileSync(historyPath, "utf-8");
+      const parsed = JSON.parse(raw) as Record<string, unknown>[];
+
+      for (const entry of parsed) {
+        expect(entry).toHaveProperty("last_run");
+        expect(entry).toHaveProperty("status");
+      }
+    },
+  );
+});
+
+describe("Article URL cache validation", () => {
+  const cachePath = path.resolve(
+    __dirname,
+    "..",
+    "data",
+    "article-url-cache.json",
+  );
+  const cacheExists = fs.existsSync(cachePath);
+
+  it.skipIf(!cacheExists)(
+    "article-url-cache.json is valid JSON",
+    () => {
+      const raw = fs.readFileSync(cachePath, "utf-8");
+      expect(() => JSON.parse(raw)).not.toThrow();
+    },
+  );
+
+  it.skipIf(!cacheExists)(
+    "article-url-cache.json is an array of strings",
+    () => {
+      const raw = fs.readFileSync(cachePath, "utf-8");
+      const parsed = JSON.parse(raw);
+
+      expect(
+        Array.isArray(parsed),
+        "article-url-cache.json should be an array",
+      ).toBe(true);
+
+      // Check a sample of entries (not all, since the file can be huge)
+      const sample = (parsed as unknown[]).slice(0, 20);
+      for (const entry of sample) {
+        expect(typeof entry).toBe("string");
+        expect(
+          (entry as string).startsWith("http"),
+          `Cache entry should be a URL: ${String(entry).slice(0, 80)}`,
+        ).toBe(true);
+      }
+    },
+  );
+});
+
+// =========================================================================
+// 5. PWA manifest validation
 // =========================================================================
 
 describe("PWA manifest validation", () => {

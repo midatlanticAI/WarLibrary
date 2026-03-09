@@ -320,7 +320,10 @@
       "longitude": 35.3833,
       "country": "Lebanon",
       "region": "Seir al-Gharbiya, South Lebanon",
-      "actors": ["Israel Air Force", "Hezbollah"],
+      "actors": [
+        "Israel Air Force",
+        "Hezbollah"
+      ],
       "fatalities": 19,
       "source": "The New Arab, Lebanese National News Agency",
       "civilian_impact": "19 killed including women and children; buildings collapsed; rescue operations ongoing",
@@ -331,10 +334,12 @@
       "event_type": "airstrike",
       "description": "Israeli strikes kill at least 20 people across multiple towns in southern Lebanon as Israel renews assault on day nine. Targets include residential areas and infrastructure. Death toll in Lebanon passes 394 killed in one week including 83 children, 42 women, and 9 rescue workers, per Lebanese Health Ministry.",
       "latitude": 33.27,
-      "longitude": 35.20,
+      "longitude": 35.2,
       "country": "Lebanon",
       "region": "Southern Lebanon (multiple towns)",
-      "actors": ["Israel Air Force"],
+      "actors": [
+        "Israel Air Force"
+      ],
       "fatalities": 20,
       "source": "Euronews, Al Jazeera",
       "civilian_impact": "20+ killed across multiple southern towns; 517,000+ displaced; schools in Beirut converted to shelters",
@@ -348,7 +353,9 @@
       "longitude": 35.3833,
       "country": "Lebanon",
       "region": "Ain al-Helweh, Sidon",
-      "actors": ["Israel Air Force"],
+      "actors": [
+        "Israel Air Force"
+      ],
       "fatalities": 0,
       "source": "Times of Israel, The New Arab",
       "civilian_impact": "Palestinian refugee camp struck; 120,000 refugees at risk; smoke and damage reported",
@@ -362,7 +369,9 @@
       "longitude": 35.3667,
       "country": "Lebanon",
       "region": "Ghaziyeh, South Lebanon",
-      "actors": ["Israel Air Force"],
+      "actors": [
+        "Israel Air Force"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera, Lebanese National News Agency",
       "civilian_impact": "People trapped under rubble; evacuation orders for multiple villages; mass displacement",
@@ -376,7 +385,10 @@
       "longitude": 35.4867,
       "country": "Lebanon",
       "region": "Beirut - Dahiyeh suburbs",
-      "actors": ["Israel Air Force", "Hezbollah"],
+      "actors": [
+        "Israel Air Force",
+        "Hezbollah"
+      ],
       "fatalities": 10,
       "source": "Al Jazeera",
       "source_url": "https://www.aljazeera.com/news/2026/3/5/israeli-strikes-hit-beirut-amid-threats-on-iranian-officials-in-lebanon",
@@ -391,7 +403,10 @@
       "longitude": 35.5018,
       "country": "Lebanon",
       "region": "Lebanon (multiple locations including Beirut)",
-      "actors": ["Israel Air Force", "Hezbollah"],
+      "actors": [
+        "Israel Air Force",
+        "Hezbollah"
+      ],
       "fatalities": 100,
       "source": "Al Jazeera",
       "source_url": "https://www.aljazeera.com/gallery/2026/3/5/buildings-devastated-by-israeli-strikes-in-lebanon-death-toll-rises-to-77",
@@ -406,7 +421,11 @@
       "longitude": 35.5018,
       "country": "Lebanon",
       "region": "Lebanon (nationwide)",
-      "actors": ["Israel", "Hezbollah", "Lebanese Health Ministry"],
+      "actors": [
+        "Israel",
+        "Hezbollah",
+        "Lebanese Health Ministry"
+      ],
       "fatalities": 0,
       "source": "Al Jazeera, RTE, Manila Times, Euronews",
       "civilian_impact": "394 killed including 83 children, 42 women, 9 rescue workers; 1,200+ wounded; 517,000+ displaced; schools converted to shelters",
@@ -467,12 +486,250 @@
       "verification_status": "confirmed",
       "location_precision": "country",
       "civilian_impact": "217 killed, 798 wounded, 95,000 displaced"
+    },
+    {
+      "date": "2026-03-02T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Cumulative death toll from Iranian strikes and US-Israeli attacks: preliminary figures are 1,255 dead in Iran, at least 13 in Israel, eight US soldiers and 14 killed in Gulf states.",
+      "latitude": 32,
+      "longitude": 53,
+      "country": "Iran",
+      "region": "Iran",
+      "actors": [
+        "Iran",
+        "United States",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/1/us-israel-attacks-on-iran-death-toll-and-injuries-live-tracker",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "country"
+    },
+    {
+      "date": "2026-03-02T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Death toll in Iran reaches 555 as US-Israeli strikes continue. At least 35 people killed in southern Iran's Fars province. More than 20 people killed in Niloofar Square in Tehran. At least two people killed in Sanandaj with several residential buildings destroyed. US-Israeli forces dropped six missiles on different parts of Sanandaj including densely populated neighbourhoods.",
+      "latitude": 32,
+      "longitude": 53,
+      "country": "Iran",
+      "region": "Iran",
+      "actors": [
+        "United States",
+        "Israel"
+      ],
+      "fatalities": 555,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/2/iran-death-toll-reaches-555-as-us-israel-escalate-attacks",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "555+ killed including civilians in residential areas"
+    },
+    {
+      "date": "2026-03-04T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Death toll in Iran surpasses 1,000 as Israel-US strikes continue. Israeli attacks on Wednesday struck Tehran, Qom, western Iran, and Isfahan province. Israeli attacks also damaged residential units. Israel struck buildings belonging to Basij paramilitary force and Iran's internal security command. Death toll reaches 1,045.",
+      "latitude": 32,
+      "longitude": 53,
+      "country": "Iran",
+      "region": "Iran",
+      "actors": [
+        "Israel",
+        "United States"
+      ],
+      "fatalities": 1045,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/4/death-toll-in-iran-surpasses-1000-as-israel-us-strikes-continue",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "1,045+ killed, civilians bearing brunt of attacks, residential areas damaged"
+    },
+    {
+      "date": "2026-03-05T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli or US strikes on Shajareh Tayebeh primary school in Minab and adjacent Iranian Revolutionary Guard Corps (IRGC) compound. Satellite imagery analysis reveals multiple strikes and burn marks suggesting the area was struck by multiple simultaneous or near-simultaneous strikes. Iranian authorities say the attack killed 168 people.",
+      "latitude": 27.2089,
+      "longitude": 57.0737,
+      "country": "Iran",
+      "region": "Hormozan",
+      "actors": [
+        "Israel",
+        "United States"
+      ],
+      "fatalities": 168,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/articles/c5yqqyly9n0o",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "168 killed including students at primary school, school struck multiple times"
+    },
+    {
+      "date": "2026-03-08T10:06:13Z",
+      "event_type": "drone_attack",
+      "description": "Iranian drone struck a Kuwaiti government high-rise building housing the Public Institution for Social Security. Flames tore through the building resulting in material damage. Attack occurred in early hours of Sunday.",
+      "latitude": 29.3759,
+      "longitude": 47.9774,
+      "country": "Kuwait",
+      "region": "Kuwait",
+      "actors": [
+        "Iran",
+        "IRGC"
+      ],
+      "fatalities": 0,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/videos/c9wnex8g5dyo",
+      "confidence": 0.9,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "Material damage to government building"
+    },
+    {
+      "date": "2026-03-02T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Hezbollah launches strikes on Israel in response to the killing of Iranian supreme leader Ali Khamenei. In response, Israel launches strikes in Beirut, the Lebanese capital.",
+      "latitude": 33.85,
+      "longitude": 35.5,
+      "country": "Lebanon",
+      "region": "Beirut",
+      "actors": [
+        "Hezbollah",
+        "Israeli Air Force"
+      ],
+      "fatalities": 0,
+      "source": "en.wikipedia.org",
+      "source_url": "https://en.wikipedia.org/wiki/2026_Hezbollah%E2%80%93Israel_strikes",
+      "confidence": 0.75,
+      "verification_status": "confirmed",
+      "location_precision": "city"
+    },
+    {
+      "date": "2026-03-08T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli strikes on 30 Iranian fuel depots. US officials express concern that strikes go 'far beyond' what was expected, sparking first significant US-Israel disagreement since war began. Environmental damage from fuel depot strikes noted. Oil prices reach $100/barrel for first time since July 2022.",
+      "latitude": 32.6538,
+      "longitude": 51.6674,
+      "country": "Iran",
+      "region": "National",
+      "actors": [
+        "Israeli Air Force",
+        "US military"
+      ],
+      "fatalities": 0,
+      "source": "existing_database",
+      "source_url": "https://existing.internal",
+      "confidence": 0.75,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "Environmental damage from fuel depot strikes; toxic smoke over Tehran"
+    },
+    {
+      "date": "2026-03-04T02:23:00Z",
+      "event_type": "explosion",
+      "description": "Explosions reported in the Iranian capital as war with US and Israel enters fifth day.",
+      "latitude": 35.6892,
+      "longitude": 51.3889,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "US Air Force",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "AP News",
+      "source_url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQZm9zQ3ZQSXRmY0NtN2pKUUZaUHlqWHh5QkI3SVpaM3pXTEdEaUI2Z2VNdC1KbWRob0dSOXdMRDVyblNGWDJKQ3Y4Tmc3WWk5R2FReWRIVXRYdl9OOHJtSnFkVERKZ3Y1UjZwUEZSMzdWd3JRclJSQUtKUjR4ekYyR3lYNmlWYVBnb29HUnJR?oc=5",
+      "confidence": 0.9,
+      "verification_status": "reported",
+      "location_precision": "city"
+    },
+    {
+      "date": "2026-03-04T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Satellite images show Iran school strike hit more buildings than earlier reported, indicating expanded damage from airstrikes.",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "US",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "npr",
+      "source_url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxNN2RsQ1dCR1o4VHZxY1hWRWZ4cG5NRXRuMTVIMGlib3VkNEF0ZXpYZERYa0pteU02S3prY1QweldDeE1SZVZrQzdndmZUSTN0RW5KTmNackpSWnlTbWVpSGl6bnMyeE51dzRURHdMWjZoMjdzUUVRZTNTUGcwZTZ4eEYtVDZocWYzQ3ItQWt3SDdGSzM4SDdlcTE3ekZrLTQzZm5SUnZ2ZURZRmFSTlJ6ZEEtUjdkWUNEVjNiZllqNlVMb1BYR0pTSHJiV09zUkVmbDUweHRYUFBBNW10?oc=5",
+      "confidence": 0.85,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-05T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Iran school and nearby military base struck multiple times according to satellite imagery analysis.",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "US",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/articles/c5yqqyly9n0o?at_medium=RSS&at_campaign=rss",
+      "confidence": 0.9,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "School struck, civilian impact likely"
+    },
+    {
+      "date": "2026-03-05T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Iran targets headquarters of Iranian Kurdish forces in Iraq.",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iraq",
+      "region": null,
+      "actors": [
+        "Iran",
+        "Iranian Kurdish forces"
+      ],
+      "fatalities": 0,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/articles/c2k88y1147jo?at_medium=RSS&at_campaign=rss",
+      "confidence": 0.85,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-05T00:00:00Z",
+      "event_type": "battle",
+      "description": "US submarine sinks Iranian warship in Indian Ocean according to US Defense Secretary Hegseth.",
+      "latitude": 15,
+      "longitude": 65,
+      "country": "International Waters",
+      "region": "Indian Ocean",
+      "actors": [
+        "US Navy",
+        "Iranian Navy"
+      ],
+      "fatalities": 0,
+      "source": "BBC News",
+      "source_url": "https://www.bbc.com/news/articles/c0e55g03v2zo?at_medium=RSS&at_campaign=rss",
+      "confidence": 0.7999999999999999,
+      "verification_status": "claimed",
+      "location_precision": "region",
+      "civilian_impact": null
     }
   ],
   "metadata": {
     "generated": "2026-03-09",
     "source": "multiple",
-    "note": "Auto-updated from real news sources. Events verified against Al Jazeera, Euronews, RTE, The New Arab, Manila Times.",
+    "note": "Auto-updated from real news sources. 40 total events in latest file.",
     "sources_checked": [
       "GDELT API",
       "Google News RSS",

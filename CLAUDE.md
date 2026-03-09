@@ -11,7 +11,7 @@ the world. 100% of monetization proceeds go to humanitarian aid.
 - **Frontend**: Next.js 16.1.6 / React 19 / TypeScript (strict) / Tailwind CSS 4
 - **Map**: Mapbox GL JS via react-map-gl v8 (`import from "react-map-gl/mapbox"`)
 - **AI Chat**: Claude Haiku 4.5 via @anthropic-ai/sdk (Next.js API route)
-- **Testing**: Vitest + Testing Library + happy-dom (129 tests, 3 suites)
+- **Testing**: Vitest + Testing Library + happy-dom (176 tests, 4 suites)
 - **PWA**: Service worker, web app manifest, install prompt, push notifications
 - **Backend**: Python 3.12+ / FastAPI / SQLAlchemy (async) / PostGIS (scaffolded, not yet active)
 - **Database**: Seed JSON files in src/data/ (PostGIS planned)
@@ -31,9 +31,12 @@ src/
 │   ├── page.tsx              # Main page — tab router (map|ask|donate|sources|about)
 │   ├── layout.tsx            # Root layout, dark theme, Mapbox CSS, PWA meta
 │   ├── globals.css           # Dark war-room aesthetic, custom scrollbars
+│   ├── admin/
+│   │   └── page.tsx          # Admin dashboard (auth-gated, auto-refresh)
 │   └── api/
 │       ├── chat/route.ts     # Claude AI chat endpoint (Haiku 4.5, guardrailed)
 │       ├── admin/route.ts    # Admin auth (httpOnly cookie, timing-safe)
+│       ├── admin/dashboard/route.ts # Dashboard API (pipeline stats, controls, logs)
 │       ├── events/route.ts   # Event data API (for future backend)
 │       ├── health/route.ts   # Health check endpoint
 │       ├── notifications/route.ts # Push notification endpoint (admin POST, client GET)
@@ -66,7 +69,10 @@ src/
 ├── data/
 │   ├── events.json           # 48 original events (Feb 28 – Mar 8)
 │   ├── events_expanded.json  # 64 expanded events (15+ countries)
-│   └── events_latest.json    # 12 latest verified events (Mar 8)
+│   ├── events_latest.json    # 12 latest verified events (Mar 8)
+│   ├── pipeline-stats.json   # Current pipeline run stats
+│   ├── pipeline-history.json # Last 100 pipeline runs
+│   └── article-url-cache.json # Prevents duplicate API calls
 ├── hooks/
 │   ├── useEvents.ts          # Merges all 3 event files, sorts chronologically
 │   └── useNotifications.ts   # Polls for push notifications, shows via SW
@@ -85,6 +91,12 @@ scripts/
 ├── audit-ask-ai.mjs          # Agent SDK audit of Ask AI section
 ├── generate-icons.mjs         # PWA icon generator (sharp)
 ├── auto-update.sh             # Automated event update pipeline
+│                              #   Pipeline history tracking (pipeline-history.json)
+│                              #   Article URL caching (article-url-cache.json)
+│                              #   Source health monitoring
+│                              #   API token usage tracking
+│                              #   90-second execution timeout
+│                              #   Automatic notifications on new events
 ├── update-events.js           # Event data update script
 ├── test-chat-agent.mjs        # Chat agent test script
 └── test-update-agent.mjs      # Update agent test script
@@ -98,6 +110,12 @@ Axios, PBS, France 24, Naval News, UN News, ACLED, and more.
 1. **Tier 1 — Precomputed** (12 suggested questions): Zero cost, instant
 2. **Tier 2 — Cached**: Cheap (future)
 3. **Tier 3 — Live Claude**: Haiku 4.5 (~$0.001/question), rate limited 10/hr/IP
+
+### Admin Dashboard
+- Accessible at `/admin` (requires `ADMIN_SECRET` env var)
+- **Features**: pipeline monitoring, source health, event funnel, logs viewer, controls
+- **Controls**: trigger updates, clear cache, adjust cron, send notifications
+- Auto-refreshes every 30 seconds
 
 ### Security
 - API keys in .env.local only (gitignored, server-side only, chmod 600)
