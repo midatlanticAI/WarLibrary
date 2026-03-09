@@ -1,0 +1,261 @@
+import { describe, it, expect } from "vitest";
+import seedData from "@/data/events.json";
+import expandedData from "@/data/events_expanded.json";
+import latestData from "@/data/events_latest.json";
+import * as fs from "fs";
+import * as path from "path";
+
+// ---------------------------------------------------------------------------
+// Types matching the raw event shape stored in JSON (no id — added at runtime)
+// ---------------------------------------------------------------------------
+
+interface RawEvent {
+  date: string;
+  event_type: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  country: string;
+  region: string;
+  actors: string[];
+  fatalities: number | null;
+  source: string;
+}
+
+const VALID_EVENT_TYPES = [
+  "airstrike",
+  "missile_attack",
+  "drone_attack",
+  "battle",
+  "explosion",
+  "violence_against_civilians",
+  "strategic_development",
+  "protest",
+] as const;
+
+const REQUIRED_FIELDS: (keyof RawEvent)[] = [
+  "date",
+  "event_type",
+  "country",
+  "region",
+  "latitude",
+  "longitude",
+  "description",
+  "source",
+];
+
+// Helper — flatten all events from every file into one list with source labels
+const allFiles: { name: string; events: RawEvent[] }[] = [
+  { name: "events.json", events: seedData.events as RawEvent[] },
+  { name: "events_expanded.json", events: expandedData.events as RawEvent[] },
+  { name: "events_latest.json", events: latestData.events as RawEvent[] },
+];
+
+const allEvents: RawEvent[] = allFiles.flatMap((f) => f.events);
+
+// =========================================================================
+// 1. Event data structure
+// =========================================================================
+
+describe("Event data structure", () => {
+  it("all events have required fields", () => {
+    for (const event of allEvents) {
+      for (const field of REQUIRED_FIELDS) {
+        expect(event).toHaveProperty(field);
+        expect(
+          event[field],
+          `field "${field}" should be defined on event: ${event.description?.slice(0, 60)}`,
+        ).toBeDefined();
+      }
+    }
+  });
+
+  it("no duplicate descriptions across all 3 files", () => {
+    // Since raw events have no id, we use description as a uniqueness proxy
+    const descriptions = allEvents.map((e) => e.description);
+    const uniqueDescriptions = new Set(descriptions);
+    const duplicates = descriptions.filter(
+      (d, i) => descriptions.indexOf(d) !== i,
+    );
+    expect(
+      duplicates,
+      `Found duplicate descriptions: ${duplicates.map((d) => d.slice(0, 80)).join(" | ")}`,
+    ).toHaveLength(0);
+    expect(uniqueDescriptions.size).toBe(allEvents.length);
+  });
+
+  it("all dates are valid ISO format", () => {
+    for (const event of allEvents) {
+      const parsed = new Date(event.date);
+      expect(
+        isNaN(parsed.getTime()),
+        `Invalid date "${event.date}" on event: ${event.description?.slice(0, 60)}`,
+      ).toBe(false);
+      // ISO strings contain a "T" separator
+      expect(event.date).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    }
+  });
+
+  it("all latitudes are between -90 and 90", () => {
+    for (const event of allEvents) {
+      expect(event.latitude).toBeGreaterThanOrEqual(-90);
+      expect(event.latitude).toBeLessThanOrEqual(90);
+    }
+  });
+
+  it("all longitudes are between -180 and 180", () => {
+    for (const event of allEvents) {
+      expect(event.longitude).toBeGreaterThanOrEqual(-180);
+      expect(event.longitude).toBeLessThanOrEqual(180);
+    }
+  });
+
+  it("all event_types are from the known set", () => {
+    const validSet = new Set<string>(VALID_EVENT_TYPES);
+    for (const event of allEvents) {
+      expect(
+        validSet.has(event.event_type),
+        `Unknown event_type "${event.event_type}" on event: ${event.description?.slice(0, 60)}`,
+      ).toBe(true);
+    }
+  });
+
+  it("all fatalities are either null or non-negative numbers", () => {
+    for (const event of allEvents) {
+      if (event.fatalities !== null && event.fatalities !== undefined) {
+        expect(typeof event.fatalities).toBe("number");
+        expect(
+          event.fatalities,
+          `Negative fatalities (${event.fatalities}) on event: ${event.description?.slice(0, 60)}`,
+        ).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+});
+
+// =========================================================================
+// 2. Event data quality
+// =========================================================================
+
+describe("Event data quality", () => {
+  it("every event has a non-empty description", () => {
+    for (const event of allEvents) {
+      expect(event.description).toBeTruthy();
+      expect(event.description.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it("every event has a non-empty source", () => {
+    for (const event of allEvents) {
+      expect(event.source).toBeTruthy();
+      expect(event.source.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it("no event has an empty country", () => {
+    for (const event of allEvents) {
+      expect(event.country).toBeTruthy();
+      expect(event.country.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it("dates are within expected range (2026-02-28 to current)", () => {
+    const rangeStart = new Date("2026-02-28T00:00:00Z").getTime();
+    const now = Date.now();
+    for (const event of allEvents) {
+      const ts = new Date(event.date).getTime();
+      expect(
+        ts,
+        `Date ${event.date} is before 2026-02-28`,
+      ).toBeGreaterThanOrEqual(rangeStart);
+      expect(
+        ts,
+        `Date ${event.date} is in the future`,
+      ).toBeLessThanOrEqual(now);
+    }
+  });
+});
+
+// =========================================================================
+// 3. Cross-file consistency
+// =========================================================================
+
+describe("Cross-file consistency", () => {
+  it("total event count matches expected range (100+)", () => {
+    expect(allEvents.length).toBeGreaterThanOrEqual(100);
+  });
+
+  it("all 3 files can be parsed as valid JSON with an 'events' array", () => {
+    const dataDir = path.resolve(__dirname, "..", "data");
+    const fileNames = [
+      "events.json",
+      "events_expanded.json",
+      "events_latest.json",
+    ];
+
+    for (const fileName of fileNames) {
+      const filePath = path.join(dataDir, fileName);
+      const raw = fs.readFileSync(filePath, "utf-8");
+      let parsed: unknown;
+      expect(() => {
+        parsed = JSON.parse(raw);
+      }).not.toThrow();
+      expect(parsed).toHaveProperty("events");
+      expect(Array.isArray((parsed as { events: unknown }).events)).toBe(true);
+    }
+  });
+
+  it("each file contributes at least 1 event", () => {
+    for (const file of allFiles) {
+      expect(
+        file.events.length,
+        `${file.name} has no events`,
+      ).toBeGreaterThan(0);
+    }
+  });
+});
+
+// =========================================================================
+// 4. PWA manifest validation
+// =========================================================================
+
+describe("PWA manifest validation", () => {
+  const manifestPath = path.resolve(
+    __dirname,
+    "..",
+    "..",
+    "public",
+    "manifest.webmanifest",
+  );
+
+  // Guard: skip manifest tests if the file doesn't exist yet
+  const manifestExists = fs.existsSync(manifestPath);
+
+  it.skipIf(!manifestExists)(
+    "manifest.webmanifest has required fields",
+    () => {
+      const raw = fs.readFileSync(manifestPath, "utf-8");
+      const manifest = JSON.parse(raw) as Record<string, unknown>;
+
+      expect(manifest).toHaveProperty("name");
+      expect(manifest).toHaveProperty("short_name");
+      expect(manifest).toHaveProperty("start_url");
+      expect(manifest).toHaveProperty("display");
+      expect(manifest).toHaveProperty("icons");
+    },
+  );
+
+  it.skipIf(!manifestExists)(
+    "icons array has at least 192x192 and 512x512 entries",
+    () => {
+      const raw = fs.readFileSync(manifestPath, "utf-8");
+      const manifest = JSON.parse(raw) as {
+        icons: { sizes: string }[];
+      };
+
+      const sizes = manifest.icons.map((icon) => icon.sizes);
+      expect(sizes).toContain("192x192");
+      expect(sizes).toContain("512x512");
+    },
+  );
+});
