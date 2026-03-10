@@ -1,24 +1,36 @@
 {
-  "totalViews": 5,
+  "totalViews": 11,
   "aiQuestions": 0,
   "pageViews": {
-    "map": 3,
+    "map": 7,
     "feed": 0,
-    "ask": 1,
+    "ask": 2,
     "donate": 0,
     "sources": 1,
-    "about": 0
+    "about": 1
   },
   "daily": [
     {
+      "date": "2026-03-10",
+      "views": {
+        "map": 2,
+        "feed": 0,
+        "ask": 1,
+        "donate": 0,
+        "sources": 0,
+        "about": 0
+      },
+      "uniqueVisitors": 1
+    },
+    {
       "date": "2026-03-09",
       "views": {
-        "map": 3,
+        "map": 5,
         "feed": 0,
         "ask": 1,
         "donate": 0,
         "sources": 1,
-        "about": 0
+        "about": 1
       },
       "uniqueVisitors": 0
     }

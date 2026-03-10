@@ -704,5 +704,317 @@
     "duration_ms": 48687,
     "api_input_tokens": 6000,
     "api_output_tokens": 3562
+  },
+  {
+    "last_run": "2026-03-09T21:19:54.952Z",
+    "articles_fetched": 392,
+    "articles_by_source": {
+      "NewsData": 25,
+      "Google News": 229,
+      "Outlet RSS": 138
+    },
+    "events_extracted": 1,
+    "events_valid": 1,
+    "events_unique": 1,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.45,
+    "source_mix": {
+      "CityNews Ottawa": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 1,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 202,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "ok",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 5530,
+    "api_input_tokens": 1917,
+    "api_output_tokens": 436
+  },
+  {
+    "last_run": "2026-03-09T21:30:02.885Z",
+    "articles_fetched": 394,
+    "articles_by_source": {
+      "NewsData": 25,
+      "Google News": 231,
+      "Outlet RSS": 138
+    },
+    "events_extracted": 0,
+    "events_valid": 0,
+    "events_unique": 0,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0,
+    "source_mix": {},
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 0,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 202,
+    "status": "NO_NEW_EVENTS",
+    "errors": [],
+    "source_health": {
+      "NewsData": "ok",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 4817,
+    "api_input_tokens": 1707,
+    "api_output_tokens": 95
+  },
+  {
+    "last_run": "2026-03-09T22:00:03.584Z",
+    "articles_fetched": 392,
+    "articles_by_source": {
+      "NewsData": 22,
+      "Google News": 233,
+      "Outlet RSS": 137
+    },
+    "events_extracted": 0,
+    "events_valid": 0,
+    "events_unique": 0,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0,
+    "source_mix": {},
+    "verification_breakdown": {
+      "confirmed": 0,
+      "reported": 0,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 0,
+    "status": "NO_NEW_EVENTS",
+    "errors": [
+      "Failed to parse JSON from Claude response"
+    ],
+    "source_health": {
+      "NewsData": "ok",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 82899,
+    "api_input_tokens": 7667,
+    "api_output_tokens": 4096
+  },
+  {
+    "last_run": "2026-03-09T22:30:04.650Z",
+    "articles_fetched": 392,
+    "articles_by_source": {
+      "NewsData": 24,
+      "Google News": 231,
+      "Outlet RSS": 137
+    },
+    "events_extracted": 6,
+    "events_valid": 6,
+    "events_unique": 6,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.73,
+    "source_mix": {
+      "Al Jazeera": 1,
+      "breitbart": 1,
+      "The Daily Wire": 1,
+      "Anadolu Agency": 1,
+      "Modern Diplomacy": 1,
+      "The Guardian": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 2,
+      "reported": 4,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 208,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "ok",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 23046,
+    "api_input_tokens": 4019,
+    "api_output_tokens": 1639
+  },
+  {
+    "last_run": "2026-03-09T23:00:03.245Z",
+    "articles_fetched": 387,
+    "articles_by_source": {
+      "NewsData": 23,
+      "Google News": 228,
+      "Outlet RSS": 136
+    },
+    "events_extracted": 8,
+    "events_valid": 8,
+    "events_unique": 8,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.82,
+    "source_mix": {
+      "Al Jazeera": 2,
+      "The Independent": 2,
+      "The Guardian": 1,
+      "The Hans India": 1,
+      "Mankato Free Press": 1,
+      "News 18": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 2,
+      "reported": 6,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 216,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "ok",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 52945,
+    "api_input_tokens": 6477,
+    "api_output_tokens": 2091
+  },
+  {
+    "last_run": "2026-03-10T00:00:04.699Z",
+    "articles_fetched": 370,
+    "articles_by_source": {
+      "NewsData": 0,
+      "Google News": 234,
+      "Outlet RSS": 136
+    },
+    "events_extracted": 7,
+    "events_valid": 5,
+    "events_unique": 5,
+    "events_rejected_invalid": 2,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.74,
+    "source_mix": {
+      "Al Jazeera": 1,
+      "The Guardian": 2,
+      "Hudson Institute": 1,
+      "wion": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 2,
+      "reported": 3,
+      "claimed": 0,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 211,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "error",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 74225,
+    "api_input_tokens": 4343,
+    "api_output_tokens": 2853
+  },
+  {
+    "last_run": "2026-03-10T00:30:05.124Z",
+    "articles_fetched": 398,
+    "articles_by_source": {
+      "NewsData": 30,
+      "Google News": 232,
+      "Outlet RSS": 136
+    },
+    "events_extracted": 10,
+    "events_valid": 10,
+    "events_unique": 10,
+    "events_rejected_invalid": 0,
+    "events_rejected_duplicate": 0,
+    "events_rejected_spatiotemporal": 0,
+    "avg_confidence": 0.67,
+    "source_mix": {
+      "New York Times": 1,
+      "Al Jazeera": 1,
+      "Orissa Post": 2,
+      "Mankato Free Press": 1,
+      "The New York Times": 1,
+      "AP News via Mankato Free Press": 2,
+      "Jamaica Inquirer": 1,
+      "The Week": 1
+    },
+    "verification_breakdown": {
+      "confirmed": 2,
+      "reported": 7,
+      "claimed": 1,
+      "disputed": 0,
+      "unconfirmed": 0
+    },
+    "total_events_in_dataset": 221,
+    "status": "EVENTS_ADDED",
+    "errors": [],
+    "source_health": {
+      "NewsData": "ok",
+      "Google News": "ok",
+      "Al Jazeera": "ok",
+      "BBC News": "ok",
+      "New York Times": "ok",
+      "The Guardian": "ok",
+      "France 24": "ok",
+      "DW News": "error"
+    },
+    "duration_ms": 41813,
+    "api_input_tokens": 7527,
+    "api_output_tokens": 2654
   }
 ]

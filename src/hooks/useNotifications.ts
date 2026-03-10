@@ -10,24 +10,33 @@ interface NotificationData {
   url: string;
 }
 
+function getLastSeen(): number {
+  if (typeof window === "undefined") return Date.now();
+  const stored = localStorage.getItem("wl_notif_seen");
+  return stored ? parseInt(stored, 10) : 0;
+}
+
 /**
  * Poll for new notifications every 30 seconds.
- * Returns the latest notification for in-app display.
- * Also shows browser push notifications if permission is granted.
+ * Uses localStorage to track dismissed notifications so they persist across reloads.
  */
 export function useNotifications() {
-  const lastSeenRef = useRef(Date.now() - 5 * 60 * 1000); // Check last 5 minutes on load
+  const lastSeenRef = useRef(0);
   const [notification, setNotification] = useState<NotificationData | null>(null);
 
-  const dismiss = useCallback(() => setNotification(null), []);
+  const dismiss = useCallback(() => {
+    setNotification(null);
+    if (typeof window !== "undefined") {
+      const now = Date.now();
+      localStorage.setItem("wl_notif_seen", now.toString());
+      lastSeenRef.current = now;
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Request notification permission on first visit (non-blocking)
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
-    }
+    lastSeenRef.current = getLastSeen();
 
     const poll = async () => {
       try {
@@ -36,12 +45,10 @@ export function useNotifications() {
         const json = await res.json();
         if (!json.data) return;
 
-        lastSeenRef.current = json.data.timestamp;
-
-        // Always show in-app notification
+        // Show in-app banner
         setNotification(json.data);
 
-        // Also show browser notification if permitted
+        // Show browser/push notification if permitted
         if ("Notification" in window && Notification.permission === "granted") {
           try {
             const reg = await navigator.serviceWorker?.ready;
@@ -65,11 +72,10 @@ export function useNotifications() {
           }
         }
       } catch {
-        // Silently fail — notification polling is non-critical
+        // Silently fail — polling is non-critical
       }
     };
 
-    // Poll immediately on mount, then every 30 seconds
     poll();
     const interval = setInterval(poll, 30_000);
     return () => clearInterval(interval);

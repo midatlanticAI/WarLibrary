@@ -1105,10 +1105,21 @@ CRITICAL RULES:
 - For headline-only articles: use the headline as description, infer event_type from keywords, use the article's source/date/URL.
 - Return ONLY a valid JSON array. No markdown code fences, no explanation text, no commentary.
 
+FATALITY RULES (VERY IMPORTANT):
+- fatalities = the number killed IN THIS SPECIFIC EVENT ONLY.
+- If an article says "death toll reaches 1,000" or "X people killed so far" — that is a CUMULATIVE TOTAL, NOT per-event. Set fatalities=0 and event_type="strategic_development".
+- NEVER use cumulative/running death toll numbers as fatalities for an individual event.
+- Only use fatalities > 0 when the article says people were killed IN THIS SPECIFIC strike/attack/incident.
+- If unsure whether a number is per-event or cumulative, set fatalities=0.
+
+DATE RULES:
+- The conflict started 2026-02-28. Do NOT extract events dated before 2026-02-28.
+- If an article references historical/pre-war events, skip them.
+
 event_type: "airstrike"|"missile_attack"|"drone_attack"|"battle"|"explosion"|"violence_against_civilians"|"strategic_development"|"protest"
 verification_status: "confirmed"|"reported"|"claimed"|"disputed"|"unconfirmed"
 location_precision: "exact"|"city"|"region"|"country"
-fatalities: exact number if stated, 0 if unknown. Cumulative tolls → strategic_development with fatalities=0.
+fatalities: exact number killed IN THIS SPECIFIC EVENT. 0 if unknown or cumulative. NEVER use running totals.
 civilian_impact: brief phrase if civilians affected.
 confidence: 0.0–1.0 based on source reliability. Headline-only = 0.5-0.7 depending on source.
 
@@ -1279,6 +1290,36 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
   // 8d. Geocode fallback — fill in missing lat/lng from known locations
   for (const event of newEvents) {
     geocodeFallback(event);
+  }
+
+  // 8e. Reject pre-war events and fix cumulative fatalities
+  const CONFLICT_START = new Date("2026-02-28T00:00:00Z").getTime();
+  for (let i = newEvents.length - 1; i >= 0; i--) {
+    const e = newEvents[i];
+    // Reject pre-war events
+    const eventDate = new Date(e.date).getTime();
+    if (eventDate < CONFLICT_START) {
+      console.log(`  SKIP (pre-war date ${e.date?.slice(0, 10)}): ${e.description?.slice(0, 60)}...`);
+      newEvents.splice(i, 1);
+      pipelineStats.events_rejected_invalid = (pipelineStats.events_rejected_invalid || 0) + 1;
+      continue;
+    }
+    // Flag cumulative death tolls — if description says "death toll" / "total killed" / "surpasses" with high fatalities, zero them out
+    const descLower = (e.description || "").toLowerCase();
+    if (e.fatalities > 200 && (
+      descLower.includes("death toll") || descLower.includes("cumulative") ||
+      descLower.includes("surpasses") || descLower.includes("total killed") ||
+      descLower.includes("people killed in") && descLower.includes("attacks")
+    )) {
+      console.log(`  FIX cumulative fatalities ${e.fatalities}->0: ${e.description?.slice(0, 60)}...`);
+      e.fatalities = 0;
+      e.event_type = "strategic_development";
+    }
+    // Cap suspicious single-event fatalities at 500 (no single strike in this war has killed 500+)
+    if (e.fatalities > 500) {
+      console.log(`  FIX suspicious fatalities ${e.fatalities}->0: ${e.description?.slice(0, 60)}...`);
+      e.fatalities = 0;
+    }
   }
 
   // 9. Validate and deduplicate

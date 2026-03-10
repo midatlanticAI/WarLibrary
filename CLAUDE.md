@@ -11,15 +11,14 @@ the world. 100% of monetization proceeds go to humanitarian aid.
 - **Frontend**: Next.js 16.1.6 / React 19 / TypeScript (strict) / Tailwind CSS 4
 - **Map**: Mapbox GL JS via react-map-gl v8 (`import from "react-map-gl/mapbox"`)
 - **AI Chat**: Claude Haiku 4.5 via @anthropic-ai/sdk (Next.js API route)
-- **Testing**: Vitest + Testing Library + happy-dom (176 tests, 4 suites)
+- **Pipeline**: Node.js script extracting events from news via Claude Haiku 4.5
+- **News Sources**: NewsData.io API, Google News RSS, Al Jazeera, BBC, NYT, The Guardian, France 24, DW News
+- **Article Extraction**: Mozilla Readability + jsdom for full article body text
+- **Testing**: Vitest + Testing Library + happy-dom; Playwright E2E
 - **PWA**: Service worker, web app manifest, install prompt, push notifications
-- **Backend**: Python 3.12+ / FastAPI / SQLAlchemy (async) / PostGIS (scaffolded, not yet active)
-- **Database**: Seed JSON files in src/data/ (PostGIS planned)
 - **Hosting**: DigitalOcean droplet (Ubuntu 24.04, 2GB RAM)
-- **Reverse Proxy**: Caddy (auto-SSL via Let's Encrypt)
-- **CDN/DNS**: Cloudflare (DNS, DDoS protection, caching)
-- **Process Manager**: PM2
-- **Domain**: warlibrary.midatlantic.ai (DNS via Cloudflare, registrar GoDaddy)
+- **Process Manager**: PM2 (`warlibrary`, id 0)
+- **Cron**: `*/30 * * * *` runs `scripts/auto-update.sh`
 - **Repo**: https://github.com/midatlanticAI/WarLibrary (public, MIT)
 
 ## Architecture
@@ -31,105 +30,141 @@ src/
 │   ├── page.tsx              # Main page — tab router (map|ask|donate|sources|about)
 │   ├── layout.tsx            # Root layout, dark theme, Mapbox CSS, PWA meta
 │   ├── globals.css           # Dark war-room aesthetic, custom scrollbars
+│   ├── sitemap.ts            # Dynamic sitemap for SEO
 │   ├── admin/
-│   │   └── page.tsx          # Admin dashboard (auth-gated, auto-refresh)
+│   │   ├── page.tsx          # Admin dashboard (tabbed: overview|events|analytics|controls|logs)
+│   │   └── layout.tsx        # Admin-specific manifest + icons (separate PWA)
 │   └── api/
 │       ├── chat/route.ts     # Claude AI chat endpoint (Haiku 4.5, guardrailed)
 │       ├── admin/route.ts    # Admin auth (httpOnly cookie, timing-safe)
 │       ├── admin/dashboard/route.ts # Dashboard API (pipeline stats, controls, logs)
-│       ├── events/route.ts   # Event data API (for future backend)
+│       ├── events/route.ts   # Event data API (merges 3 data files, deduplicates)
+│       ├── analytics/route.ts # Persistent analytics tracking
 │       ├── health/route.ts   # Health check endpoint
-│       ├── notifications/route.ts # Push notification endpoint (admin POST, client GET)
+│       ├── notifications/route.ts # Notification endpoint (admin POST, client GET poll)
 │       └── stats/route.ts    # Event statistics endpoint
 ├── components/
 │   ├── map/
-│   │   ├── ConflictMap.tsx   # Mapbox interactive map with markers
+│   │   ├── ConflictMap.tsx   # Mapbox interactive map with markers, popups, filters
 │   │   └── MapLegend.tsx     # Filter by event type and country
 │   ├── timeline/
-│   │   └── TimelineSlider.tsx # Date range filter with histogram
+│   │   └── TimelineSlider.tsx # Date range filter with adaptive scales + histogram
 │   ├── chat/
 │   │   └── AskPanel.tsx      # Chat-style AI Q&A with markdown rendering
 │   ├── pwa/
 │   │   └── PWAProvider.tsx   # Install prompt + notification permission banners
+│   ├── seo/
+│   │   └── JsonLd.tsx        # Structured data (Organization, WebSite, Dataset, NewsMedia)
 │   └── ui/
 │       ├── Header.tsx        # Nav tabs + live indicator
 │       ├── MobileNav.tsx     # Bottom tab bar (mobile only)
-│       ├── EventPanel.tsx    # Scrollable event feed sidebar
-│       ├── ContentWarning.tsx # First-visit landing + return briefing
+│       ├── EventPanel.tsx    # Scrollable event feed with search, filters, provenance
+│       ├── ContentWarning.tsx # First-visit landing + briefing
 │       ├── OverviewBanner.tsx # Situation summary + stats
 │       ├── DonationPanel.tsx # 8 verified humanitarian orgs
 │       ├── SourcesPage.tsx   # Data source methodology
 │       ├── AboutPage.tsx     # About + editorial policy
 │       └── SourceFooter.tsx  # Footer with source links
-├── __tests__/
-│   ├── setup.ts              # Test setup (conditional jest-dom import)
-│   ├── api-chat.test.ts      # 83 tests: guardrails, rate limiting, spend tracking
-│   ├── components.test.tsx   # 30 tests: AskPanel, EventPanel, useEvents
-│   └── data-integrity.test.ts # 16 tests: event data, PWA manifest validation
 ├── data/
-│   ├── events.json           # 48 original events (Feb 28 – Mar 8)
-│   ├── events_expanded.json  # 64 expanded events (15+ countries)
-│   ├── events_latest.json    # 12 latest verified events (Mar 8)
+│   ├── events.json           # Base seed events (49)
+│   ├── events_expanded.json  # Expanded events (64)
+│   ├── events_latest.json    # Pipeline-appended events (grows over time)
+│   ├── notification.json     # Latest notification (persisted to disk)
+│   ├── analytics.json        # Page view analytics
 │   ├── pipeline-stats.json   # Current pipeline run stats
 │   ├── pipeline-history.json # Last 100 pipeline runs
-│   └── article-url-cache.json # Prevents duplicate API calls
+│   └── article-url-cache.json # Prevents duplicate article processing
 ├── hooks/
-│   ├── useEvents.ts          # Merges all 3 event files, sorts chronologically
-│   └── useNotifications.ts   # Polls for push notifications, shows via SW
+│   ├── useEvents.ts          # Fetches & merges all event data from API
+│   └── useNotifications.ts   # Polls for notifications, shows in-app banner + push
 ├── lib/
-│   └── api.ts                # API client (for future backend)
+│   ├── auth.ts               # Shared admin auth (SHA-256, timing-safe, cookie + header)
+│   ├── constants.ts          # EVENT_COLORS and shared constants
+│   └── api.ts                # API client utilities
 └── types/
-    └── index.ts              # ConflictEvent, Faction, etc.
-
-public/
-├── sw.js                     # Service worker (network-first cache, push)
-├── manifest.webmanifest      # PWA manifest (installable, standalone)
-├── icons/                    # PWA icons (192, 512, maskable variants)
-└── robots.txt                # Search engine directives
-
-scripts/
-├── audit-ask-ai.mjs          # Agent SDK audit of Ask AI section
-├── generate-icons.mjs         # PWA icon generator (sharp)
-├── auto-update.sh             # Automated event update pipeline
-│                              #   Pipeline history tracking (pipeline-history.json)
-│                              #   Article URL caching (article-url-cache.json)
-│                              #   Source health monitoring
-│                              #   API token usage tracking
-│                              #   90-second execution timeout
-│                              #   Automatic notifications on new events
-├── update-events.js           # Event data update script
-├── test-chat-agent.mjs        # Chat agent test script
-└── test-update-agent.mjs      # Update agent test script
+    └── index.ts              # ConflictEvent, Faction, MapViewState, etc.
 ```
 
-### Data: 124 verified events across 17+ countries
-Sources: Al Jazeera, CNN, BBC, Reuters, NPR, Washington Post, Times of Israel,
-Axios, PBS, France 24, Naval News, UN News, ACLED, and more.
+### Scripts
+```
+scripts/
+├── update-events.js          # Main pipeline (~1400 lines)
+│   - Fetches from NewsData.io API, Google News RSS, outlet RSS feeds
+│   - Resolves Google News redirect URLs
+│   - Extracts article bodies via Mozilla Readability
+│   - Sends to Claude Haiku 4.5 for structured event extraction
+│   - Validates: schema, date range (post-Feb 28), fatality sanity checks
+│   - Deduplicates: exact match + spatio-temporal proximity
+│   - Rejects cumulative death toll reports (prevents double-counting)
+│   - Rejects pre-war events (before 2026-02-28)
+│   - Caps suspicious single-event fatalities (>500 = zeroed)
+│   - Source tier confidence adjustment (Tier 1 boost, Tier 3 penalty)
+│   - Geocode fallback for missing coordinates
+│   - Sends notification on new events
+│   - 180-second execution timeout
+├── auto-update.sh            # Cron wrapper with logging
+├── reconcile-fatalities.js   # Fatality reconciliation against authoritative sources
+└── generate-icons.mjs        # PWA icon generator
+```
+
+### Public
+```
+public/
+├── sw.js                     # Service worker (network-first, push notifications)
+├── manifest.webmanifest      # Main app PWA manifest
+├── admin/manifest.webmanifest # Admin PWA manifest (separate installable app)
+├── robots.txt                # Search engine + AI crawler directives
+└── icons/
+    ├── icon-192.png, icon-512.png           # Main app icons
+    ├── icon-maskable-192.png, icon-maskable-512.png
+    ├── admin-icon-192.png, admin-icon-512.png  # Admin icons (red theme)
+    ├── admin-maskable-192.png, admin-maskable-512.png
+    ├── apple-touch-icon.png
+    └── favicon-16.png, favicon-32.png
+```
+
+### Data: 206 verified events across 28+ countries
+Sources: Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Washington Post,
+Reuters, NPR, Times of Israel, Axios, PBS, Naval News, UN News, and more.
+
+Per-event fatalities: ~568 (individual event attributions only — cumulative tolls tracked separately as strategic_development events with fatalities=0)
+
+### Event Pipeline
+- Runs every 30 minutes via cron
+- Pulls from 3 source types: NewsData.io API (25+ articles), Google News RSS (3 queries), Outlet RSS (6 feeds)
+- Token-optimized: 20 articles max, 800 chars body per article, 4096 max output tokens
+- Estimated cost: ~$0.003-0.005 per run, ~$7/month at 48 runs/day
+- Source tiers: Tier 1 (Reuters, AP, BBC, etc.) get confidence boost; Tier 3 penalized
 
 ### AI Chat System (3-tier cost model)
 1. **Tier 1 — Precomputed** (12 suggested questions): Zero cost, instant
-2. **Tier 2 — Cached**: Cheap (future)
+2. **Tier 2 — Cached**: (future)
 3. **Tier 3 — Live Claude**: Haiku 4.5 (~$0.001/question), rate limited 10/hr/IP
 
 ### Admin Dashboard
 - Accessible at `/admin` (requires `ADMIN_SECRET` env var)
-- **Features**: pipeline monitoring, source health, event funnel, logs viewer, controls
-- **Controls**: trigger updates, clear cache, adjust cron, send notifications
+- **Tabbed layout**: Overview, Events, Analytics, Controls, Logs
+- **Controls**: trigger pipeline updates, clear article cache, adjust cron interval, send notifications
+- **Installable as separate PWA** on mobile (distinct red icon)
 - Auto-refreshes every 30 seconds
 
+### Notification System
+- Pipeline sends POST to `/api/notifications` when new events are added
+- Persisted to `src/data/notification.json` (survives restarts)
+- Frontend polls every 30 seconds via `useNotifications` hook
+- Shows amber banner on ALL screens (including landing page)
+- Dismissed state tracked in localStorage (won't re-show same notification)
+- Browser push notifications if permission granted (requires HTTPS)
+
 ### Security
-- API keys in .env.local only (gitignored, server-side only, chmod 600)
+- API keys in .env.local only (gitignored, server-side only)
 - No NEXT_PUBLIC_ prefix on secrets — never sent to browser
-- Admin auth: httpOnly cookie + timing-safe comparison
+- Admin auth: httpOnly cookie + X-Admin-Token header, SHA-256 timing-safe comparison
 - Input guardrails: jailbreak detection, off-topic rejection, weapon content blocked
 - Output guardrails: catches if Claude goes off-rails
 - Daily spend cap: 2M tokens/day hard limit
-- CSP, HSTS, X-Frame-Options DENY, no server fingerprinting
-- fail2ban: SSH brute force, API abuse, bad bot jails
-- UFW: only ports 22, 80, 443
-- SSH: key-only, no password, max 3 attempts
-- Kernel hardened: SYN flood protection, anti-spoofing, no source routing
-- Auto security updates via unattended-upgrades
+- UFW firewall: only ports 22, 80, 443 open
+- fail2ban for SSH brute force protection
 
 ## Coding Conventions
 
@@ -142,49 +177,42 @@ Axios, PBS, France 24, Naval News, UN News, ACLED, and more.
 - Components: PascalCase files. Hooks: use prefix.
 - react-map-gl v8: MUST import from `react-map-gl/mapbox` NOT `react-map-gl`
 
-### Python (Backend — future)
-- Type hints on ALL function signatures.
-- Async by default for all I/O.
-- Pydantic models for all API validation.
-- SQLAlchemy ORM only — never raw SQL from user input.
+### Pipeline (Node.js)
+- No fabricated events — every event must trace to a real article URL.
+- Fatalities = per-event only. NEVER use cumulative death toll numbers.
+- No events before conflict start date (2026-02-28).
+- Source tiering for confidence adjustment.
+- Deduplication via description similarity + spatio-temporal proximity.
 
 ### API Design
 - All responses: `{ data, meta, errors }` envelope.
 - Rate limited: all endpoints, stricter on AI.
-- Parameterized queries only. Never interpolate user input.
+- Parameterized queries only.
 
 ### Security Rules
 - NEVER commit .env files or API keys.
 - NEVER expose ANTHROPIC_API_KEY or ADMIN_SECRET to client.
 - Sanitize ALL user input before passing to AI models.
 - Rate limit everything. Especially AI endpoints.
-- CSP headers on all pages.
 
 ### Git Conventions
 - Commit messages: imperative mood, < 72 chars first line.
 - Branch naming: feature/*, fix/*, data/*
 - No force pushes to main.
 
-## Deployment
-```bash
-# Local dev
-cd frontend && npm run dev  # runs on port 3001 (3000 used by other app)
-
-# Run tests
-npm test
-
-# Production deploy (one command)
-bash deploy.sh  # requires DEPLOY_SERVER env var (e.g. root@your-server-ip)
-
-# Manual production deploy
-tar --exclude='node_modules' --exclude='.next' --exclude='.env.local' -czf /tmp/warlibrary.tar.gz .
-scp /tmp/warlibrary.tar.gz root@$SERVER_IP:/opt/warlibrary.tar.gz
-ssh root@$SERVER_IP "cd /opt/warlibrary && tar xzf /opt/warlibrary.tar.gz && rm /opt/warlibrary.tar.gz && npm install && npm run build && pm2 restart warlibrary"
+## Environment Variables (.env.local)
+```
+NEXT_PUBLIC_MAPBOX_TOKEN=...
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+ANTHROPIC_API_KEY=...
+ADMIN_SECRET=...
+NEWSDATA_API_KEY=...  # Optional, enhances article content quality
 ```
 
 ## Key Principles
 - **Neutral**: No sides. All perspectives presented. Source-attributed.
 - **Accessible**: Anyone in the world can read this. Mobile-first.
 - **Verified**: Every event has a source. Distinguish confirmed vs unconfirmed.
-- **Budget-conscious**: Haiku for chat, precomputed answers, aggressive caching.
+- **Accurate**: Per-event fatalities only — no cumulative double-counting.
+- **Budget-conscious**: Haiku for chat/extraction, token-optimized prompts, aggressive caching.
 - **Humanitarian**: 100% of proceeds to verified aid organizations.

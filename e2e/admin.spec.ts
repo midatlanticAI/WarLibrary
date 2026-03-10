@@ -31,7 +31,7 @@ test.describe("Admin Dashboard", () => {
     expect(res.status()).toBe(403);
   });
 
-  test("valid login shows dashboard", async ({ page }) => {
+  test("valid login shows dashboard with tabs", async ({ page }) => {
     const secret = getAdminSecret();
     if (!secret) { test.skip(); return; }
 
@@ -39,13 +39,16 @@ test.describe("Admin Dashboard", () => {
     await page.fill("input[type='password']", secret);
     await page.click("button:has-text('Login')");
 
-    // Should see dashboard content
-    await expect(page.locator("text=Pipeline Status")).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator("text=Event Data")).toBeVisible();
-    await expect(page.locator("text=Controls")).toBeVisible();
+    // Should see tabbed layout with Overview tab active by default
+    await expect(page.locator("text=Total Events")).toBeVisible({ timeout: 10_000 });
+    // Should see all tab buttons
+    await expect(page.getByRole("button", { name: "Overview" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Events" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Controls" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Logs" })).toBeVisible();
   });
 
-  test("dashboard shows pipeline data", async ({ page }) => {
+  test("dashboard overview shows pipeline stats", async ({ page }) => {
     const secret = getAdminSecret();
     if (!secret) { test.skip(); return; }
 
@@ -53,11 +56,27 @@ test.describe("Admin Dashboard", () => {
     await page.fill("input[type='password']", secret);
     await page.click("button:has-text('Login')");
 
-    await expect(page.locator("text=Pipeline Status")).toBeVisible({ timeout: 10_000 });
+    // Overview tab shows quick stats
+    await expect(page.locator("text=Total Events")).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator("text=Last Run")).toBeVisible();
+    await expect(page.locator("text=Confidence")).toBeVisible();
+  });
 
-    // Should show event data section
-    await expect(page.locator("text=Event Data")).toBeVisible();
-    await expect(page.locator("text=Total").first()).toBeVisible();
+  test("events tab shows event counts", async ({ page }) => {
+    const secret = getAdminSecret();
+    if (!secret) { test.skip(); return; }
+
+    await page.goto("/admin");
+    await page.fill("input[type='password']", secret);
+    await page.click("button:has-text('Login')");
+
+    await expect(page.locator("text=Total Events")).toBeVisible({ timeout: 10_000 });
+
+    // Switch to Events tab
+    await page.getByRole("button", { name: "Events" }).click();
+    await expect(page.locator("text=Seed")).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator("text=Expanded")).toBeVisible();
+    await expect(page.locator("text=Latest")).toBeVisible();
   });
 
   test("dashboard API returns 401 without auth", async ({ request }) => {
@@ -65,7 +84,7 @@ test.describe("Admin Dashboard", () => {
     expect(res.status()).toBe(401);
   });
 
-  test("dashboard controls exist", async ({ page }) => {
+  test("controls tab has pipeline actions", async ({ page }) => {
     const secret = getAdminSecret();
     if (!secret) { test.skip(); return; }
 
@@ -73,8 +92,11 @@ test.describe("Admin Dashboard", () => {
     await page.fill("input[type='password']", secret);
     await page.click("button:has-text('Login')");
 
-    await expect(page.locator("text=Controls")).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator("button", { hasText: "Run Update Now" })).toBeVisible();
+    await expect(page.locator("text=Total Events")).toBeVisible({ timeout: 10_000 });
+
+    // Switch to Controls tab
+    await page.getByRole("button", { name: "Controls" }).click();
+    await expect(page.locator("button", { hasText: "Run Update Now" })).toBeVisible({ timeout: 5_000 });
     await expect(page.locator("button", { hasText: /Clear.*Cache/i })).toBeVisible();
     await expect(page.locator("select")).toBeVisible(); // cron interval
   });

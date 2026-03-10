@@ -91,22 +91,6 @@
       "source": "FDD"
     },
     {
-      "date": "2026-02-28T06:00:00Z",
-      "event_type": "airstrike",
-      "description": "Airstrike destroys the Shajareh Tayyebeh girls' elementary school in Minab, Hormozgan province, during the school day. Between 80 and 180 people killed, mostly schoolchildren. US investigation later suggests American forces likely responsible.",
-      "latitude": 27.1461,
-      "longitude": 57.084,
-      "country": "Iran",
-      "region": "Minab, Hormozgan",
-      "actors": [
-        "United States"
-      ],
-      "fatalities": 180,
-      "source": "Washington Post",
-      "civilian_impact": "Elementary girls' school struck during school day, approximately 180 people killed, mostly schoolchildren",
-      "verification_status": "confirmed"
-    },
-    {
       "date": "2026-02-28T08:00:00Z",
       "event_type": "airstrike",
       "description": "US and Israeli strikes set Iran's naval headquarters at Bandar Abbas ablaze. Satellite imagery shows 11 Iranian warships sunk in the Gulf of Oman, including frigates and Iran's sole Kilo-class submarine.",

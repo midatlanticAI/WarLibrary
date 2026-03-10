@@ -397,7 +397,7 @@
     },
     {
       "date": "2026-03-05T14:00:00Z",
-      "event_type": "airstrike",
+      "event_type": "strategic_development",
       "description": "Israel kills more than 100 Lebanese in a single day as it commands Beirut residents to flee. Massive strikes on multiple locations across Lebanon mark the deadliest day of the conflict for Lebanon. Buildings devastated across the country as death toll rises sharply.",
       "latitude": 33.8938,
       "longitude": 35.5018,
@@ -407,7 +407,7 @@
         "Israel Air Force",
         "Hezbollah"
       ],
-      "fatalities": 100,
+      "fatalities": 0,
       "source": "Al Jazeera",
       "source_url": "https://www.aljazeera.com/gallery/2026/3/5/buildings-devastated-by-israeli-strikes-in-lebanon-death-toll-rises-to-77",
       "civilian_impact": "100+ killed in single day; buildings devastated; mass evacuation orders for Beirut; death toll rises sharply",
@@ -519,7 +519,7 @@
         "United States",
         "Israel"
       ],
-      "fatalities": 555,
+      "fatalities": 0,
       "source": "Al Jazeera",
       "source_url": "https://www.aljazeera.com/news/2026/3/2/iran-death-toll-reaches-555-as-us-israel-escalate-attacks",
       "confidence": 0.95,
@@ -539,7 +539,7 @@
         "Israel",
         "United States"
       ],
-      "fatalities": 1045,
+      "fatalities": 0,
       "source": "Al Jazeera",
       "source_url": "https://www.aljazeera.com/news/2026/3/4/death-toll-in-iran-surpasses-1000-as-israel-us-strikes-continue",
       "confidence": 0.95,
@@ -686,46 +686,6 @@
       "civilian_impact": "School struck, civilian impact likely"
     },
     {
-      "date": "2026-03-05T00:00:00Z",
-      "event_type": "missile_attack",
-      "description": "Iran targets headquarters of Iranian Kurdish forces in Iraq.",
-      "latitude": 32.4279,
-      "longitude": 53.688,
-      "country": "Iraq",
-      "region": null,
-      "actors": [
-        "Iran",
-        "Iranian Kurdish forces"
-      ],
-      "fatalities": 0,
-      "source": "BBC News",
-      "source_url": "https://www.bbc.com/news/articles/c2k88y1147jo?at_medium=RSS&at_campaign=rss",
-      "confidence": 0.85,
-      "verification_status": "reported",
-      "location_precision": "country",
-      "civilian_impact": null
-    },
-    {
-      "date": "2026-03-05T00:00:00Z",
-      "event_type": "battle",
-      "description": "US submarine sinks Iranian warship in Indian Ocean according to US Defense Secretary Hegseth.",
-      "latitude": 15,
-      "longitude": 65,
-      "country": "International Waters",
-      "region": "Indian Ocean",
-      "actors": [
-        "US Navy",
-        "Iranian Navy"
-      ],
-      "fatalities": 0,
-      "source": "BBC News",
-      "source_url": "https://www.bbc.com/news/articles/c0e55g03v2zo?at_medium=RSS&at_campaign=rss",
-      "confidence": 0.7999999999999999,
-      "verification_status": "claimed",
-      "location_precision": "region",
-      "civilian_impact": null
-    },
-    {
       "date": "2026-03-09T15:09:05Z",
       "event_type": "missile_attack",
       "description": "US missile struck military base near Iran school, according to BBC video analysis",
@@ -787,46 +747,6 @@
       "civilian_impact": null
     },
     {
-      "date": "2026-02-28T08:00:00Z",
-      "event_type": "airstrike",
-      "description": "US-Israeli strike on girls' school in Minab kills at least 85 students according to Iran's judiciary",
-      "latitude": 27.1924,
-      "longitude": 57.084,
-      "country": "Iran",
-      "region": "Minab",
-      "actors": [
-        "US Air Force",
-        "Israeli Air Force"
-      ],
-      "fatalities": 85,
-      "source": "France 24",
-      "source_url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOMl9ZT21XZG4zb3BMaV9YWmdBRVNwQWFKcnBlSE1FZ0xLMk9LbUk3amdNN25DYmtnc3RxQklhb2JyUkJQYVFsSVJ0SC14WG5GSkJ6TkZZdjQtNTVNTHRKV3U5d0xRU1RZUVhtcGFURHRoX2JRYlJiSl9sRjBzT052eEZkSjliOFdEMm1vejNDYXY2UVRDUWdLRTNhWTBPSDZPRWxrRjNWMXkzZkxhRjgxMzk2SURzTE5HYzFsUjBrR2tFanRkdkNzQkdn?oc=5",
-      "confidence": 0.7999999999999999,
-      "verification_status": "claimed",
-      "location_precision": "city",
-      "civilian_impact": "85 students killed in school strike"
-    },
-    {
-      "date": "2026-03-03T00:00:00Z",
-      "event_type": "airstrike",
-      "description": "Strike on school in Minab kills at least 170 people according to sources, referenced in US senators' call for investigation",
-      "latitude": 27.1924,
-      "longitude": 57.084,
-      "country": "Iran",
-      "region": "Minab",
-      "actors": [
-        "US Air Force",
-        "Israeli Air Force"
-      ],
-      "fatalities": 170,
-      "source": "Al Jazeera",
-      "source_url": "https://www.aljazeera.com/news/2026/3/9/us-senators-demand-probe-into-appalling-attack-on-girlss-school-in-iran?traffic_source=rss",
-      "confidence": 0.7,
-      "verification_status": "reported",
-      "location_precision": "city",
-      "civilian_impact": "At least 170 people killed in school bombing"
-    },
-    {
       "date": "2026-03-06T14:50:36Z",
       "event_type": "airstrike",
       "description": "Airstrikes intensify over Tehran as Iran's missile barrages decline in frequency and scale",
@@ -864,25 +784,6 @@
       "verification_status": "reported",
       "location_precision": "city",
       "civilian_impact": "Children and elderly at particular risk from damage to petroleum facilities"
-    },
-    {
-      "date": "2026-01-27T00:00:00Z",
-      "event_type": "violence_against_civilians",
-      "description": "At least 6,126 people killed in Iran's crackdown on nationwide protests, according to activists",
-      "latitude": 35.68,
-      "longitude": 51.39,
-      "country": "Iran",
-      "region": "Nationwide",
-      "actors": [
-        "Iranian security forces"
-      ],
-      "fatalities": 6126,
-      "source": "npr",
-      "source_url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPaEo3VG1QZExVUndKZi02UFNMVW1qd05JaHk4V2dOQ2NQM29halFrVHF2WnF0QjRnSThuS0JVSW1vdVEzMEs4bmluRHZyWjllb2tJM3ZHZGx1UC1MWE1sSnNZYnpsWC1EcE1xeUdZZU83WjNCdWEwblFLZVg3dkxUX2tKb0dodGVxRkFaQW1B?oc=5",
-      "confidence": 0.7999999999999999,
-      "verification_status": "claimed",
-      "location_precision": "country",
-      "civilian_impact": "6,126 deaths during crackdown on nationwide protests"
     },
     {
       "date": "2026-03-04T00:00:00Z",
@@ -961,47 +862,6 @@
       "confidence": 0.7999999999999999,
       "verification_status": "reported",
       "location_precision": "region",
-      "civilian_impact": null
-    },
-    {
-      "date": "2026-02-26T00:00:00Z",
-      "event_type": "strategic_development",
-      "description": "Iran-backed militias in Iraq and Yemen threaten new attacks as US aircraft carrier arrives in region",
-      "latitude": 32.4279,
-      "longitude": 53.688,
-      "country": "Iraq",
-      "region": null,
-      "actors": [
-        "Iran-backed militias",
-        "US Military"
-      ],
-      "fatalities": 0,
-      "source": "Chattanooga Times Free Press",
-      "source_url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxQc0FWS3NYQ0dGbEd1d0pwVlI1R2tMRzR3eVUtMEhxMUdXMUowT3VNNGpmMktkZ2tJNVlTNkp0TVlOLW04OFc0RGRhTWhVNDNJUHdNeWRWanJESDVzRW9qRHZfbHZGWmg0aVBsWjFzczNsMXFlaHdiRmpKMFlaN2ZEOENBa0UxNk5BbGNEdW5ZUGw5ekd3akRzMDBpdVVmVzloUDZLRmFiOV85d3ZETUR5ZWRYdzBwNVJQdXVuS3BkVzNHUUc4aVA2RDRCb0puTGFCVVMzcWJR?oc=5",
-      "confidence": 0.6,
-      "verification_status": "reported",
-      "location_precision": "country",
-      "civilian_impact": null
-    },
-    {
-      "date": "2026-02-24T00:00:00Z",
-      "event_type": "strategic_development",
-      "description": "Iran-US-Israel escalation includes nuclear leverage, military buildup and retaliatory postures as of February 2026",
-      "latitude": 32.4279,
-      "longitude": 53.688,
-      "country": "Iran",
-      "region": null,
-      "actors": [
-        "Iran",
-        "US",
-        "Israel"
-      ],
-      "fatalities": 0,
-      "source": "debuglies.com",
-      "source_url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxQa0haNTcyclBTeHVvQVhlWlZFNmhranVoazRQa2ZmMm1vSlJoWFQxTVRiTi1YcmJBV2VidlAxWElLNnhQNElWdW5UTUJnbGxNV3YwQmpNWFRIU0hhQ1pyU0I1UEptOWZLNHdSUjBVa1BDT3lZekdCaHBJY082XzJwNk14aWZkMHR1WHNvYU94cWVEaTQzTHpmeW1MOVZPOXNfdUF1bkI2djFZTmlaSVZVdU9CaVp4SVBZUW90V0N6SVRicmdJT2cxdHNQbWhkeDlicGJVZ3dZMHQ?oc=5",
-      "confidence": 0.5,
-      "verification_status": "unconfirmed",
-      "location_precision": "country",
       "civilian_impact": null
     },
     {
@@ -1490,7 +1350,7 @@
         "US",
         "Israel"
       ],
-      "fatalities": 1255,
+      "fatalities": 0,
       "source": "Al Jazeera",
       "source_url": "https://www.aljazeera.com/news/2026/3/9/what-is-the-us-endgame-in-iran-as-the-war-escalates?traffic_source=rss",
       "confidence": 0.85,
@@ -1537,26 +1397,6 @@
       "verification_status": "reported",
       "location_precision": "city",
       "civilian_impact": null
-    },
-    {
-      "date": "2026-02-28T00:00:00Z",
-      "event_type": "airstrike",
-      "description": "US-Israeli strike on elementary school in Minab, southern Iran during opening strikes, killing at least 170 people including school children",
-      "latitude": 27.18,
-      "longitude": 57.08,
-      "country": "Iran",
-      "region": "Minab",
-      "actors": [
-        "US Air Force",
-        "Israel"
-      ],
-      "fatalities": 170,
-      "source": "Al Jazeera",
-      "source_url": "https://www.aljazeera.com/news/2026/3/9/us-senators-demand-probe-into-appalling-attack-on-girlss-school-in-iran",
-      "confidence": 0.95,
-      "verification_status": "reported",
-      "location_precision": "city",
-      "civilian_impact": "170 people killed, including elementary school children; US senators demanded investigation"
     },
     {
       "date": "2026-02-28T00:00:00Z",
@@ -1681,12 +1521,599 @@
       "verification_status": "reported",
       "location_precision": "country",
       "civilian_impact": null
+    },
+    {
+      "date": "2026-02-28T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Canada's pro-U.S. stance in Iran attack carries security risks, experts say",
+      "latitude": 56.1304,
+      "longitude": -106.3468,
+      "country": "Canada",
+      "region": "Canada",
+      "actors": [
+        "Canada",
+        "United States"
+      ],
+      "fatalities": 0,
+      "source": "CityNews Ottawa",
+      "source_url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOUkc3NlhJY1h5bm5NZEFQT3N2WGFsNU8tN0FkdXkxMV96LXFQeXBZUjFoRDdIY1o0cnFMUTJDeE5YWVQ1ZGU2bGNWclRabjVja01Eb0hKM2dQUzVBSm1ZaklVUC1jRHFFWHFyNk50d1owLUpIUFphT0gyMERrUm9UcVZBb1FEUmZuRW1LSk1rUzlhN3d4Z2hoZ0poX3BmRWtfWEluWVpIci1JUEZ1Z2d0Wg?oc=5",
+      "confidence": 0.44999999999999996,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Trump administration designates Sudanese Muslim Brotherhood as 'terrorist' group, accusing it of receiving support from Iran's IRGC and carrying out violence against civilians.",
+      "latitude": 15.5,
+      "longitude": 32.5,
+      "country": "Sudan",
+      "region": "Sudan",
+      "actors": [
+        "Trump administration",
+        "US State Department",
+        "IRGC",
+        "Sudanese Muslim Brotherhood"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/us-blacklists-sudanese-muslim-brotherhood-as-terrorist-group?traffic_source=rss",
+      "confidence": 0.95,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Mojtaba Khamenei confirmed as new Supreme Leader of Iran; Iranian state television reports he is 'janbaz' (wounded by enemy) in unspecified incident at unknown time and location.",
+      "latitude": 35.6762,
+      "longitude": 51.4243,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "Iran's Assembly of Experts",
+        "Iranian state television",
+        "Mojtaba Khamenei"
+      ],
+      "fatalities": 0,
+      "source": "breitbart",
+      "source_url": "https://www.breitbart.com/europe/2026/03/09/iran-confirms-new-supreme-leader-mojtaba-khamenei-is-wounded/",
+      "confidence": 0.6,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Trump administration and Israeli officials reportedly discussing seizure of Kharg Island, Iran's primary oil export terminal handling roughly 90% of Iran's crude oil exports, as strategic shift in conflict.",
+      "latitude": 29.2506,
+      "longitude": 50.3675,
+      "country": "Iran",
+      "region": "Persian Gulf",
+      "actors": [
+        "Trump administration",
+        "Israeli officials",
+        "US National Energy Dominance Council"
+      ],
+      "fatalities": 0,
+      "source": "The Daily Wire",
+      "source_url": "https://www.dailywire.com/news/trump-admin-weighs-bold-move-to-seize-irans-economic-jugular",
+      "confidence": 0.5499999999999999,
+      "verification_status": "reported",
+      "location_precision": "exact",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli airstrike struck Sainte Therese area in Beirut's southern suburbs following evacuation warning; Israeli drones also flew over Baabda, Hadath and other southern suburbs areas.",
+      "latitude": 33.8042,
+      "longitude": 35.4979,
+      "country": "Lebanon",
+      "region": "Beirut",
+      "actors": [
+        "Israeli army",
+        "Israeli drones"
+      ],
+      "fatalities": 0,
+      "source": "Anadolu Agency",
+      "source_url": "https://www.aa.com.tr/en/middle-east/israeli-army-strikes-beirut-s-southern-suburbs-after-evacuation-warning/3856183",
+      "confidence": 0.7,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "Evacuation warning issued; casualty information not yet available"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Trump states war in Iran is 'very complete, pretty much,' claiming Iran has no navy, no communications, and no air force; indicates US military campaign will be ending soon amid Republican concerns about prolonged conflict.",
+      "latitude": 25.7482,
+      "longitude": -80.2275,
+      "country": "United States",
+      "region": "Florida",
+      "actors": [
+        "Donald Trump",
+        "US military",
+        "Republican allies"
+      ],
+      "fatalities": 0,
+      "source": "The Guardian",
+      "source_url": "https://www.theguardian.com/world/2026/mar/09/us-israel-strikes-iran-supreme-leader",
+      "confidence": 0.9,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Iran launches new wave of missiles and drones targeting Gulf nations in retaliation for US-Israeli attacks",
+      "latitude": 25.5,
+      "longitude": 50.5,
+      "country": "Gulf Region",
+      "region": "Gulf States",
+      "actors": [
+        "Iran",
+        "Gulf nations"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/reprehensible-new-wave-of-iranian-missiles-drones-target-gulf-nations",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": "Gulf airspace shut, oil production disrupted"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Iranian attack on Bahrain's Bapco refinery complex, fire reported at refinery installation",
+      "latitude": 26.13,
+      "longitude": 50.26,
+      "country": "Bahrain",
+      "region": "Bahrain",
+      "actors": [
+        "Iran"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/reprehensible-new-wave-of-iranian-missiles-drones-target-gulf-nations",
+      "confidence": 0.98,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "Refinery fire, force majeure declared by state oil company Bapco, oil supply disrupted"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Mojtaba Khamenei, 56, appointed as new supreme leader of Iran following death of father Ali Khamenei; signs missile with message 'At your service, Sayyid Mojtaba' directed at Israel",
+      "latitude": 35.67,
+      "longitude": 51.39,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "Iran",
+        "Assembly of Experts",
+        "Islamic Revolutionary Guard Corps"
+      ],
+      "fatalities": 0,
+      "source": "The Independent",
+      "source_url": "https://www.independent.co.uk/news/world/middle-east/iran-new-supreme-leader-signs-missile-israel-b2934639.html",
+      "confidence": 0.9,
+      "verification_status": "confirmed",
+      "location_precision": "city",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "New supreme leader Mojtaba Khamenei launches first strikes within hours of appointment, targeting Israel",
+      "latitude": 35.67,
+      "longitude": 51.39,
+      "country": "Iran",
+      "region": "Iran",
+      "actors": [
+        "Iran",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "The Independent",
+      "source_url": "https://www.independent.co.uk/news/world/middle-east/iran-new-supreme-leader-signs-missile-israel-b2934639.html",
+      "confidence": 0.85,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Australia announces deployment of specialist surveillance aircraft and air-to-air missiles to UAE to protect civilians from Iranian attacks",
+      "latitude": 23.42,
+      "longitude": 53.85,
+      "country": "United Arab Emirates",
+      "region": "UAE",
+      "actors": [
+        "Australia",
+        "United Arab Emirates"
+      ],
+      "fatalities": 0,
+      "source": "The Guardian",
+      "source_url": "https://www.theguardian.com/world/2026/mar/10/australia-to-send-aircraft-and-air-to-air-missiles-to-gulf-to-protect-and-defend-civilians-pm-says",
+      "confidence": 0.9,
+      "verification_status": "confirmed",
+      "location_precision": "city",
+      "civilian_impact": "Protection measure for Australian citizens under threat from Iranian attack"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran's Prosecutor General's Office warns overseas citizens of asset seizure and death penalty for supporting or cooperating with Israel, US, or affiliated groups",
+      "latitude": 35.67,
+      "longitude": 51.39,
+      "country": "Iran",
+      "region": "Iran",
+      "actors": [
+        "Iran",
+        "Prosecutor General's Office"
+      ],
+      "fatalities": 0,
+      "source": "The Hans India",
+      "source_url": "https://www.thehansindia.com/news/international/iran-warns-overseas-citizens-of-asset-seizure-death-penalty-for-supporting-enemy-amid-escalating-war-1055015",
+      "confidence": 0.6699999999999999,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "Iranians abroad threatened with capital punishment and asset confiscation"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Oil prices surge following Iran's appointment of new supreme leader Mojtaba Khamenei and continued Iranian attacks; Nikkei 225 index plunges up to 7% in early Monday trading",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Multiple",
+      "region": "Global",
+      "actors": [
+        "Iran",
+        "Global markets"
+      ],
+      "fatalities": 0,
+      "source": "Mankato Free Press",
+      "source_url": "https://www.mankatofreepress.com/news/state_national_news/the-latest-oil-prices-soar-after-iran-names-new-supreme-leader-and-launches-more-attacks/article_0ea2d7ac-98b4-51b5-83a3-93edae0bc62d.html",
+      "confidence": 0.73,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "Economic disruption, inflation concerns, reduced consumer spending expected"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Strait of Hormuz operations disrupted; cables in strait carry 37% of global internet traffic, threatening data services and connectivity",
+      "latitude": 26.5,
+      "longitude": 56.5,
+      "country": "Iran/Oman",
+      "region": "Strait of Hormuz",
+      "actors": [
+        "Iran",
+        "Multiple"
+      ],
+      "fatalities": 0,
+      "source": "News 18",
+      "source_url": "https://www.news18.com/explainers/can-shutting-of-strait-of-hormuz-amid-us-israel-iran-war-impact-indias-internet-explained-ws-l-9950750.html",
+      "confidence": 0.6,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": "Global internet connectivity threatened, impact on data services and cloud infrastructure worldwide"
+    },
+    {
+      "date": "2026-03-09T23:43:55Z",
+      "event_type": "strategic_development",
+      "description": "Trump claims US and Israel have struck 5,000 targets since war began on February 28, calling past 10 days a 'short-term excursion' and stating war will be over 'very soon'",
+      "latitude": 31.0461,
+      "longitude": 34.8516,
+      "country": "United States",
+      "region": "Florida",
+      "actors": [
+        "Donald Trump",
+        "US Military",
+        "Israeli Military"
+      ],
+      "fatalities": 0,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/2026/3/9/trump-says-us-israeli-war-on-iran-will-be-over-very-soon?traffic_source=rss",
+      "confidence": 0.95,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T23:58:07Z",
+      "event_type": "strategic_development",
+      "description": "Oil prices tumble sharply after Trump claims US-Israel war on Iran could end 'very soon', with Brent crude falling from four-year highs above $100 per barrel",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Multiple",
+      "region": "Global Markets",
+      "actors": [
+        "Global Energy Markets",
+        "Donald Trump"
+      ],
+      "fatalities": 0,
+      "source": "The Guardian",
+      "source_url": "https://www.theguardian.com/world/live/2026/mar/09/iran-war-live-updates-new-supreme-leader-mojtaba-khamenei-oil-prices-soar",
+      "confidence": 0.9,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T23:54:07Z",
+      "event_type": "strategic_development",
+      "description": "Oil prices continue to surge beyond $115 per barrel amid Iran war, triggering stark sell-offs across leading stock markets and raising global stagflation concerns",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Multiple",
+      "region": "Global Markets",
+      "actors": [
+        "Global Financial Markets",
+        "Oil Industry"
+      ],
+      "fatalities": 0,
+      "source": "The Guardian",
+      "source_url": "https://www.theguardian.com/business/2026/mar/09/iran-war-oil-prices-stagflation-global-economy",
+      "confidence": 0.9,
+      "verification_status": "confirmed",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-05T12:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Hudson Institute analysis discusses Iran's declining military capabilities and emerging strategy as Operation Epic Fury conflict nears its second week",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "Iran Military",
+        "Hudson Institute"
+      ],
+      "fatalities": 0,
+      "source": "Hudson Institute",
+      "source_url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNbVk0QzJuUE1PTEtmMDE5SlJtQWJoNzU3ZDcwOVBleWxxZFF2TTZVTldnZ3R1cUx3eXlZREczd3IxeEFOV2pyTUhrajRkQ2JUNzMyTGgzQmFnZ1lndTJDRF92b3YxMnFiWlp4ZHo2amJtR3B6Y2t4NGVWMlQ2WnZSSXpBRWVmOVBpd1l6Nkx5VjhsT19jaUxqcFJSaGdIbVhla0xERjVGMUU5aExaTDJ2aUFLRUZPdlBCQU1JVkIxQ1g5NV9aM2F5bw?oc=5",
+      "confidence": 0.44999999999999996,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T23:30:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran's new Supreme Leader receives backing from Houthi movement and Hezbollah amid ongoing US-Israeli war",
+      "latitude": 32.4279,
+      "longitude": 53.688,
+      "country": "Iran",
+      "region": null,
+      "actors": [
+        "Iran",
+        "Houthis",
+        "Hezbollah"
+      ],
+      "fatalities": 0,
+      "source": "wion",
+      "source_url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxPRWFhOVVrQU5GZTdVc0J0MUdOaTl3SWViNnd2VmNtT3g5WTIxQ0N4NnlsbnctTlJQWnBGS2NudENXalV6UG0zeW1uNG5MRGtNWU9hWXJ4UnVZR2ZCU0otbGYtZlZ6R1VJQm5EYjRibkNZVVIxNGxJMExfbl95UGY4V3g2SXZjUVpRcUNza3luNHFIblM1UUZSSTdkVFgxVF9PT1FTOGxwNnloRkwzd0FkMzljRlllZzU4MkFrVkpRRExsWWctY3fSAcsBQVVfeXFMTlhrRWxpQzdNWk43NFhpcWtSSE9PYXN6Uzg1NGVEck1mbHZ6a2I2ZllLdURTazVkbVc0aEowXzJZTWo2OUpZbEJlaWZoM2NJaEhUTnlneEx0dDdDTTlFSlg5UGZJemY0ZFVBeFB2MFA2ZmJBczk1WkRRR0FpTGdqa3ZTWW5hTkJ6eUNuZXdmd1Z6cFpmT2RrZFBmNnNNUUM2dklNamtjaFJPdG5ia1lRVUFiMUQwMjhDcU9JNndzRXpDN25POXZ1VjYtZUE?oc=5",
+      "confidence": 0.5,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-10T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Shells fired from Lebanon land west of Syrian capital Damascus, according to Syria's military statement",
+      "latitude": 33.51,
+      "longitude": 36.28,
+      "country": "Syria",
+      "region": "Damascus",
+      "actors": [
+        "Hezbollah",
+        "Syria"
+      ],
+      "fatalities": 0,
+      "source": "New York Times",
+      "source_url": "https://www.nytimes.com/2026/03/09/world/middleeast/syria-hezbollah-iran-lebanon.html",
+      "confidence": 0.85,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-10T00:00:00Z",
+      "event_type": "violence_against_civilians",
+      "description": "40 people killed in Tehran according to live war coverage",
+      "latitude": 35.68,
+      "longitude": 51.39,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "US Air Force",
+        "Israel"
+      ],
+      "fatalities": 40,
+      "source": "Al Jazeera",
+      "source_url": "https://www.aljazeera.com/news/liveblog/2026/3/10/iran-war-live-trump-says-conflict-will-be-over-soon-40-killed-in-tehran?traffic_source=rss",
+      "confidence": 0.7999999999999999,
+      "verification_status": "reported",
+      "location_precision": "city",
+      "civilian_impact": "40 killed in Tehran"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "airstrike",
+      "description": "Israeli military targeting Hezbollah's financial arm al-Qard Al-Hasan in Lebanon with ground forces launching focused raids against infrastructure",
+      "latitude": 33.31,
+      "longitude": 35.5,
+      "country": "Lebanon",
+      "region": "Lebanon",
+      "actors": [
+        "Israeli military",
+        "Hezbollah"
+      ],
+      "fatalities": 0,
+      "source": "Orissa Post",
+      "source_url": "https://www.orissapost.com/lebanese-parliament-extends-term-by-two-years-as-israel-intensifies-attacks-on-lebanon/",
+      "confidence": 0.6,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "violence_against_civilians",
+      "description": "Israeli forces used white phosphorus incendiary shells in strikes on residential areas in Lebanese village, violation of international law according to Human Rights Watch",
+      "latitude": 33.31,
+      "longitude": 35.5,
+      "country": "Lebanon",
+      "region": "Lebanon",
+      "actors": [
+        "Israeli forces",
+        "Human Rights Watch"
+      ],
+      "fatalities": 0,
+      "source": "Orissa Post",
+      "source_url": "https://www.orissapost.com/lebanese-parliament-extends-term-by-two-years-as-israel-intensifies-attacks-on-lebanon/",
+      "confidence": 0.6,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "White phosphorus used on residential areas"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "missile_attack",
+      "description": "Iran fired more drones and missiles across the Persian Gulf and beyond in response to US and Israeli airstrikes after choosing Mojtaba Khamenei as new supreme leader",
+      "latitude": 26,
+      "longitude": 54,
+      "country": "Iran",
+      "region": "Persian Gulf",
+      "actors": [
+        "Iran",
+        "Revolutionary Guard"
+      ],
+      "fatalities": 0,
+      "source": "Mankato Free Press",
+      "source_url": "https://www.mankatofreepress.com/news/state_national_news/ap-news-summary-at-8-14-a-m-edt/article_f4a20252-3c32-5c76-88dc-6abfa9782eea.html",
+      "confidence": 0.65,
+      "verification_status": "reported",
+      "location_precision": "region",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "violence_against_civilians",
+      "description": "Dozens wounded in Bahrain as result of Iranian strikes on Gulf Arab states",
+      "latitude": 26.07,
+      "longitude": 50.56,
+      "country": "Bahrain",
+      "region": "Bahrain",
+      "actors": [
+        "Iran",
+        "Revolutionary Guard"
+      ],
+      "fatalities": 0,
+      "source": "The New York Times",
+      "source_url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPRDVneVJ4VlUxOGctQmJieHlpTUkyT0k5RUNLRU5tT1djc0ZQRzgxbFgzNndNUURneXBiWi1zTzZDZ2Q5MEM4YndhVjY0cXpaZ0RDUGstUkpSSnUyX3UwRmFJdm5Ca2xBMzhYTW5UdXF4Z3A2TWhFUHJPREktTjBLY2R2RQ?oc=5",
+      "confidence": 0.65,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "Dozens wounded"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran names hard-line Ayatollah Mojtaba Khamenei (son of late Supreme Leader Ali Khamenei) as new supreme leader, signaling continuation of hardline rule",
+      "latitude": 35.68,
+      "longitude": 51.39,
+      "country": "Iran",
+      "region": "Tehran",
+      "actors": [
+        "Iran Assembly of Experts",
+        "Revolutionary Guard"
+      ],
+      "fatalities": 0,
+      "source": "AP News via Mankato Free Press",
+      "source_url": "https://www.mankatofreepress.com/news/state_national_news/ap-news-summary-at-8-14-a-m-edt/article_f4a20252-3c32-5c76-88dc-6abfa9782eea.html",
+      "confidence": 0.7,
+      "verification_status": "confirmed",
+      "location_precision": "city",
+      "civilian_impact": null
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Bombs hit military bases, government buildings, oil and water installations, hotels and at least one school in Iran during 10-day war",
+      "latitude": 32,
+      "longitude": 53,
+      "country": "Iran",
+      "region": "Iran",
+      "actors": [
+        "US Air Force",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "AP News via Mankato Free Press",
+      "source_url": "https://www.mankatofreepress.com/news/state_national_news/ap-news-summary-at-8-14-a-m-edt/article_f4a20252-3c32-5c76-88dc-6abfa9782eea.html",
+      "confidence": 0.6,
+      "verification_status": "reported",
+      "location_precision": "country",
+      "civilian_impact": "School hit among other civilian infrastructure"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Iran reports cumulative death toll of 1,255 people killed in US-Israeli attacks, mostly civilians",
+      "latitude": 32,
+      "longitude": 53,
+      "country": "Iran",
+      "region": "Iran",
+      "actors": [
+        "Iran",
+        "US",
+        "Israel"
+      ],
+      "fatalities": 0,
+      "source": "Jamaica Inquirer",
+      "source_url": "https://jamaicainquirer.com/us-israel-war-on-iran-a-brief-history-of-mission-creep-and-false-promises/",
+      "confidence": 0.5499999999999999,
+      "verification_status": "claimed",
+      "location_precision": "country",
+      "civilian_impact": "1,255 reported killed, mostly civilians (cumulative)"
+    },
+    {
+      "date": "2026-03-09T00:00:00Z",
+      "event_type": "strategic_development",
+      "description": "Lebanese parliament extended its term by two years due to escalating US-Israel war with Iran and Israeli attacks on Lebanon",
+      "latitude": 33.86,
+      "longitude": 35.5,
+      "country": "Lebanon",
+      "region": "Beirut",
+      "actors": [
+        "Lebanese parliament"
+      ],
+      "fatalities": 0,
+      "source": "The Week",
+      "source_url": "https://www.theweek.in/wire-updates/international/2026/03/09/lebanese-parliament-extends-term-by-2-years-as-israel-intensifies-attacks-on-lebanon.html",
+      "confidence": 0.7,
+      "verification_status": "confirmed",
+      "location_precision": "city",
+      "civilian_impact": null
     }
   ],
   "metadata": {
-    "generated": "2026-03-09",
+    "generated": "2026-03-10",
     "source": "multiple",
-    "note": "Auto-updated from real news sources. 88 total events in latest file.",
+    "note": "Auto-updated from real news sources. 109 total events in latest file.",
     "sources_checked": [
       "NewsData.io API",
       "Google News RSS",

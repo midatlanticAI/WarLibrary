@@ -90,10 +90,30 @@ export default function Home() {
     );
   }
 
+  // Notification banner — shown on ALL screens
+  const notifBanner = notification ? (
+    <div className="relative z-40 flex items-center gap-3 bg-amber-600/90 px-4 py-2 text-sm text-white backdrop-blur-sm">
+      <div className="flex-1 min-w-0">
+        <span className="font-semibold">{notification.title}</span>
+        <span className="ml-2 opacity-90">{notification.body}</span>
+      </div>
+      <button
+        onClick={dismissNotif}
+        className="shrink-0 rounded px-2 py-0.5 text-xs hover:bg-white/20"
+        aria-label="Dismiss notification"
+      >
+        ✕
+      </button>
+    </div>
+  ) : null;
+
   // Landing / briefing screen
   if (!showApp) {
     return (
-      <ContentWarning events={events} onDismiss={() => setShowApp(true)} />
+      <>
+        {notifBanner}
+        <ContentWarning events={events} onDismiss={() => setShowApp(true)} />
+      </>
     );
   }
 
@@ -102,6 +122,7 @@ export default function Home() {
     return (
       <div className="flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="sources" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
+        {notifBanner}
         <SourcesPage onBack={() => navigate("map")} />
         <MobileNav active="sources" onChange={navigateMobile} />
       </div>
@@ -112,6 +133,7 @@ export default function Home() {
     return (
       <div className="flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="about" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
+        {notifBanner}
         <AboutPage onBack={() => navigate("map")} />
         <MobileNav active="about" onChange={navigateMobile} />
       </div>
@@ -122,6 +144,7 @@ export default function Home() {
     return (
       <div className="flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="ask" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
+        {notifBanner}
         <AskPanel events={events} />
         <MobileNav active="ask" onChange={navigateMobile} />
       </div>
@@ -132,6 +155,7 @@ export default function Home() {
     return (
       <div className="flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="donate" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
+        {notifBanner}
         <DonationPanel onBack={() => navigate("map")} />
         <MobileNav active="donate" onChange={navigateMobile} />
       </div>
@@ -144,22 +168,7 @@ export default function Home() {
   return (
     <div className="flex h-dvh w-screen flex-col overflow-hidden">
       <Header lastUpdated={lastUpdated} activeTab="map" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
-
-      {notification && (
-        <div className="relative z-40 flex items-center gap-3 bg-amber-600/90 px-4 py-2 text-sm text-white backdrop-blur-sm">
-          <div className="flex-1">
-            <span className="font-semibold">{notification.title}</span>
-            <span className="ml-2 opacity-90">{notification.body}</span>
-          </div>
-          <button
-            onClick={dismissNotif}
-            className="shrink-0 rounded px-2 py-0.5 text-xs hover:bg-white/20"
-            aria-label="Dismiss notification"
-          >
-            ✕
-          </button>
-        </div>
-      )}
+      {notifBanner}
 
       <OverviewBanner events={events} />
 
