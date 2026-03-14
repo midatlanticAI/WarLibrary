@@ -175,6 +175,17 @@ export default function AboutPage({ onBack }: AboutPageProps) {
                 <li className="flex items-start gap-2">
                   <span className="mt-0.5 text-zinc-600">•</span>
                   <span>
+                    <strong className="text-zinc-300">Push notifications</strong>{" "}
+                    — if you enable breaking event alerts, your browser generates
+                    an anonymous push subscription token. We store only this token
+                    (no name, email, IP, or device info) to deliver alerts. You
+                    can unsubscribe at any time through your browser settings.
+                    Expired tokens are automatically removed.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-0.5 text-zinc-600">•</span>
+                  <span>
                     <strong className="text-zinc-300">No analytics trackers</strong>{" "}
                     are used. No Google Analytics, no Facebook Pixel, no ad
                     networks. Cloudflare provides anonymous traffic statistics.

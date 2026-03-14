@@ -10,6 +10,7 @@ import Map, {
 } from "react-map-gl/mapbox";
 import type { ConflictEvent } from "@/types";
 import { EVENT_COLORS } from "@/lib/constants";
+import { shareEvent } from "@/lib/share";
 import MapLegend from "./MapLegend";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -250,7 +251,36 @@ function EventPopup({ event }: { event: ConflictEvent }) {
         <span className="text-xs font-medium text-zinc-500">
           Source: {event.source}
         </span>
+        <PopupShareButton event={event} />
       </div>
     </div>
+  );
+}
+
+function PopupShareButton({ event }: { event: ConflictEvent }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    try {
+      await shareEvent(event);
+      if (!navigator.share) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch {
+      // cancelled
+    }
+  }, [event]);
+
+  return (
+    <button
+      onClick={handleShare}
+      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-zinc-500 transition-colors hover:bg-zinc-700 hover:text-zinc-300"
+    >
+      <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+      </svg>
+      {copied ? "Copied!" : "Share"}
+    </button>
   );
 }

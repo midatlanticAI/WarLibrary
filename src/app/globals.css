@@ -93,9 +93,21 @@ html {
   touch-action: manipulation;
 }
 
-/* Prevent text selection on interactive elements */
-button, nav, [role="button"] {
+/* Prevent text selection on buttons/nav, but allow on content areas */
+button, nav {
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* News ticker scroll animation — seamless loop */
+.ticker-track {
+  display: inline-flex;
+  animation: ticker-scroll 45s linear infinite;
+  white-space: nowrap;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }

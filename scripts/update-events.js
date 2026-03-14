@@ -87,14 +87,16 @@ const MODEL = "claude-haiku-4-5-20251001";
 const SOURCE_TIERS = {
   // Tier 1: Major wire services and globally recognized outlets
   tier1: [
-    "Reuters", "AP News", "BBC News", "Al Jazeera", "CNN",
-    "New York Times", "Washington Post", "NPR", "France 24",
+    "Reuters", "AP News", "Associated Press", "BBC News", "Al Jazeera", "CNN",
+    "New York Times", "The New York Times", "Washington Post", "NPR",
+    "France 24", "CBS News", "ABC News",
   ],
   // Tier 2: Credible regional/specialty outlets
   tier2: [
-    "Times of Israel", "Axios", "The Guardian", "PBS", "NBC News",
-    "ABC News", "Sky News", "DW News", "UN News", "Naval News",
-    "France 24", "Deutsche Welle", "The Independent", "Middle East Eye",
+    "Times of Israel", "Haaretz", "Axios", "The Guardian", "PBS", "NBC News",
+    "Fox News", "Sky News", "DW News", "UN News", "Naval News",
+    "Deutsche Welle", "The Independent", "Middle East Eye", "i24 News",
+    "Arab News", "The National", "IRNA", "Press TV",
   ],
   // Tier 3: Everything else (no explicit list needed)
 };
@@ -291,6 +293,8 @@ async function fetchNewsDataAPI() {
     "iran war airstrike missile",
     "iran israel hezbollah conflict",
     "strait hormuz military IRGC",
+    "iran sanctions humanitarian ceasefire",
+    "houthi yemen red sea shipping",
   ];
 
   const allArticles = [];
@@ -346,6 +350,10 @@ async function fetchGoogleNewsRSS() {
     "https://news.google.com/rss/search?q=iran+war+operation+epic+fury+2026&hl=en-US&gl=US&ceid=US:en",
     "https://news.google.com/rss/search?q=iran+airstrike+missile+2026&hl=en-US&gl=US&ceid=US:en",
     "https://news.google.com/rss/search?q=hezbollah+houthi+iran+war+2026&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=iran+sanctions+diplomacy+2026&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=strait+hormuz+persian+gulf+navy+2026&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=iran+nuclear+IAEA+2026&hl=en-US&gl=US&ceid=US:en",
+    "https://news.google.com/rss/search?q=iran+humanitarian+civilian+casualties+2026&hl=en-US&gl=US&ceid=US:en",
   ];
 
   const allArticles = [];
@@ -390,6 +398,7 @@ async function fetchGoogleNewsRSS() {
  */
 async function fetchOutletRSS() {
   const feeds = [
+    // ── Middle East / International ──
     {
       url: "https://www.aljazeera.com/xml/rss/all.xml",
       name: "Al Jazeera",
@@ -399,20 +408,63 @@ async function fetchOutletRSS() {
       name: "BBC News",
     },
     {
-      url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml",
-      name: "New York Times",
-    },
-    {
-      url: "https://www.theguardian.com/world/middleeast/rss",
-      name: "The Guardian",
-    },
-    {
       url: "https://www.france24.com/en/middle-east/rss",
       name: "France 24",
     },
     {
       url: "https://rss.dw.com/xml/rss-en-mid",
       name: "DW News",
+    },
+    {
+      url: "https://www.theguardian.com/world/middleeast/rss",
+      name: "The Guardian",
+    },
+    // ── US Major Outlets ──
+    {
+      url: "https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml",
+      name: "New York Times",
+    },
+    {
+      url: "http://feeds.washingtonpost.com/rss/world",
+      name: "Washington Post",
+    },
+    {
+      url: "https://feeds.npr.org/1004/rss.xml",
+      name: "NPR",
+    },
+    {
+      url: "http://rss.cnn.com/rss/edition_meast.rss",
+      name: "CNN",
+    },
+    {
+      url: "https://feeds.foxnews.com/foxnews/world",
+      name: "Fox News",
+    },
+    {
+      url: "https://feeds.cbsnews.com/CBSNewsWorld",
+      name: "CBS News",
+    },
+    {
+      url: "https://feeds.abcnews.com/abcnews/internationalheadlines",
+      name: "ABC News",
+    },
+    // ── Wire Services ──
+    {
+      url: "https://feeds.reuters.com/Reuters/worldNews",
+      name: "Reuters",
+    },
+    {
+      url: "https://news.un.org/feed/subscribe/en/news/region/middle-east/feed/rss.xml",
+      name: "UN News",
+    },
+    // ── Israeli / Regional ──
+    {
+      url: "https://www.timesofisrael.com/feed/",
+      name: "Times of Israel",
+    },
+    {
+      url: "https://www.middleeasteye.net/rss",
+      name: "Middle East Eye",
     },
   ];
 
@@ -439,6 +491,9 @@ async function fetchOutletRSS() {
         return (
           text.includes("iran") ||
           text.includes("tehran") ||
+          text.includes("isfahan") ||
+          text.includes("shiraz") ||
+          text.includes("tabriz") ||
           text.includes("hezbollah") ||
           text.includes("houthi") ||
           text.includes("hormuz") ||
@@ -447,11 +502,23 @@ async function fetchOutletRSS() {
           text.includes("persian gulf") ||
           text.includes("pentagon") ||
           text.includes("centcom") ||
+          text.includes("khamenei") ||
+          text.includes("rouhani") ||
+          text.includes("quds force") ||
+          text.includes("natanz") ||
+          text.includes("fordow") ||
+          text.includes("bushehr") ||
+          text.includes("iaea") ||
+          text.includes("sanction") ||
           (text.includes("strike") && (text.includes("middle east") || text.includes("israel"))) ||
           (text.includes("missile") && (text.includes("israel") || text.includes("gulf"))) ||
           (text.includes("bombing") && (text.includes("iran") || text.includes("beirut"))) ||
           (text.includes("drone") && (text.includes("iran") || text.includes("yemen"))) ||
-          (text.includes("navy") && (text.includes("carrier") || text.includes("gulf")))
+          (text.includes("navy") && (text.includes("carrier") || text.includes("gulf"))) ||
+          (text.includes("refugee") && (text.includes("iran") || text.includes("iraq") || text.includes("lebanon"))) ||
+          (text.includes("humanitarian") && (text.includes("iran") || text.includes("middle east"))) ||
+          (text.includes("protest") && (text.includes("iran") || text.includes("war"))) ||
+          (text.includes("ceasefire") || text.includes("peace talk") || text.includes("negotiat"))
         );
       });
       for (const item of relevant) {
@@ -822,7 +889,13 @@ function sendNewEventsNotification(uniqueEvents) {
     }
     const title = `${uniqueEvents.length} New Event${uniqueEvents.length === 1 ? "" : "s"}`;
     const summaryLines = uniqueEvents.slice(0, 5).map(
-      (e) => `- [${e.country}] ${e.event_type}: ${(e.description || "").slice(0, 80)}`
+      (e) => {
+        const desc = (e.description || "").slice(0, 200);
+        const url = e.source_url || "";
+        return url
+          ? `- [${e.country}] ${e.event_type}: ${desc} |||${url}`
+          : `- [${e.country}] ${e.event_type}: ${desc}`;
+      }
     );
     const body = summaryLines.join("\n");
     const payload = JSON.stringify({ title, body });
@@ -952,14 +1025,24 @@ async function main() {
   try {
     outletArticles = await fetchOutletRSS();
     // Track individual outlet health from fetchOutletRSS
-    for (const name of ["Al Jazeera", "BBC News", "New York Times", "The Guardian", "France 24", "DW News"]) {
+    const OUTLET_NAMES = [
+      "Al Jazeera", "BBC News", "New York Times", "The Guardian", "France 24", "DW News",
+      "Washington Post", "NPR", "CNN", "Fox News", "CBS News", "ABC News",
+      "Reuters", "UN News", "Times of Israel", "Middle East Eye",
+    ];
+    for (const name of OUTLET_NAMES) {
       const hasArticles = outletArticles.some((a) => a.source === name);
       pipelineStats.source_health[name] = hasArticles ? "ok" : "error";
     }
   } catch (err) {
     console.error(`Outlet RSS fetch error: ${err.message}`);
     pipelineStats.errors.push(`Outlet RSS fetch error: ${err.message}`);
-    for (const name of ["Al Jazeera", "BBC News", "New York Times", "The Guardian", "France 24", "DW News"]) {
+    const OUTLET_NAMES = [
+      "Al Jazeera", "BBC News", "New York Times", "The Guardian", "France 24", "DW News",
+      "Washington Post", "NPR", "CNN", "Fox News", "CBS News", "ABC News",
+      "Reuters", "UN News", "Times of Israel", "Middle East Eye",
+    ];
+    for (const name of OUTLET_NAMES) {
       pipelineStats.source_health[name] = err.name === "TimeoutError" ? "timeout" : "error";
     }
   }
@@ -1390,7 +1473,7 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
       generated: new Date().toISOString().split("T")[0],
       source: "multiple",
       note: `Auto-updated from real news sources. ${updatedLatest.length} total events in latest file.`,
-      sources_checked: ["NewsData.io API", "Google News RSS", "Al Jazeera RSS", "BBC RSS", "NYT RSS", "The Guardian RSS", "France 24 RSS", "DW News RSS"],
+      sources_checked: ["NewsData.io API", "Google News RSS", "Al Jazeera", "BBC News", "NYT", "The Guardian", "France 24", "DW News", "Washington Post", "NPR", "CNN", "Fox News", "CBS News", "ABC News", "Reuters", "UN News", "Times of Israel", "Middle East Eye"],
     },
   };
   writeJSON(latestFile, latestWrapper);

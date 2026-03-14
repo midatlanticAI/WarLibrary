@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import type { ConflictEvent } from "@/types";
 import { EVENT_COLORS } from "@/lib/constants";
+import { shareEvent } from "@/lib/share";
 
 interface EventPanelProps {
   events: ConflictEvent[];
@@ -91,10 +92,12 @@ export default function EventPanel({
         {/* Event List */}
         <div className="flex-1 overflow-y-auto">
           {sortedEvents.map((event) => (
-            <button
+            <div
               key={event.id}
               onClick={() => onSelectEvent(event)}
-              className={`w-full border-b border-zinc-800/50 p-3 text-left transition-colors hover:bg-zinc-800/50 ${
+              role="button"
+              tabIndex={0}
+              className={`w-full cursor-pointer select-text border-b border-zinc-800/50 p-3 text-left transition-colors hover:bg-zinc-800/50 ${
                 selectedEvent?.id === event.id ? "bg-zinc-800/70" : ""
               }`}
             >
@@ -141,9 +144,10 @@ export default function EventPanel({
                     </div>
                   )}
                   <ProvenanceRow event={event} />
+                  <ShareButton event={event} />
                 </div>
               </div>
-            </button>
+            </div>
           ))}
 
           {sortedEvents.length === 0 && (
@@ -334,4 +338,37 @@ function formatRelativeDate(iso: string): string {
 function formatNumber(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
   return n.toString();
+}
+
+function ShareButton({ event }: { event: ConflictEvent }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      try {
+        await shareEvent(event);
+        if (!navigator.share) {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }
+      } catch {
+        // User cancelled share dialog
+      }
+    },
+    [event]
+  );
+
+  return (
+    <button
+      onClick={handleShare}
+      className="mt-1.5 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-400"
+      title="Share event"
+    >
+      <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" className="shrink-0">
+        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+      </svg>
+      {copied ? "Copied!" : "Share"}
+    </button>
+  );
 }

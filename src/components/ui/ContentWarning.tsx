@@ -55,18 +55,24 @@ export default function ContentWarning({
       if (e.fatalities) newFatalities += e.fatalities;
     }
 
-    // Top event types
+    // Per-type country breakdown so we don't mix up where events actually happened
+    const countriesByType: Record<string, Record<string, number>> = {};
+    for (const e of newEvents) {
+      if (!countriesByType[e.event_type]) countriesByType[e.event_type] = {};
+      countriesByType[e.event_type][e.country] = (countriesByType[e.event_type][e.country] || 0) + 1;
+    }
+
     const topTypes = Object.entries(byType)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3);
     for (const [type, count] of topTypes) {
       const label = type.replace(/_/g, " ");
-      const countries = Object.entries(byCountry)
+      const typeCountries = Object.entries(countriesByType[type] || {})
         .sort((a, b) => b[1] - a[1])
         .slice(0, 2)
         .map(([c]) => c)
         .join(" and ");
-      bullets.push(`${count} new ${label}${count > 1 ? "s" : ""} reported in ${countries}`);
+      bullets.push(`${count} new ${label}${count > 1 ? "s" : ""} reported in ${typeCountries}`);
     }
 
     if (newFatalities > 0) {

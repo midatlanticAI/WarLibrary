@@ -79,84 +79,18 @@ export default function TimelineSlider({
   // Compute tick labels for the x-axis
   const tickLabels = getTickLabels(buckets, scale);
 
+  const quickFilters = [
+    { label: "All", start: minDate, end: maxDate },
+    { label: "24h", start: hoursAgoISO(24), end: nowISO() },
+    { label: "3d", start: daysAgoISO(3), end: nowISO() },
+    { label: "7d", start: daysAgoISO(7), end: nowISO() },
+  ];
+
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg bg-black/70 p-3 backdrop-blur-sm">
-      <div className="flex items-center justify-between text-xs text-zinc-400">
-        <span>{formatDateFull(dateRange.start)}</span>
-        <span className="font-semibold text-zinc-200">Timeline</span>
-        <span>{formatDateFull(dateRange.end)}</span>
-      </div>
-
-      {/* Scale indicator */}
-      <div className="text-center text-[10px] text-zinc-500">
-        {scale === "30min" && "30-minute intervals"}
-        {scale === "6h" && "6-hour intervals"}
-        {scale === "daily" && "Daily intervals"}
-        {" · "}{buckets.reduce((s, b) => s + b.count, 0)} events in range
-      </div>
-
-      {/* Histogram */}
-      <div className="flex h-10 items-end gap-px">
-        {buckets.map((bucket) => {
-          const height = bucket.count > 0 ? Math.max((bucket.count / maxCount) * 100, 8) : 3;
-          return (
-            <div
-              key={bucket.key}
-              className="group relative flex-1 cursor-pointer rounded-t-sm transition-colors hover:opacity-80"
-              style={{
-                height: `${height}%`,
-                backgroundColor: bucket.count > 0 ? "#ef4444" : "#262626",
-                minWidth: "2px",
-              }}
-              title={`${bucket.label}: ${bucket.count} events`}
-              onClick={() =>
-                onChange({ start: bucket.key, end: dateRange.end })
-              }
-            >
-              {/* Tooltip on hover */}
-              {bucket.count > 0 && (
-                <div className="pointer-events-none absolute -top-7 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] text-zinc-200 shadow group-hover:block">
-                  {bucket.count}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* X-axis tick labels */}
-      <div className="relative flex h-3 items-start">
-        {tickLabels.map((tick) => (
-          <span
-            key={tick.position}
-            className="absolute text-[9px] text-zinc-500 -translate-x-1/2"
-            style={{ left: `${tick.position}%` }}
-          >
-            {tick.label}
-          </span>
-        ))}
-      </div>
-
-      {/* Range slider */}
-      <div className="relative">
-        <input
-          type="range"
-          min={0}
-          max={Math.max(allBuckets.length - 1, 0)}
-          value={sliderValue}
-          onChange={handleSliderChange}
-          className="w-full accent-red-500"
-        />
-      </div>
-
-      {/* Quick filters */}
-      <div className="flex gap-1.5">
-        {[
-          { label: "All", start: minDate, end: maxDate },
-          { label: "Last 24h", start: hoursAgoISO(24), end: nowISO() },
-          { label: "Last 3d", start: daysAgoISO(3), end: nowISO() },
-          { label: "Last 7d", start: daysAgoISO(7), end: nowISO() },
-        ].map((preset) => {
+    <div className="flex flex-col gap-1.5 rounded-lg bg-black/70 backdrop-blur-sm">
+      {/* Mobile: compact filter bar only */}
+      <div className="flex gap-1.5 p-2 sm:hidden">
+        {quickFilters.map((preset) => {
           const isActive = isRangeMatch(dateRange, preset);
           return (
             <button
@@ -164,16 +98,108 @@ export default function TimelineSlider({
               onClick={() =>
                 onChange({ start: preset.start, end: preset.end })
               }
-              className={`rounded px-3 py-1.5 text-xs transition-colors ${
+              className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-red-600 text-white"
-                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                  : "bg-zinc-800/80 text-zinc-400 active:bg-zinc-700"
               }`}
             >
               {preset.label}
             </button>
           );
         })}
+      </div>
+
+      {/* Desktop: full timeline with histogram, slider, and filters */}
+      <div className="hidden sm:flex sm:flex-col sm:gap-1.5 sm:p-3">
+        <div className="flex items-center justify-between text-xs text-zinc-400">
+          <span>{formatDateFull(dateRange.start)}</span>
+          <span className="font-semibold text-zinc-200">Timeline</span>
+          <span>{formatDateFull(dateRange.end)}</span>
+        </div>
+
+        {/* Scale indicator */}
+        <div className="text-center text-[10px] text-zinc-500">
+          {scale === "30min" && "30-minute intervals"}
+          {scale === "6h" && "6-hour intervals"}
+          {scale === "daily" && "Daily intervals"}
+          {" · "}{buckets.reduce((s, b) => s + b.count, 0)} events in range
+        </div>
+
+        {/* Histogram */}
+        <div className="flex h-10 items-end gap-px">
+          {buckets.map((bucket) => {
+            const height = bucket.count > 0 ? Math.max((bucket.count / maxCount) * 100, 8) : 3;
+            return (
+              <div
+                key={bucket.key}
+                className="group relative flex-1 cursor-pointer rounded-t-sm transition-colors hover:opacity-80"
+                style={{
+                  height: `${height}%`,
+                  backgroundColor: bucket.count > 0 ? "#ef4444" : "#262626",
+                  minWidth: "2px",
+                }}
+                title={`${bucket.label}: ${bucket.count} events`}
+                onClick={() =>
+                  onChange({ start: bucket.key, end: dateRange.end })
+                }
+              >
+                {bucket.count > 0 && (
+                  <div className="pointer-events-none absolute -top-7 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] text-zinc-200 shadow group-hover:block">
+                    {bucket.count}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* X-axis tick labels */}
+        <div className="relative flex h-3 items-start">
+          {tickLabels.map((tick) => (
+            <span
+              key={tick.position}
+              className="absolute text-[9px] text-zinc-500 -translate-x-1/2"
+              style={{ left: `${tick.position}%` }}
+            >
+              {tick.label}
+            </span>
+          ))}
+        </div>
+
+        {/* Range slider */}
+        <div className="relative">
+          <input
+            type="range"
+            min={0}
+            max={Math.max(allBuckets.length - 1, 0)}
+            value={sliderValue}
+            onChange={handleSliderChange}
+            className="w-full accent-red-500"
+          />
+        </div>
+
+        {/* Quick filters */}
+        <div className="flex gap-1.5">
+          {quickFilters.map((preset) => {
+            const isActive = isRangeMatch(dateRange, preset);
+            return (
+              <button
+                key={preset.label}
+                onClick={() =>
+                  onChange({ start: preset.start, end: preset.end })
+                }
+                className={`rounded px-3 py-1.5 text-xs transition-colors ${
+                  isActive
+                    ? "bg-red-600 text-white"
+                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                }`}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

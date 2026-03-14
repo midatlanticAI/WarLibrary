@@ -13,7 +13,8 @@
         "Israel"
       ],
       "fatalities": 12,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-02-28T03:00:00Z",
@@ -28,7 +29,8 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "CNN"
+      "source": "CNN",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-02-28T03:15:00Z",
@@ -119,7 +121,7 @@
       "fatalities": 1,
       "source": "Times of Israel",
       "civilian_impact": "One civilian woman (foreign caregiver) killed, 22 others injured in residential strike",
-      "verification_status": "reported"
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-02-28T18:30:00Z",
@@ -148,8 +150,8 @@
       ],
       "fatalities": 1,
       "source": "Al Jazeera",
-      "civilian_impact": "One Pakistani civilian killed by debris from intercepted missile near Zayed International Airport",
-      "verification_status": "reported"
+      "civilian_impact": "One Asian worker killed on March 2 when debris from intercepted missile fell onto foreign vessel undergoing maintenance in Salman Industrial City; on March 10, a 29-year-old woman killed and eight people injured when residential building in Manama hit",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-01T06:00:00Z",
@@ -164,7 +166,7 @@
       ],
       "fatalities": 1,
       "source": "Al Jazeera",
-      "civilian_impact": "One person killed in drone strike on airport; smoke reported near US Embassy area",
+      "civilian_impact": "One person killed in drone strike on Kuwait International Airport; Kuwait's Fire Force reported two of its officers killed while performing duties (circumstances unclear)",
       "verification_status": "reported"
     },
     {
@@ -211,8 +213,8 @@
       ],
       "fatalities": 9,
       "source": "Times of Israel",
-      "civilian_impact": "Nine people killed including three teenage siblings in synagogue and bomb shelter strike; 49 others injured",
-      "verification_status": "reported"
+      "civilian_impact": "Nine people killed in synagogue and bomb shelter strike; more than 20 others injured",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-01T14:00:00Z",
@@ -228,8 +230,8 @@
       ],
       "fatalities": 0,
       "source": "Al Jazeera",
-      "civilian_impact": "16 people injured in Qatar from missile and drone strikes; no deaths reported",
-      "verification_status": "reported"
+      "civilian_impact": "16 people injured from missile and drone strikes across Qatar; no deaths reported",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-01T16:00:00Z",
@@ -287,7 +289,7 @@
       ],
       "fatalities": 31,
       "source": "Al Jazeera",
-      "civilian_impact": "31 people killed in strikes on Beirut suburbs",
+      "civilian_impact": "31 people killed in strikes on Beirut suburbs; Hezbollah intelligence chief Hussein Makled and senior IRGC Quds Force commanders killed",
       "verification_status": "confirmed"
     },
     {
@@ -525,7 +527,7 @@
       ],
       "fatalities": null,
       "source": "NPR",
-      "civilian_impact": "At least 294 killed and 1,023 wounded in Lebanon; 95,000 displaced from Israeli attacks",
+      "civilian_impact": "At least 294 killed and 1,023 wounded in Lebanon from Israeli attacks; 95,000 displaced",
       "verification_status": "reported"
     },
     {
@@ -558,7 +560,7 @@
       "fatalities": 41,
       "source": "Al Jazeera",
       "civilian_impact": "At least 41 people killed and 40 wounded in Nabi Chit, Bekaa Valley during airstrike coinciding with commando raid",
-      "verification_status": "reported"
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-07T03:00:00Z",
@@ -639,7 +641,7 @@
       ],
       "fatalities": null,
       "source": "Al Jazeera",
-      "civilian_impact": "Over 500,000 displaced in Lebanon; total Iranian civilian death toll exceeds 1,300 per Iranian Red Crescent",
+      "civilian_impact": "Over 500,000 displaced in Lebanon; at least 1,348 people killed in US-Israeli attacks on Iran (as of March 7); Iranian Red Crescent reports total Iranian civilian death toll as part of broader casualty figures",
       "verification_status": "reported"
     },
     {
@@ -682,9 +684,9 @@
         "United States",
         "Israel"
       ],
-      "fatalities": null,
+      "fatalities": 1348,
       "source": "Al Jazeera",
-      "civilian_impact": "Total civilian casualties in Iran surpass 1,300 killed according to Iranian Red Crescent. Infrastructure damage includes Grand Bazaar in Tehran and Golestan Palace, a UNESCO World Heritage Site.",
+      "civilian_impact": "At least 1,348 people killed according to Iranian UN representative; damage includes Grand Bazaar in Tehran and Golestan Palace (UNESCO World Heritage Site); 300 children and adolescents hospitalized; over 6,000 people wounded",
       "verification_status": "reported"
     },
     {

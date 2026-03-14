@@ -46,14 +46,34 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("map");
   const [mobileTab, setMobileTab] = useState<MobileTab>("map");
   const [panelOpen, setPanelOpen] = useState(false);
-  const [dateRange, setDateRange] = useState({
-    start: "2026-02-28T00:00:00Z",
-    end: new Date().toISOString(),
+  const [dateRange, setDateRange] = useState(() => {
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 86400000);
+    return {
+      start: oneDayAgo.toISOString(),
+      end: now.toISOString(),
+    };
   });
 
   const daysOfConflict = Math.ceil(
     (Date.now() - new Date(CONFLICT_START).getTime()) / 86400000
   );
+
+  // If no events in default 24h window, expand to show all
+  const [hasExpandedFallback, setHasExpandedFallback] = useState(false);
+  useEffect(() => {
+    if (hasExpandedFallback || events.length === 0) return;
+    const startTs = new Date(dateRange.start).getTime();
+    const endTs = new Date(dateRange.end).getTime();
+    const inRange = events.filter((e) => {
+      const t = new Date(e.date).getTime();
+      return t >= startTs && t <= endTs;
+    });
+    if (inRange.length === 0) {
+      setDateRange({ start: "2026-02-28T00:00:00Z", end: new Date().toISOString() });
+      setHasExpandedFallback(true);
+    }
+  }, [events, dateRange, hasExpandedFallback]);
 
   // Privacy-respecting analytics — fire-and-forget page view tracking
   useEffect(() => {
@@ -90,16 +110,71 @@ export default function Home() {
     );
   }
 
-  // Notification banner — shown on ALL screens
+  // Notification banner — scrolling ticker with clickable headlines
+  const headlines: { text: string; url: string | null }[] = notification
+    ? notification.body
+        .split("- [")
+        .filter(Boolean)
+        .map((item) => {
+          // Extract source URL if appended with ||| delimiter
+          const pipeIdx = item.indexOf("|||");
+          const url = pipeIdx !== -1 ? item.slice(pipeIdx + 3).trim() : null;
+          const text = (pipeIdx !== -1 ? item.slice(0, pipeIdx) : item)
+            .replace(/^\[/, "")
+            .replace(/\]/, " —")
+            .trim();
+          return { text, url };
+        })
+        .filter((item) => /[.!?)"'\d]$/.test(item.text))
+    : [];
+
   const notifBanner = notification ? (
-    <div className="relative z-40 flex items-center gap-3 bg-amber-600/90 px-4 py-2 text-sm text-white backdrop-blur-sm">
-      <div className="flex-1 min-w-0">
-        <span className="font-semibold">{notification.title}</span>
-        <span className="ml-2 opacity-90">{notification.body}</span>
+    <div className="relative z-40 flex items-center bg-amber-600/90 text-sm text-white backdrop-blur-sm">
+      <span className="shrink-0 bg-red-700 px-3 py-2 text-xs font-bold uppercase tracking-wider">
+        Breaking
+      </span>
+      <div className="flex-1 min-w-0 overflow-hidden py-2">
+        <div className="ticker-track hover:[animation-play-state:paused]">
+          {headlines.map((item, i) =>
+            item.url ? (
+              <a
+                key={i}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block whitespace-nowrap px-8 hover:underline"
+              >
+                {item.text}
+              </a>
+            ) : (
+              <span key={i} className="inline-block whitespace-nowrap px-8">
+                {item.text}
+              </span>
+            )
+          )}
+          {headlines.map((item, i) =>
+            item.url ? (
+              <a
+                key={`dup-${i}`}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block whitespace-nowrap px-8 hover:underline"
+                aria-hidden="true"
+              >
+                {item.text}
+              </a>
+            ) : (
+              <span key={`dup-${i}`} className="inline-block whitespace-nowrap px-8" aria-hidden="true">
+                {item.text}
+              </span>
+            )
+          )}
+        </div>
       </div>
       <button
         onClick={dismissNotif}
-        className="shrink-0 rounded px-2 py-0.5 text-xs hover:bg-white/20"
+        className="shrink-0 px-3 py-2 text-xs hover:bg-white/20"
         aria-label="Dismiss notification"
       >
         ✕
@@ -181,7 +256,8 @@ export default function Home() {
             dateRange={dateRange}
           />
 
-          <div className="absolute bottom-0 left-0 right-0 p-3 pb-4 sm:pb-3 md:right-[380px]">
+          {/* Full timeline on desktop, compact filter bar on mobile */}
+          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 sm:pb-3 md:right-[380px]">
             <TimelineSlider
               events={events}
               dateRange={dateRange}

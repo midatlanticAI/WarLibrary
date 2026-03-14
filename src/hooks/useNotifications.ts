@@ -45,32 +45,8 @@ export function useNotifications() {
         const json = await res.json();
         if (!json.data) return;
 
-        // Show in-app banner
+        // Show in-app banner (push notifications are handled server-side)
         setNotification(json.data);
-
-        // Show browser/push notification if permitted
-        if ("Notification" in window && Notification.permission === "granted") {
-          try {
-            const reg = await navigator.serviceWorker?.ready;
-            if (reg) {
-              reg.showNotification(json.data.title, {
-                body: json.data.body,
-                icon: "/icons/icon-192.png",
-                badge: "/icons/icon-192.png",
-                tag: json.data.id,
-                data: { url: json.data.url },
-              } as NotificationOptions);
-            } else {
-              new Notification(json.data.title, {
-                body: json.data.body,
-                icon: "/icons/icon-192.png",
-                tag: json.data.id,
-              });
-            }
-          } catch {
-            // Browser notification failed, in-app still shows
-          }
-        }
       } catch {
         // Silently fail — polling is non-critical
       }

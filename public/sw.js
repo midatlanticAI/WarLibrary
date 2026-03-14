@@ -1,7 +1,7 @@
 // War Library Service Worker
 // Handles: offline caching, push notifications, background sync
 
-const CACHE_NAME = "warlibrary-v1";
+const CACHE_NAME = "warlibrary-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.webmanifest",

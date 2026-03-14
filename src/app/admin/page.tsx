@@ -748,7 +748,12 @@ function Dashboard() {
   const { data } = resp;
   const stats = data.pipeline.stats;
   const logs = data.logs.last_50_lines;
-  const sourceNames = ["Google News", "Al Jazeera", "BBC News", "New York Times", "The Guardian", "France 24", "DW News"];
+  const sourceNames = [
+    "Google News", "NewsData",
+    "Al Jazeera", "BBC News", "New York Times", "The Guardian", "France 24", "DW News",
+    "Washington Post", "NPR", "CNN", "Fox News", "CBS News", "ABC News",
+    "Reuters", "UN News", "Times of Israel", "Middle East Eye",
+  ];
 
   return (
     <div className="flex h-dvh flex-col bg-[#0a0a0a] text-zinc-300">

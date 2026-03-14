@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth";
+import { sendPushToAll } from "@/lib/push";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
@@ -68,5 +69,21 @@ export async function POST(req: NextRequest) {
 
   saveToDisk(latestNotification);
 
-  return NextResponse.json({ data: latestNotification });
+  // Fire real push notifications to all subscribers
+  let pushResult = { sent: 0, failed: 0, removed: 0 };
+  try {
+    pushResult = await sendPushToAll({
+      title,
+      body: notifBody,
+      url: body.url || "/",
+      tag: latestNotification.id,
+    });
+  } catch (err) {
+    console.error("[notifications] Push send failed:", err);
+  }
+
+  return NextResponse.json({
+    data: latestNotification,
+    push: pushResult,
+  });
 }

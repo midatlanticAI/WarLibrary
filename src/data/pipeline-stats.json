@@ -1,38 +1,31 @@
 {
-  "last_run": "2026-03-10T00:30:05.124Z",
-  "articles_fetched": 398,
+  "last_run": "2026-03-14T03:30:03.029Z",
+  "articles_fetched": 803,
   "articles_by_source": {
-    "NewsData": 30,
-    "Google News": 232,
-    "Outlet RSS": 136
+    "NewsData": 34,
+    "Google News": 551,
+    "Outlet RSS": 218
   },
-  "events_extracted": 10,
-  "events_valid": 10,
-  "events_unique": 10,
+  "events_extracted": 0,
+  "events_valid": 0,
+  "events_unique": 0,
   "events_rejected_invalid": 0,
   "events_rejected_duplicate": 0,
   "events_rejected_spatiotemporal": 0,
-  "avg_confidence": 0.67,
-  "source_mix": {
-    "New York Times": 1,
-    "Al Jazeera": 1,
-    "Orissa Post": 2,
-    "Mankato Free Press": 1,
-    "The New York Times": 1,
-    "AP News via Mankato Free Press": 2,
-    "Jamaica Inquirer": 1,
-    "The Week": 1
-  },
+  "avg_confidence": 0,
+  "source_mix": {},
   "verification_breakdown": {
-    "confirmed": 2,
-    "reported": 7,
-    "claimed": 1,
+    "confirmed": 0,
+    "reported": 0,
+    "claimed": 0,
     "disputed": 0,
     "unconfirmed": 0
   },
-  "total_events_in_dataset": 221,
-  "status": "EVENTS_ADDED",
-  "errors": [],
+  "total_events_in_dataset": 0,
+  "status": "NO_NEW_EVENTS",
+  "errors": [
+    "Failed to parse JSON from Claude response"
+  ],
   "source_health": {
     "NewsData": "ok",
     "Google News": "ok",
@@ -41,9 +34,19 @@
     "New York Times": "ok",
     "The Guardian": "ok",
     "France 24": "ok",
-    "DW News": "error"
+    "DW News": "error",
+    "Washington Post": "ok",
+    "NPR": "ok",
+    "CNN": "ok",
+    "Fox News": "ok",
+    "CBS News": "error",
+    "ABC News": "ok",
+    "Reuters": "error",
+    "UN News": "ok",
+    "Times of Israel": "error",
+    "Middle East Eye": "ok"
   },
-  "duration_ms": 41813,
-  "api_input_tokens": 7527,
-  "api_output_tokens": 2654
+  "duration_ms": 76539,
+  "api_input_tokens": 7333,
+  "api_output_tokens": 4096
 }

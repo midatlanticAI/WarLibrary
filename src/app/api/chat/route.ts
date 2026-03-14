@@ -2,8 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { isAdmin } from "@/lib/auth";
-import fs from "fs";
-import path from "path";
+import { retrieveEvents, getAllEvents, getDatabaseSummary, buildContext } from "@/lib/rag";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "",
@@ -255,192 +254,25 @@ function checkGuardrails(question: string): GuardrailResult {
   return { allowed: true };
 }
 
-// ---------------------------------------------------------------------------
-// RAG-style event retrieval — search and rank events by relevance to query
-// ---------------------------------------------------------------------------
-
-interface EventRecord {
-  date?: string;
-  event_type?: string;
-  description?: string;
-  latitude?: number;
-  longitude?: number;
-  country?: string;
-  region?: string;
-  actors?: string[];
-  fatalities?: number | null;
-  source?: string;
-  source_url?: string | null;
-  confidence?: number;
-  verification_status?: string;
-  [key: string]: unknown;
-}
-
-const STOP_WORDS = new Set([
-  "the", "is", "are", "was", "were", "be", "been", "being",
-  "have", "has", "had", "do", "does", "did", "will", "would",
-  "could", "should", "may", "might", "shall", "can",
-  "a", "an", "and", "but", "or", "nor", "not", "no",
-  "in", "on", "at", "to", "for", "of", "with", "by",
-  "from", "up", "about", "into", "through", "during",
-  "before", "after", "above", "below", "between",
-  "this", "that", "these", "those", "it", "its",
-  "what", "which", "who", "whom", "how", "when", "where", "why",
-  "all", "each", "every", "both", "few", "more", "most",
-  "some", "such", "than", "too", "very", "just",
-  "i", "me", "my", "we", "our", "you", "your",
-  "he", "she", "they", "them", "their", "his", "her",
-  "if", "then", "so", "as", "also", "only",
-  "tell", "know", "think", "many", "much", "any",
-]);
-
-function extractKeywords(query: string): string[] {
-  return query
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, " ")
-    .split(/\s+/)
-    .filter((w) => w.length > 1 && !STOP_WORDS.has(w));
-}
-
-function scoreEvent(event: EventRecord, keywords: string[]): number {
-  const searchable = [
-    String(event.description || ""),
-    String(event.country || ""),
-    String(event.region || ""),
-    String(event.event_type || "").replace(/_/g, " "),
-    ...(Array.isArray(event.actors) ? event.actors.map(String) : []),
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  let score = 0;
-  for (const kw of keywords) {
-    if (searchable.includes(kw)) {
-      score++;
-    }
-  }
-  return score;
-}
-
-function searchEvents(
-  query: string,
-  events: EventRecord[],
-  limit: number = 20
-): EventRecord[] {
-  const keywords = extractKeywords(query);
-
-  if (keywords.length === 0) {
-    // No meaningful keywords — return most recent events
-    return [...events]
-      .sort((a, b) =>
-        String(b.date || "").localeCompare(String(a.date || ""))
-      )
-      .slice(0, limit);
-  }
-
-  const scored = events.map((event) => ({
-    event,
-    score: scoreEvent(event, keywords),
-  }));
-
-  const matched = scored
-    .filter((s) => s.score > 0)
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      // Tie-break by date (most recent first)
-      return String(b.event.date || "").localeCompare(
-        String(a.event.date || "")
-      );
-    });
-
-  // If fewer than 5 events match, fall back to most recent
-  if (matched.length < 5) {
-    const recentFallback = [...events]
-      .sort((a, b) =>
-        String(b.date || "").localeCompare(String(a.date || ""))
-      )
-      .slice(0, limit);
-    return recentFallback;
-  }
-
-  return matched.slice(0, limit).map((s) => s.event);
-}
-
-// ---------------------------------------------------------------------------
-// Load events from disk (cached for 30s to avoid reading on every request)
-// ---------------------------------------------------------------------------
-const DATA_DIR = path.join(process.cwd(), "src", "data");
-let _cachedEvents: EventRecord[] = [];
-let _cachedSummary = "";
-let _cacheTime = 0;
-
-function readEventsFile(filePath: string): EventRecord[] {
-  try {
-    if (!fs.existsSync(filePath)) return [];
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const parsed: { events?: EventRecord[] } = JSON.parse(raw);
-    return Array.isArray(parsed.events) ? parsed.events : [];
-  } catch {
-    return [];
-  }
-}
-
-function getAllEvents(): EventRecord[] {
-  const now = Date.now();
-  if (_cachedEvents.length > 0 && now - _cacheTime < 30_000) return _cachedEvents;
-  _cachedEvents = [
-    ...readEventsFile(path.join(DATA_DIR, "events.json")),
-    ...readEventsFile(path.join(DATA_DIR, "events_expanded.json")),
-    ...readEventsFile(path.join(DATA_DIR, "events_latest.json")),
-  ];
-  _cacheTime = now;
-  _cachedSummary = "";
-  return _cachedEvents;
-}
-
-function getDatabaseSummary(): string {
-  const allEvents = getAllEvents();
-  if (_cachedSummary) return _cachedSummary;
-  const countries = [...new Set(allEvents.map((e) => String(e.country)))];
-  const totalFatalities = allEvents.reduce(
-    (sum, e) => sum + (Number(e.fatalities) || 0),
-    0
-  );
-  const eventTypes = [
-    ...new Set(allEvents.map((e) => String(e.event_type))),
-  ];
-  const dates = allEvents.map((e) => e.date?.split("T")[0]).filter(Boolean).sort();
-  const dateRange = dates.length > 0 ? `${dates[0]} – ${dates[dates.length - 1]}` : "unknown";
-  _cachedSummary = `CONFLICT DATABASE — Operation Epic Fury (US-Israel War on Iran)\n`;
-  _cachedSummary += `Period: ${dateRange} | ${allEvents.length} verified events | ${totalFatalities.toLocaleString()}+ fatalities reported\n`;
-  _cachedSummary += `Countries affected: ${countries.join(", ")}\n`;
-  _cachedSummary += `Event types: ${eventTypes.map((t) => t.replace(/_/g, " ")).join(", ")}\n`;
-  return _cachedSummary;
-}
-
-// ---------------------------------------------------------------------------
-// Build event context from a subset of relevant events
-// ---------------------------------------------------------------------------
-function buildEventContext(relevantEvents: EventRecord[]): string {
-  let context = getDatabaseSummary() + "\n";
-  context += `Based on the most relevant events from our database (${relevantEvents.length} of ${getAllEvents().length} total):\n\n`;
-
-  for (const e of relevantEvents) {
-    context += `[${e.date}] ${String(e.event_type || "").replace(/_/g, " ").toUpperCase()} — ${e.region}, ${e.country}: ${e.description}`;
-    if (Number(e.fatalities) > 0) context += ` (${e.fatalities} killed)`;
-    context += ` | Actors: ${Array.isArray(e.actors) ? e.actors.join(", ") : "unknown"} | Source: ${e.source}`;
-    if (e.verification_status) context += ` [${e.verification_status}]`;
-    context += "\n";
-  }
-
-  return context;
-}
-
 function getBaseSystemPrompt(): string {
-  return `You are the War Library AI — a neutral, factual analyst for the 2026 Middle East conflict (Operation Epic Fury). You have access to a verified database of ${getAllEvents().length} conflict events.
+  return `You are the War Library AI — a neutral, factual analyst for the 2026 Middle East conflict (Operation Epic Fury). You have access to a verified database of ${getAllEvents().length} conflict events AND essential background context about the conflict's origins.
+
+CONFLICT BACKGROUND — USE THIS TO ANSWER QUESTIONS ABOUT HOW/WHY THE WAR STARTED:
+
+Operation Epic Fury is the name given to the joint US-Israel military campaign against Iran that began on February 28, 2026. Key background:
+
+- **Escalation timeline**: Tensions between the US, Israel, and Iran had been escalating for years. Iran's nuclear program was a central flashpoint — Iran had been enriching uranium to near-weapons-grade levels, and the IAEA reported reduced cooperation and monitoring access throughout 2025.
+- **Proxies and regional tensions**: Iran-backed groups — Hezbollah in Lebanon, the Houthis in Yemen, and various militias in Iraq and Syria — had been conducting attacks on US forces, Israeli targets, and international shipping in the Red Sea and Strait of Hormuz throughout 2024-2025.
+- **Trump administration posture**: The Trump administration took an increasingly hawkish stance toward Iran, imposing "maximum pressure" sanctions and stating that Iran's nuclear progress represented an unacceptable threat. Israel shared this position and had been conducting covert operations against Iranian nuclear facilities.
+- **Triggering events**: In late February 2026, a combination of factors converged — intelligence assessments about Iran's nuclear breakout timeline, continued attacks by Iran-backed proxies on US forces in the region, and political alignment between Washington and Jerusalem — leading to the decision to launch coordinated military strikes.
+- **February 28, 2026**: The US and Israel launched coordinated airstrikes against Iranian military installations, nuclear facilities, air defense systems, and IRGC command infrastructure. Iran retaliated with ballistic missile salvos against US bases in the region and Israeli territory.
+- **Expansion**: The conflict rapidly expanded as Hezbollah opened a front from Lebanon, Houthis intensified attacks on Red Sea shipping, and Iran attempted to close the Strait of Hormuz. Multiple countries were drawn in — Cyprus (as a staging area), Iraq, Syria, Bahrain, Qatar, and others.
+- **International response**: Russia and China condemned the strikes. European allies were divided. The UN Security Council was deadlocked. Global oil prices spiked dramatically, and shipping through the Strait of Hormuz and Red Sea was severely disrupted.
+
+IMPORTANT: When answering questions about the war's origins, causes, or background, use the context above. You are NOT limited to only the event database — you have this background knowledge. Be clear about what comes from the verified event database vs. background context.
 
 RULES:
-1. Be factual and source-attributed. When citing information from the database, mention the source.
+1. Be factual and source-attributed. When citing events from the database, mention the source. When using background context, note it as "background reporting" or "pre-conflict context."
 2. Stay neutral — do not take sides. Present all perspectives.
 3. Distinguish between verified facts and reported/unconfirmed claims.
 4. If you don't know something or it's not in the data, say so clearly.
@@ -569,8 +401,9 @@ export async function POST(req: NextRequest) {
     }
 
     // RAG: retrieve relevant events for this question
-    const relevantEvents = searchEvents(question, getAllEvents(), 20);
-    const eventContext = buildEventContext(relevantEvents);
+    const allEvents = getAllEvents();
+    const { events: relevantEvents, meta } = retrieveEvents(question, allEvents, 25);
+    const eventContext = buildContext(relevantEvents, meta, allEvents.length, getDatabaseSummary());
     const systemPrompt = getBaseSystemPrompt() + eventContext;
 
     const message = await client.messages.create({

@@ -33,6 +33,11 @@ interface RawEvent {
   actors: string[];
   fatalities: number | null;
   source: string;
+  source_url?: string | null;
+  confidence?: number | null;
+  verification_status?: string | null;
+  civilian_impact?: string | null;
+  location_precision?: string | null;
 }
 
 interface SerializedEvent {
@@ -48,6 +53,10 @@ interface SerializedEvent {
   fatalities: number | null;
   source: string;
   source_url: string | null;
+  confidence: number | null;
+  verification_status: string | null;
+  civilian_impact: string | null;
+  location_precision: string | null;
   created_at: string;
 }
 
@@ -101,7 +110,11 @@ function toSerializedEvent(raw: RawEvent, index: number): SerializedEvent {
     actors: raw.actors,
     fatalities: raw.fatalities ?? null,
     source: raw.source,
-    source_url: null,
+    source_url: raw.source_url ?? null,
+    confidence: raw.confidence ?? null,
+    verification_status: raw.verification_status ?? null,
+    civilian_impact: raw.civilian_impact ?? null,
+    location_precision: raw.location_precision ?? null,
     created_at: raw.date,
   };
 }

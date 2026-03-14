@@ -131,7 +131,8 @@
       ],
       "fatalities": 2,
       "source": "Al Jazeera",
-      "civilian_impact": "At least two civilians injured in drone strikes on Razi airport terminal and near school in Shakarabad village"
+      "civilian_impact": "At least two civilians injured in drone strikes on Razi airport terminal and near school in Shakarabad village",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-05T14:00:00Z",
@@ -236,12 +237,13 @@
       ],
       "fatalities": 10,
       "source": "Al Jazeera",
-      "civilian_impact": "10 killed, over 60 injured at US consulate in Karachi"
+      "civilian_impact": "10 killed, over 60 injured at US consulate in Karachi",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-01T12:00:00Z",
       "event_type": "violence_against_civilians",
-      "description": "At least 12 protesters and one security officer killed in pro-Iran demonstrations in Gilgit and Skardu in northern Pakistan. Shiite demonstrators attack offices of the UN Military Observer Group in Azad Kashmir.",
+      "description": "At least 13 protesters and security personnel killed in pro-Iran demonstrations in Gilgit and Skardu in northern Pakistan. Shiite demonstrators attack offices of the UN Military Observer Group in Azad Kashmir.",
       "latitude": 35.3356,
       "longitude": 75.5406,
       "country": "Pakistan",
@@ -249,9 +251,10 @@
       "actors": [
         "Pakistan"
       ],
-      "fatalities": 12,
+      "fatalities": 13,
       "source": "Al Jazeera",
-      "civilian_impact": "At least 12 protesters and one security officer killed in pro-Iran demonstrations in Gilgit and Skardu"
+      "civilian_impact": "At least 13 killed (protesters and security personnel) in pro-Iran demonstrations in Gilgit and Skardu",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-01T14:00:00Z",
@@ -432,11 +435,13 @@
       "country": "United Arab Emirates",
       "region": "Dubai - Palm Jumeirah",
       "actors": [
+        "Hezbollah",
         "Iran"
       ],
       "fatalities": 0,
       "source": "Wikipedia",
-      "civilian_impact": "Four people injured from debris and blast effects in strike near Fairmont The Palm Hotel"
+      "civilian_impact": "Four people injured from debris and blast effects in strike near Fairmont The Palm Hotel",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-02T16:30:00Z",
@@ -469,7 +474,7 @@
     {
       "date": "2026-03-04T14:00:00Z",
       "event_type": "strategic_development",
-      "description": "UAE Defense Ministry reports intercepting 161 of 174 tracked ballistic missiles, 645 of 689 detected drones, and 8 cruise missiles since February 28. An additional 812 drones detected with 755 intercepted; 57 made impact within the country. Four foreign nationals killed.",
+      "description": "UAE Defense Ministry reports intercepting 161 of 174 tracked ballistic missiles, 645 of 689 detected drones, and 8 cruise missiles since February 28. An additional 812 drones detected with 755 intercepted; 57 made impact within the country. Four foreign nationals killed and 112 injured overall.",
       "latitude": 24.4539,
       "longitude": 54.3773,
       "country": "United Arab Emirates",
@@ -480,7 +485,8 @@
       ],
       "fatalities": 4,
       "source": "Gulf News",
-      "civilian_impact": "Four foreign nationals killed (from Pakistan, Nepal, and Bangladesh) and 112 injured since strikes began"
+      "civilian_impact": "Four foreign nationals killed (from Pakistan, Nepal, and Bangladesh) and 112 injured since strikes began",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-03T18:00:00Z",
@@ -496,7 +502,8 @@
       ],
       "fatalities": 4,
       "source": "Axios",
-      "civilian_impact": "Four foreign nationals killed (from Pakistan, Nepal, and Bangladesh) and 112 injured since strikes began"
+      "civilian_impact": "Four foreign nationals killed (from Pakistan, Nepal, and Bangladesh) and 112 injured since strikes began",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-02T01:00:00Z",
@@ -555,7 +562,8 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "FDD"
+      "source": "FDD",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-03T04:00:00Z",
@@ -571,7 +579,7 @@
       ],
       "fatalities": null,
       "source": "Al Jazeera",
-      "verification_status": "reported"
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-02T06:00:00Z",
@@ -600,7 +608,8 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "House of Commons Library"
+      "source": "House of Commons Library",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-03T06:00:00Z",
