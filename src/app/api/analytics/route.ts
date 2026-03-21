@@ -32,6 +32,7 @@ interface MemoryDay {
   date: string;
   views: Record<PageName, number>;
   visitors: Set<string>;
+  restoredUniqueCount: number; // persisted count from before last restart
 }
 
 // In-memory store
@@ -62,7 +63,8 @@ function loadFromDisk(): void {
         store.dailyStats.set(day.date, {
           date: day.date,
           views: { ...day.views },
-          visitors: new Set(), // can't restore hashes, start fresh per restart
+          visitors: new Set(),
+          restoredUniqueCount: day.uniqueVisitors || 0, // preserve count from disk
         });
       }
     }
@@ -84,7 +86,7 @@ function flushToDisk(): void {
         daily.push({
           date: day.date,
           views: { ...day.views },
-          uniqueVisitors: day.visitors.size,
+          uniqueVisitors: Math.max(day.restoredUniqueCount, day.visitors.size),
         });
       }
     }
@@ -182,6 +184,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       date: today,
       views: { map: 0, feed: 0, ask: 0, donate: 0, sources: 0, about: 0 },
       visitors: new Set(),
+      restoredUniqueCount: 0,
     };
     store.dailyStats.set(today, day);
   }
@@ -213,7 +216,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     daily.push({
       date: day.date,
       views: { ...day.views },
-      uniqueVisitors: day.visitors.size,
+      uniqueVisitors: Math.max(day.restoredUniqueCount, day.visitors.size),
     });
   }
   daily.sort((a, b) => b.date.localeCompare(a.date));
@@ -222,7 +225,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     data: {
       totalViews: store.totalViews,
       todayViews: todayStats ? Object.values(todayStats.views).reduce((a, b) => a + b, 0) : 0,
-      todayUnique: todayStats ? todayStats.visitors.size : 0,
+      todayUnique: todayStats ? Math.max(todayStats.restoredUniqueCount, todayStats.visitors.size) : 0,
       aiQuestions: store.aiQuestions,
       pageViews: { ...store.pageViews },
       daily,

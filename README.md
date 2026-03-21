@@ -11,12 +11,13 @@ A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on I
 ## What It Does
 
 - **Interactive conflict map** — Mapbox-powered map with event markers, country filtering, and a timeline slider to scrub through events by date
-- **206+ verified events** across 28+ countries, sourced from Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Reuters, and 20+ other outlets
+- **2,900+ verified events** across 28+ countries, sourced from Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Reuters, and 20+ other outlets
 - **Automated news pipeline** — Ingests articles from RSS feeds and NewsData.io every 30 minutes, extracts structured events via Claude Haiku 4.5 with source attribution and confidence scoring
 - **AI-powered Q&A** — Ask questions about the conflict and get sourced, guardrailed answers
 - **Admin dashboard** — Pipeline monitoring, source health, analytics, controls (installable as separate mobile app)
 - **Notification system** — In-app banners and browser push notifications for breaking events
-- **Donation directory** — 8 verified humanitarian organizations (ICRC, UNHCR, MSF, UNICEF, IRC, Direct Relief, WFP, Save the Children)
+- **Humanitarian aid page** — Comprehensive human cost data with source-attributed figures from UNHCR, UNICEF, WFP, CARE, IRC, and other agencies. Country-by-country casualty and displacement breakdowns. Dedicated children & education impact section. 8 verified donation organizations (ICRC, UNHCR, MSF, UNICEF, IRC, Direct Relief, WFP, Save the Children) with current response details
+- **Analytics** — Privacy-respecting page view tracking, AI question counting, unique visitor tracking (no cookies, no PII — SHA-256 hashed IPs only)
 - **PWA** — Installable as a native app on any device
 
 ## Tech Stack
@@ -29,7 +30,7 @@ A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on I
 | AI | Claude Haiku 4.5 via @anthropic-ai/sdk |
 | News Ingestion | NewsData.io API, Google News RSS, outlet RSS feeds |
 | Article Extraction | Mozilla Readability + jsdom |
-| Testing | Vitest + Testing Library; Playwright E2E |
+| Testing | Vitest + Testing Library (176 tests); Playwright E2E |
 | Hosting | DigitalOcean + PM2 |
 
 ## Getting Started
@@ -60,7 +61,7 @@ The app runs at `http://localhost:3000`.
 ### Running Tests
 
 ```bash
-npm test              # Unit tests (Vitest)
+npm test              # Unit tests (Vitest — 176 tests across 4 suites)
 npx playwright test   # E2E tests (Playwright)
 ```
 
@@ -87,7 +88,7 @@ src/
 │   ├── chat/                   # AskPanel (AI Q&A)
 │   ├── pwa/                    # PWAProvider (install + notification prompts)
 │   ├── seo/                    # JSON-LD structured data
-│   └── ui/                     # Header, EventPanel, MobileNav, OverviewBanner, etc.
+│   └── ui/                     # Header, EventPanel, MobileNav, DonationPanel, etc.
 ├── data/                       # JSON data files (events, analytics, pipeline stats)
 ├── hooks/                      # useEvents, useNotifications
 ├── lib/                        # Auth, constants, API utilities
@@ -114,6 +115,19 @@ The automated pipeline runs every 30 minutes and:
 
 **Cost**: ~$7/month for pipeline at 48 runs/day using Haiku.
 
+## Humanitarian Data
+
+The Humanitarian Aid page provides comprehensive, source-attributed data on the human cost of the conflict:
+
+- **Human Cost Summary** — Key displacement and casualty figures with source citations
+- **Country-by-Country Breakdown** — Collapsible sections for Iran, Lebanon, Israel, US Military, Gulf States & Iraq with per-country stats
+- **Children & Education** — 1,100+ children killed or injured regionally (UNICEF), the Minab school attack, 65+ schools damaged
+- **Economic & Food Security** — Oil prices, Strait of Hormuz disruption, 45M additional people at risk of hunger (WFP)
+- **Verified Organizations** — 8 independently rated orgs with current response details and direct donation links
+- **Source Attribution** — 24 cited sources (UNHCR, UNICEF, WFP, Hengaw, Lebanon Health Ministry, US CENTCOM, etc.)
+
+All figures include source organization and reporting date. Where government and independent figures conflict, both are presented with attribution.
+
 ## Data Integrity
 
 - Per-event fatalities only — cumulative death toll reports are tagged as `strategic_development` with `fatalities=0` to prevent double-counting
@@ -131,6 +145,15 @@ The Ask AI feature uses a 3-tier cost model:
 
 All responses are guardrailed: jailbreak detection, off-topic rejection, weapon content blocking, output validation, daily 2M token spend cap.
 
+## Analytics
+
+Privacy-respecting, cookie-free analytics:
+- Page view tracking per tab (map, feed, ask, donate, sources, about)
+- AI question counting (tracked from the chat API)
+- Unique visitor tracking via SHA-256 hashed IPs (no PII stored)
+- Persisted to disk, survives restarts
+- Visible in admin dashboard
+
 ## Security
 
 - API keys server-side only (`.env.local`, gitignored)
@@ -147,6 +170,10 @@ All responses are guardrailed: jailbreak detection, off-topic rejection, weapon 
 - **Accurate** — Per-event fatalities only. No cumulative double-counting.
 - **Accessible** — Mobile-first. Available to anyone worldwide.
 - **Humanitarian** — 100% of any monetization proceeds go to verified aid organizations.
+
+## Contact
+
+For errors, corrections, or feedback: john@midatlantic.ai
 
 ## License
 

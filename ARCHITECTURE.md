@@ -37,6 +37,8 @@
 │  │  ├── /api/admin         → Admin auth (httpOnly)     │     │
 │  │  ├── /api/events        → Event data API            │     │
 │  │  ├── /api/notifications → Push notifications        │     │
+│  │  ├── /api/analytics     → Page views + AI questions │     │
+│  │  ├── /api/push          → Push subscription mgmt   │     │
 │  │  ├── /api/stats         → Event statistics          │     │
 │  │  └── /api/health        → Health check              │     │
 │  │                                                      │     │
@@ -65,29 +67,25 @@ External Services:
 
 ## Data Flow
 
-### Event Data (current — static seed)
+### Event Data (live pipeline — runs every 30 min)
 ```
 JSON files (src/data/)
-  ├── events.json          (48 events)
-  ├── events_expanded.json (64 events)
-  └── events_latest.json   (12 events)
+  ├── events.json          (48 seed events)
+  ├── events_expanded.json (64 expanded events)
+  └── events_latest.json   (2,798+ pipeline-appended events, growing)
         │
         ▼
-  useEvents.ts hook
-  (merges, sorts chronologically, assigns IDs)
+  /api/events route
+  (merges, deduplicates, sorts chronologically)
         │
         ▼
-  124 ConflictEvent objects
+  useEvents.ts hook → 2,900+ ConflictEvent objects
   (shared across all components)
-```
 
-### Event Data (future — live pipeline)
-```
-ACLED API ──┐
-GDELT ──────┤
-NewsAPI ────┤──→ OpenClaw Pipeline ──→ PostgreSQL/PostGIS ──→ API ──→ Frontend
-SIPRI ──────┤       (scheduled)           (verified)
-HDX/IOM ────┘
+Pipeline sources:
+  NewsData.io API ──┐
+  Google News RSS ──┤──→ update-events.js ──→ events_latest.json ──→ API ──→ Frontend
+  6 Outlet RSS ─────┘    (every 30 min via cron)
 ```
 
 ### AI Chat Flow
@@ -105,7 +103,7 @@ User question
   │   NO → Return filtered response
   │   YES ↓
   ├─ Claude Haiku 4.5 API call
-  │   (system prompt + 124 events as context)
+  │   (system prompt + events database as context)
   │   (~$0.001 per question)
   │       │
   │       ▼
@@ -123,7 +121,7 @@ page.tsx (tab router)
   │
   ├── "map"     → ConflictMap + EventPanel + TimelineSlider + OverviewBanner
   ├── "ask"     → AskPanel (chat-style AI Q&A with markdown rendering)
-  ├── "donate"  → DonationPanel (8 verified humanitarian orgs)
+  ├── "donate"  → DonationPanel (human cost data + 8 verified humanitarian orgs)
   ├── "sources" → SourcesPage (methodology + source list)
   └── "about"   → AboutPage (mission, limitations, editorial policy)
 
@@ -156,7 +154,7 @@ Client (PWAProvider.tsx):
   └── Preferences stored in localStorage (wl_install_dismissed, wl_notif_enabled)
 
 Notification polling (useNotifications.ts):
-  └── Polls /api/notifications every 60s when enabled
+  └── Polls /api/notifications every 30s when enabled
 ```
 
 ## Test Architecture
@@ -166,10 +164,11 @@ vitest.config.ts
   ├── .tsx files: happy-dom (via environmentMatchGlobs)
   └── @ alias mapped to src/
 
-Test Suites (129 tests):
-  ├── api-chat.test.ts      (83 tests) — guardrails, rate limiting, spend tracking
-  ├── components.test.tsx   (30 tests) — AskPanel, EventPanel, useEvents hook
-  └── data-integrity.test.ts (16 tests) — event data structure, PWA manifest
+Test Suites (176 tests):
+  ├── api-chat.test.ts        (83 tests) — guardrails, rate limiting, spend tracking
+  ├── components.test.tsx     (30 tests) — AskPanel, EventPanel, useEvents hook
+  ├── admin-dashboard.test.ts (47 tests) — auth, cron validation, pipeline history, cache
+  └── data-integrity.test.ts  (16 tests) — event data structure, PWA manifest
 ```
 
 ## Security Architecture

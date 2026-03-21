@@ -130,9 +130,9 @@ export default function AboutPage({ onBack }: AboutPageProps) {
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-zinc-400">
               To report an error, suggest a correction, or provide feedback,
-              contact us at{" "}
-              <span className="text-zinc-300">warlibrary@midatlantic.ai</span>.
-              We take data accuracy seriously and will investigate all reports.
+              reach out at{" "}
+              <span className="text-zinc-300">john@midatlantic.ai</span>.
+              I take data accuracy seriously and will investigate all reports.
             </p>
           </section>
 

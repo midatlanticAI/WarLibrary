@@ -42,6 +42,7 @@ src/
 │       ├── analytics/route.ts # Persistent analytics tracking
 │       ├── health/route.ts   # Health check endpoint
 │       ├── notifications/route.ts # Notification endpoint (admin POST, client GET poll)
+│       ├── push/route.ts     # Push subscription management
 │       └── stats/route.ts    # Event statistics endpoint
 ├── components/
 │   ├── map/
@@ -61,16 +62,16 @@ src/
 │       ├── EventPanel.tsx    # Scrollable event feed with search, filters, provenance
 │       ├── ContentWarning.tsx # First-visit landing + briefing
 │       ├── OverviewBanner.tsx # Situation summary + stats
-│       ├── DonationPanel.tsx # 8 verified humanitarian orgs
+│       ├── DonationPanel.tsx # Humanitarian aid — human cost data + 8 verified orgs
 │       ├── SourcesPage.tsx   # Data source methodology
 │       ├── AboutPage.tsx     # About + editorial policy
 │       └── SourceFooter.tsx  # Footer with source links
 ├── data/
-│   ├── events.json           # Base seed events (49)
+│   ├── events.json           # Base seed events (48)
 │   ├── events_expanded.json  # Expanded events (64)
-│   ├── events_latest.json    # Pipeline-appended events (grows over time)
+│   ├── events_latest.json    # Pipeline-appended events (2,798+, growing)
 │   ├── notification.json     # Latest notification (persisted to disk)
-│   ├── analytics.json        # Page view analytics
+│   ├── analytics.json        # Page view + AI question analytics (persisted unique visitors)
 │   ├── pipeline-stats.json   # Current pipeline run stats
 │   ├── pipeline-history.json # Last 100 pipeline runs
 │   └── article-url-cache.json # Prevents duplicate article processing
@@ -88,7 +89,7 @@ src/
 ### Scripts
 ```
 scripts/
-├── update-events.js          # Main pipeline (~1400 lines)
+├── update-events.js          # Main pipeline (~1700 lines)
 │   - Fetches from NewsData.io API, Google News RSS, outlet RSS feeds
 │   - Resolves Google News redirect URLs
 │   - Extracts article bodies via Mozilla Readability
@@ -123,7 +124,7 @@ public/
     └── favicon-16.png, favicon-32.png
 ```
 
-### Data: 206 verified events across 28+ countries
+### Data: 2,900+ verified events across 28+ countries
 Sources: Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Washington Post,
 Reuters, NPR, Times of Israel, Axios, PBS, Naval News, UN News, and more.
 
@@ -210,9 +211,9 @@ NEWSDATA_API_KEY=...  # Optional, enhances article content quality
 ```
 
 ## Key Principles
-- **Neutral**: No sides. All perspectives presented. Source-attributed.
+- **Human-first**: Center the human cost. Event descriptions lead with who was affected, not operational details. People are not statistics.
+- **Accurate**: Per-event fatalities only — no cumulative double-counting. Discrepancies with verified cumulative totals acknowledged via disclaimers.
 - **Accessible**: Anyone in the world can read this. Mobile-first.
 - **Verified**: Every event has a source. Distinguish confirmed vs unconfirmed.
-- **Accurate**: Per-event fatalities only — no cumulative double-counting.
 - **Budget-conscious**: Haiku for chat/extraction, token-optimized prompts, aggressive caching.
 - **Humanitarian**: 100% of proceeds to verified aid organizations.

@@ -157,10 +157,10 @@ describe("AskPanel", () => {
     expect(screen.getByText("Impact")).toBeInTheDocument();
     expect(screen.getByText("Factions")).toBeInTheDocument();
 
-    // Should show some suggested questions
-    expect(screen.getByText("What is happening right now?")).toBeInTheDocument();
-    expect(screen.getByText("How did this war start?")).toBeInTheDocument();
-    expect(screen.getByText("How many civilians have been killed?")).toBeInTheDocument();
+    // Should show some suggested questions (matching current SUGGESTED_QUESTIONS)
+    expect(screen.getByText("What is the current military situation in the 2026 Iran war?")).toBeInTheDocument();
+    expect(screen.getByText("How did Operation Epic Fury start and what triggered it?")).toBeInTheDocument();
+    expect(screen.getByText("What are the civilian casualty figures in the Iran war so far?")).toBeInTheDocument();
   });
 
   it("shows War Library AI heading", () => {
@@ -171,7 +171,7 @@ describe("AskPanel", () => {
   it("renders suggested questions as clickable buttons", () => {
     render(<AskPanel events={mockEvents} />);
 
-    const questionButton = screen.getByText("What is happening right now?");
+    const questionButton = screen.getByText("What is the current military situation in the 2026 Iran war?");
     expect(questionButton.tagName).toBe("BUTTON");
     expect(questionButton).not.toBeDisabled();
   });
@@ -299,13 +299,13 @@ describe("AskPanel", () => {
 
     render(<AskPanel events={mockEvents} />);
 
-    fireEvent.click(screen.getByText("How did this war start?"));
+    fireEvent.click(screen.getByText("How did Operation Epic Fury start and what triggered it?"));
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: "How did this war start?" }),
+        body: JSON.stringify({ question: "How did Operation Epic Fury start and what triggered it?" }),
       });
     });
   });
