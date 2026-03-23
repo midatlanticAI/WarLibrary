@@ -220,7 +220,7 @@ export default function Home() {
       <div className="flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="ask" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
         {notifBanner}
-        <AskPanel events={events} />
+        <AskPanel events={events} onBack={() => navigate("map")} />
         <MobileNav active="ask" onChange={navigateMobile} />
       </div>
     );
@@ -282,6 +282,7 @@ export default function Home() {
             }}
             isOpen={true}
             onToggle={() => setPanelOpen(!panelOpen)}
+            onBack={() => setMobileTab("map")}
           />
         </div>
       </div>

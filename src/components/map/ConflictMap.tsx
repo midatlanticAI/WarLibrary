@@ -6,6 +6,7 @@ import Map, {
   Popup,
   NavigationControl,
   ScaleControl,
+  AttributionControl,
   MapRef,
 } from "react-map-gl/mapbox";
 import type { ConflictEvent } from "@/types";
@@ -130,7 +131,8 @@ export default function ConflictMap({
         attributionControl={false}
       >
         <NavigationControl position="top-left" showCompass={false} />
-        <ScaleControl position="bottom-left" />
+        <ScaleControl position="bottom-right" />
+        <AttributionControl compact position="bottom-left" />
 
         {filteredEvents.map((event) => (
           <Marker

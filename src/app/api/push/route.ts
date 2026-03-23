@@ -11,6 +11,7 @@ import path from "path";
  */
 
 const SUBS_FILE = path.join(process.cwd(), "src", "data", "push-subscriptions.json");
+const MAX_SUBSCRIPTIONS = 10_000; // Hard cap to prevent disk exhaustion
 
 interface PushSub {
   endpoint: string;
@@ -56,6 +57,12 @@ export async function POST(req: NextRequest) {
   // Deduplicate by endpoint
   const exists = subs.some((s) => s.endpoint === sub.endpoint);
   if (!exists) {
+    if (subs.length >= MAX_SUBSCRIPTIONS) {
+      return NextResponse.json(
+        { error: "Subscription limit reached" },
+        { status: 429 },
+      );
+    }
     subs.push({
       endpoint: sub.endpoint,
       keys: sub.keys,

@@ -53,6 +53,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ admin: false });
   }
   const expectedHash = createHash("sha256").update(secret).digest("hex");
-  const isAdmin = cookie === expectedHash;
+  const cookieBuf = Buffer.from(cookie, "utf-8");
+  const expectedBuf = Buffer.from(expectedHash, "utf-8");
+  const isAdmin =
+    cookieBuf.length === expectedBuf.length &&
+    timingSafeEqual(cookieBuf, expectedBuf);
   return NextResponse.json({ admin: isAdmin });
 }

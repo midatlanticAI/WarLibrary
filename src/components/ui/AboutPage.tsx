@@ -186,9 +186,10 @@ export default function AboutPage({ onBack }: AboutPageProps) {
                 <li className="flex items-start gap-2">
                   <span className="mt-0.5 text-zinc-600">•</span>
                   <span>
-                    <strong className="text-zinc-300">No analytics trackers</strong>{" "}
+                    <strong className="text-zinc-300">No third-party analytics trackers</strong>{" "}
                     are used. No Google Analytics, no Facebook Pixel, no ad
-                    networks. Cloudflare provides anonymous traffic statistics.
+                    networks. We collect anonymous page-view counts locally to
+                    understand usage — no personal data is stored or shared.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">

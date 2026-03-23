@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 const siteUrl = "https://warlibrary.midatlantic.ai";
 const siteTitle = "War Library — Live Conflict Tracker";
 const siteDescription =
-  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). 150+ verified conflict events mapped across 28 countries — airstrikes, missile attacks, drone strikes, and strategic developments. Every event is source-attributed from Al Jazeera, BBC, Reuters, CNN, and AP with confidence scoring. Includes AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
+  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). 3,100+ verified conflict events mapped across the Middle East — airstrikes, missile attacks, drone strikes, and strategic developments. Every event is source-attributed from Al Jazeera, BBC, Reuters, CNN, and AP with confidence scoring. Includes AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
 const ogImage = `${siteUrl}/icons/icon-512.png`;
 
 export const metadata: Metadata = {

@@ -31,6 +31,17 @@ body {
   width: 100vw;
 }
 
+/* Reposition Mapbox logo so it doesn't overlap mobile controls */
+.mapboxgl-logo {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  margin: 0 0 2px 4px !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  opacity: 0.7 !important;
+}
+
 /* Mapbox overrides for dark theme */
 .mapboxgl-popup-content {
   background: #1a1a1a !important;

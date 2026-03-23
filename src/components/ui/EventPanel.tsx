@@ -11,6 +11,7 @@ interface EventPanelProps {
   onSelectEvent: (event: ConflictEvent | null) => void;
   isOpen: boolean;
   onToggle: () => void;
+  onBack?: () => void;
 }
 
 export default function EventPanel({
@@ -19,6 +20,7 @@ export default function EventPanel({
   onSelectEvent,
   isOpen,
   onToggle,
+  onBack,
 }: EventPanelProps) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,6 +52,17 @@ export default function EventPanel({
       >
         {/* Header */}
         <div className="border-b border-zinc-800 p-4">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="mb-2 flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200 md:hidden"
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 011.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+              </svg>
+              Back to Map
+            </button>
+          )}
           <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
             Event Feed
           </h2>

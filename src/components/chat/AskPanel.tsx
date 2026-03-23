@@ -5,6 +5,7 @@ import type { ConflictEvent } from "@/types";
 
 interface AskPanelProps {
   events: ConflictEvent[];
+  onBack?: () => void;
 }
 
 interface ChatMessage {
@@ -18,35 +19,35 @@ const SUGGESTED_QUESTIONS = [
   {
     category: "Situation",
     questions: [
-      "What is happening right now?",
-      "How did this war start?",
-      "Which countries are involved and why?",
-      "What is the Strait of Hormuz crisis?",
+      "What is the current military situation in the 2026 Iran war?",
+      "How did Operation Epic Fury start and what triggered it?",
+      "Which countries are involved in Operation Epic Fury and why?",
+      "What is happening at the Strait of Hormuz?",
     ],
   },
   {
     category: "Impact",
     questions: [
-      "How many civilians have been killed?",
-      "How is this affecting oil prices?",
-      "What is happening in Lebanon?",
-      "Why was Cyprus attacked?",
+      "What are the civilian casualty figures in the Iran war so far?",
+      "How has the war affected global oil prices and energy markets?",
+      "What is the current situation in Lebanon and Hezbollah's involvement?",
+      "What role has Cyprus played in Operation Epic Fury?",
     ],
   },
   {
     category: "Factions",
     questions: [
-      "Who is Hezbollah and why are they involved?",
-      "What are the Houthis doing?",
-      "What is Russia's role in this war?",
-      "What is Iran's military capability now?",
+      "Who is Hezbollah and what is their role in this conflict?",
+      "What are the Houthis doing in the Red Sea and Yemen?",
+      "What is Russia's role and position in the 2026 Middle East war?",
+      "What has happened to Iran's military capabilities since the war started?",
     ],
   },
 ];
 
 const API_BASE = "/api";
 
-export default function AskPanel({ events }: AskPanelProps) {
+export default function AskPanel({ events, onBack }: AskPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -148,6 +149,21 @@ export default function AskPanel({ events }: AskPanelProps) {
 
   return (
     <div className="flex h-full flex-col bg-[#0a0a0a]">
+      {/* Back header */}
+      {onBack && (
+        <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
+          >
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 011.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+            </svg>
+            Back to Map
+          </button>
+          <span className="ml-auto text-xs text-zinc-600">War Library AI</span>
+        </div>
+      )}
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto" role="log" aria-live="polite" aria-label="Chat messages">
         {messages.length === 0 ? (

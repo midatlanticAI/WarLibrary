@@ -269,7 +269,8 @@
       ],
       "fatalities": 2,
       "source": "NBC News",
-      "civilian_impact": "Two protesters killed near the US Embassy in Islamabad during pro-Iran marches"
+      "civilian_impact": "Two protesters killed near the US Embassy in Islamabad during pro-Iran marches",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-02T06:00:00Z",
@@ -485,7 +486,7 @@
       ],
       "fatalities": 4,
       "source": "Gulf News",
-      "civilian_impact": "Four foreign nationals killed (from Pakistan, Nepal, and Bangladesh) and 112 injured since strikes began",
+      "civilian_impact": "Four foreign nationals killed and 112 injured overall from Iranian strikes since February 28",
       "verification_status": "reported"
     },
     {
@@ -502,7 +503,7 @@
       ],
       "fatalities": 4,
       "source": "Axios",
-      "civilian_impact": "Four foreign nationals killed (from Pakistan, Nepal, and Bangladesh) and 112 injured since strikes began",
+      "civilian_impact": "Four foreign nationals killed and 112 injured since strikes began",
       "verification_status": "reported"
     },
     {
@@ -594,7 +595,8 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "FDD"
+      "source": "FDD",
+      "verification_status": "confirmed"
     },
     {
       "date": "2026-03-01T02:00:00Z",
@@ -623,7 +625,8 @@
         "United States"
       ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-04T16:00:00Z",

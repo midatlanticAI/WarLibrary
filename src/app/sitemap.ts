@@ -4,36 +4,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://warlibrary.midatlantic.ai";
   const now = new Date();
 
+  // Hash fragments are not crawlable — only the base URL has SEO value.
+  // Additional "pages" are client-side tabs rendered under the same URL.
   return [
     {
       url: baseUrl,
       lastModified: now,
       changeFrequency: "hourly",
       priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/#ask`,
-      lastModified: now,
-      changeFrequency: "hourly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/#sources`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/#about`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/#donate`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.5,
     },
   ];
 }

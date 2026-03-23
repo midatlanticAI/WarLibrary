@@ -44,6 +44,14 @@ log "=========================================="
 
 cd "$PROJECT_DIR"
 
+# Prevent overlapping runs (flock on the script itself)
+LOCKFILE="/tmp/warlibrary-update.lock"
+exec 9>"$LOCKFILE"
+if ! flock -n 9; then
+  log "Another update is already running. Skipping."
+  exit 0
+fi
+
 # Run the update script and capture output
 log "Running event update script..."
 UPDATE_OUTPUT=$("$NODE_BIN" scripts/update-events.js 2>&1) || {

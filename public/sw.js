@@ -1,7 +1,7 @@
 // War Library Service Worker
 // Handles: offline caching, push notifications, background sync
 
-const CACHE_NAME = "warlibrary-v2";
+const CACHE_NAME = "warlibrary-v3";
 const STATIC_ASSETS = [
   "/",
   "/manifest.webmanifest",
@@ -41,6 +41,9 @@ self.addEventListener("fetch", (event) => {
 
   // Mapbox tiles/API — network only
   if (url.hostname.includes("mapbox.com")) return;
+
+  // Next.js bundles — network only (hashed filenames handle caching)
+  if (url.pathname.startsWith("/_next/")) return;
 
   // Everything else — network first, fall back to cache
   event.respondWith(

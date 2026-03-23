@@ -60,9 +60,9 @@ const ORGANISATIONS: Organisation[] = [
     mission:
       "The ICRC is an impartial, neutral and independent organization whose exclusively humanitarian mission is to protect the lives and dignity of victims of armed conflict and other situations of violence.",
     activeStatus:
-      "Operating on the ground in Iran, Israel, Lebanon and across the Gulf region. Delivered 170+ tons of humanitarian supplies. Working with the Iranian Red Crescent Society to provide medical services, search and rescue, and essential aid to displaced populations.",
+      "Operating on the ground in Iran, Israel, Lebanon and across the Gulf region. Working with the Iranian Red Crescent Society to provide medical services, search and rescue, and essential aid to displaced populations.",
     currentResponse:
-      "Delivering 170+ tons of humanitarian supplies across the region. Coordinating with Iranian Red Crescent for medical services, search and rescue, and essential aid to displaced populations in Iran.",
+      "Deploying emergency medical and surgical teams across the region. Coordinating with Iranian Red Crescent for medical services, search and rescue, and essential aid to displaced populations in Iran.",
     verification: "International humanitarian organization · 501(c)(3) in the US",
     charityNavigator: "3/4 Stars",
     ein: "98-6001029",
@@ -105,9 +105,9 @@ const ORGANISATIONS: Organisation[] = [
     mission:
       "UNICEF works in over 190 countries and territories to save children's lives, defend their rights, and help them fulfill their potential — from early childhood through adolescence.",
     activeStatus:
-      "Mobilizing emergency supplies to families across the Middle East. Reported 1,100+ children killed or injured across the region. Providing emergency education, water and sanitation, and child protection services in affected areas.",
+      "Mobilizing emergency supplies to families across the Middle East. Reported 1,800+ children killed or injured across the region. Providing emergency education, water and sanitation, and child protection services in affected areas.",
     currentResponse:
-      "Monitoring child casualties across the region (1,100+ killed or injured). Calling for protection of schools and children. Providing emergency education, water, sanitation, and child protection in Iran and Lebanon.",
+      "Monitoring child casualties across the region (1,800+ killed or injured). Calling for protection of schools and children. Providing emergency education, water, sanitation, and child protection in Iran and Lebanon.",
     verification: "United Nations agency · US arm (UNICEF USA) is a 501(c)(3)",
     charityNavigator: "4/4 Stars (UNICEF USA)",
     ein: "13-1760110",
@@ -120,7 +120,7 @@ const ORGANISATIONS: Organisation[] = [
     mission:
       "The IRC responds to the world's worst humanitarian crises, helping people whose lives and livelihoods are shattered by conflict and disaster to survive, recover, and regain control of their future.",
     activeStatus:
-      "Responding to displacement across the Middle East. Providing emergency relief, cash assistance, and protection services. Tracking 1 million displaced in Lebanon. Estimates war cost at ~$2 billion/day.",
+      "Responding to displacement across the Middle East. Providing emergency relief, cash assistance, and protection services. Tracking 1 million displaced in Lebanon.",
     currentResponse:
       "Operating in Lebanon, tracking 1 million+ displaced. Providing emergency relief, cash assistance, and protection services. Reporting ~140,000 people crossing from Lebanon into Syria. 87 cents of every dollar goes directly to aid.",
     verification: "501(c)(3) · Candid Platinum Seal of Transparency",
@@ -150,11 +150,11 @@ const ORGANISATIONS: Organisation[] = [
     mission:
       "WFP is the world's largest humanitarian organization, saving lives in emergencies and using food assistance to build a pathway to peace, stability, and prosperity for people recovering from conflict, disasters, and the impact of climate change.",
     activeStatus:
-      "Activated contingency plans in Lebanon to support displaced people. Served 500,000+ hot meals since March 2. Reached 230,000 people in first two weeks. Estimates 45 million more people globally at risk of acute hunger due to Hormuz disruption.",
+      "Activated contingency plans in Lebanon to support displaced people. Served 1,000,000+ hot meals since March 2. Reached 230,000 people in first two weeks. Estimates 45 million more people globally at risk of acute hunger due to Hormuz disruption.",
     currentResponse:
-      "Served 500,000+ hot meals in Lebanon since March 2. Reached 230,000 people in first two weeks. Establishing emergency cash safety net. Warning that 45 million more people face acute hunger globally due to Strait of Hormuz disruption.",
+      "Served 1,000,000+ hot meals in Lebanon since March 2. Reached 230,000 people in first two weeks. Establishing emergency cash safety net. Warning that 45 million more people face acute hunger globally due to Strait of Hormuz disruption.",
     verification: "United Nations agency · US arm (WFP USA) is a 501(c)(3)",
-    charityNavigator: "4/4 Stars (WFP USA)",
+    charityNavigator: "3/4 Stars (WFP USA)",
     ein: "13-3843435",
   },
   {
@@ -179,18 +179,18 @@ const ORGANISATIONS: Organisation[] = [
 const SOURCES = [
   { org: "UNHCR", desc: "Iran displacement figures — up to 3.2 million internally displaced", date: "March 12, 2026" },
   { org: "CARE", desc: "Lebanon displacement — 1 million+ displaced", date: "March 17, 2026" },
-  { org: "IRC", desc: "Lebanon-to-Syria border crossings — ~140,000; war cost estimate ~$2B/day", date: "March 19, 2026" },
+  { org: "IRC", desc: "Lebanon-to-Syria border crossings — ~140,000; war cost estimate ~$2B/day (CSIS estimates ~$891M/day)", date: "March 19, 2026" },
   { org: "Iran Ministry of Health", desc: "Iran casualties — 1,444 killed, 18,551 injured (government figures)", date: "Mid-March 2026" },
-  { org: "Hengaw Human Rights Org", desc: "Iran casualties — 5,300 killed (511 civilian, 4,789 military); 160+ women killed", date: "March 17, 2026" },
-  { org: "UNICEF", desc: "Regional child casualties — 1,100+ killed or injured; 200+ children killed in Iran; 91 in Lebanon; 4 in Israel; 1 in Kuwait", date: "March 11, 2026" },
-  { org: "Lebanon Health Ministry", desc: "Lebanon casualties — 900+ killed, 2,200+ injured", date: "Mid-March 2026" },
+  { org: "Hengaw Human Rights Org", desc: "Iran casualties — 5,900 killed (595 civilian, 5,305 military); 160+ women killed", date: "March 20, 2026 (6th report)" },
+  { org: "UNICEF", desc: "Regional child casualties — 1,800+ killed or injured; 240+ children killed in Iran; 107 in Lebanon; 4 in Israel; 1 in Kuwait", date: "March 16, 2026" },
+  { org: "Lebanon Health Ministry", desc: "Lebanon casualties — 1,021+ killed, 2,641 injured", date: "March 21, 2026" },
   { org: "Alma Research Center", desc: "Israel casualties — 18 civilians killed, 4,002+ injured", date: "March 20, 2026" },
   { org: "US CENTCOM", desc: "US military casualties — 13 killed (7 by enemy fire), ~200 wounded; 7,000+ strikes on Iran; 19 ships + 1 submarine destroyed", date: "Mid-March 2026" },
   { org: "Iranian Red Crescent Society", desc: "Infrastructure damage — 65+ schools, 32+ medical facilities, 10,000+ residential units, 20,000+ civilian sites", date: "Mid-March 2026" },
   { org: "Iranian Health Officials (via NPR)", desc: "Hospitals — 25 damaged, 9 out of service", date: "Mid-March 2026" },
   { org: "UNESCO", desc: "World Heritage sites damaged — Golestan Palace, Naqsh-e Jahan Square, Chehel Sotoun, Ali Qapu, Shah Mosque, Falak-ol-Aflak", date: "Mid-March 2026" },
   { org: "NetBlocks", desc: "Iran internet shutdown — 4% connectivity, 92M+ affected", date: "Mid-March 2026" },
-  { org: "WFP", desc: "Food security — 500,000+ hot meals in Lebanon; 230,000 reached; 45M more people at risk of hunger globally; shipping costs up 18%", date: "March 12–18, 2026" },
+  { org: "WFP", desc: "Food security — 1,000,000+ hot meals in Lebanon; 230,000 reached; 45M more people at risk of hunger globally; shipping costs up 18%", date: "March 12–20, 2026" },
   { org: "Mercy Corps", desc: "200,000+ children among Lebanon's displaced", date: "Mid-March 2026" },
   { org: "Iraqi Health Authorities", desc: "Iraq casualties — 61+ killed", date: "Mid-March 2026" },
   { org: "Various State Media (via NPR, AJ)", desc: "Gulf States casualties — UAE, Kuwait, Saudi Arabia, Bahrain, Oman combined 16+", date: "Mid-March 2026" },
@@ -354,19 +354,19 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                   source: "Iran Min. of Health",
                 },
                 {
-                  value: "900+",
+                  value: "1,021+",
                   label: "Killed in Lebanon",
-                  source: "Lebanon Health Min.",
+                  source: "Lebanon Health Min., March 21",
                 },
                 {
-                  value: "200+",
+                  value: "240+",
                   label: "Children killed (Iran)",
-                  source: "UNICEF, March 11",
+                  source: "Iran Health Min., March 17",
                 },
                 {
-                  value: "1,100+",
+                  value: "1,800+",
                   label: "Children killed/injured (region)",
-                  source: "UNICEF, March 11",
+                  source: "UNICEF, March 16",
                 },
               ].map((stat) => (
                 <div
@@ -390,10 +390,11 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
             <div className="mt-3 rounded-md border border-amber-900/40 bg-amber-950/20 p-2.5">
               <p className="text-[11px] leading-relaxed text-amber-300/80">
                 <span className="font-semibold text-amber-300">* Casualty figures vary by source.</span>{" "}
-                The Iranian government reports 1,444 killed and 18,551 injured.
-                Independent monitor Hengaw reports 5,300 killed (511 civilian,
-                4,789 military) as of March 17. Both figures are presented; the
-                discrepancy reflects differing methodologies and access.
+                The Iranian government reports 1,444 killed and 18,551 injured
+                (civilian figures only). Independent monitor Hengaw reports
+                5,900 killed (595 civilian, 5,305 military) as of March 20.
+                The government figure counts only civilians; Hengaw&apos;s includes
+                all casualties. Both are presented for transparency.
               </p>
             </div>
 
@@ -422,11 +423,11 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 <div className="space-y-0.5 divide-y divide-zinc-800/30">
                   <StatLine label="Killed (govt figure)" value="1,444" source="Iran Min. of Health" />
                   <StatLine label="Injured (govt figure)" value="18,551" source="Iran Min. of Health" />
-                  <StatLine label="Killed (independent)" value="5,300 total" source="Hengaw, March 17" />
-                  <StatLine label="  — Civilian" value="511" source="Hengaw" />
-                  <StatLine label="  — Military" value="4,789" source="Hengaw" />
-                  <StatLine label="Women killed" value="160+" source="Hengaw, March 17" />
-                  <StatLine label="Children killed" value="200+" source="UNICEF, March 11" />
+                  <StatLine label="Killed (independent)" value="5,900 total" source="Hengaw 6th report, March 20" />
+                  <StatLine label="  — Civilian" value="595" source="Hengaw" />
+                  <StatLine label="  — Military" value="5,305" source="Hengaw" />
+                  <StatLine label="Women killed" value="160+" source="Hengaw, March 20" />
+                  <StatLine label="Children killed" value="240+" source="Iran Health Min., March 17" />
                   <StatLine label="Children killed in schools" value="~180" source="UNICEF, March 5" />
                   <StatLine label="Internally displaced" value="Up to 3.2M" source="UNHCR, March 12" />
                 </div>
@@ -457,9 +458,9 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 icon={<span className="text-xs">🇱🇧</span>}
               >
                 <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label="Killed" value="900+" source="Lebanon Health Min." />
-                  <StatLine label="Injured" value="2,200+" source="Lebanon Health Min." />
-                  <StatLine label="Children killed" value="91" source="UNICEF, March 11" />
+                  <StatLine label="Killed" value="1,021+" source="Lebanon Health Min., March 21" />
+                  <StatLine label="Injured" value="2,641" source="Lebanon Health Min., March 21" />
+                  <StatLine label="Children killed" value="107" source="UNICEF, March 16" />
                   <StatLine label="Displaced" value="1M+" source="CARE, March 17" />
                   <StatLine label="Children displaced" value="200,000+" source="Mercy Corps" />
                   <StatLine label="Fled to Syria" value="~140,000" source="IRC, March 19" />
@@ -467,7 +468,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
                   Shelters at capacity across the country. Syrian refugees are
                   fleeing back into Syria — a reversal of a decade of displacement.
-                  WFP has reached 230,000 people and served 500,000+ hot meals
+                  WFP has reached 230,000 people and served 1,000,000+ hot meals
                   since March 2.
                 </p>
               </CollapsibleSection>
@@ -539,12 +540,12 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
             {/* Highlight card */}
             <div className="rounded-lg border border-red-900/40 bg-red-950/15 p-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-400">1,100+</div>
+                <div className="text-2xl font-bold text-red-400">1,800+</div>
                 <div className="mt-1 text-xs text-zinc-300">
                   Children killed or injured across the region
                 </div>
                 <div className="mt-1">
-                  <SourceTag text="UNICEF, March 11, 2026" />
+                  <SourceTag text="UNICEF, March 16, 2026" />
                 </div>
               </div>
             </div>
@@ -555,8 +556,8 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 By country
               </p>
               <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                <StatLine label="Iran — children killed" value="200+" source="UNICEF" />
-                <StatLine label="Lebanon — children killed" value="91" source="UNICEF" />
+                <StatLine label="Iran — children killed" value="240+" source="Iran Health Min., March 17" />
+                <StatLine label="Lebanon — children killed" value="107" source="UNICEF, March 16" />
                 <StatLine label="Israel — children killed" value="4" source="UNICEF" />
                 <StatLine label="Kuwait — children killed" value="1" source="UNICEF" />
                 <StatLine label="Lebanon — children displaced" value="200,000+" source="Mercy Corps" />
@@ -575,9 +576,10 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 Minab School Attack
               </h3>
               <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                168 girls aged 7–12 were killed when their school in Minab, Iran
-                was struck. This single event accounts for the majority of
-                school-related child fatalities in the conflict.
+                Approximately 165–175 people — primarily schoolgirls, along with
+                boys, teachers, and staff — were killed when their school in
+                Minab, Iran was struck. This single event accounts for the
+                majority of school-related child fatalities in the conflict.
               </p>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 <SourceTag text="UNICEF, March 5" />
@@ -626,7 +628,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 <StatLine label="Oil prices" value="Above $100/barrel" source="Multiple outlets" />
                 <StatLine label="Strait of Hormuz" value="Virtual standstill" source="WFP" />
                 <StatLine label="Shipping costs" value="Up 18%" source="WFP, March 12" />
-                <StatLine label="War cost estimate" value="~$2 billion/day" source="IRC" />
+                <StatLine label="War cost estimate" value="~$891M–$2B/day" source="CSIS / IRC" />
                 <StatLine label="Additional people at risk of hunger" value="45 million" source="WFP/UN News, March 18" />
                 <StatLine label="World fertilizer through Hormuz" value="25% — disrupted" source="WFP" />
               </div>
@@ -636,7 +638,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 </p>
                 <div className="space-y-0.5 divide-y divide-zinc-800/30">
                   <StatLine label="People reached by WFP" value="230,000" source="WFP" />
-                  <StatLine label="Hot meals served since March 2" value="500,000+" source="WFP" />
+                  <StatLine label="Hot meals served since March 2" value="1,000,000+" source="WFP, mid-March" />
                 </div>
               </div>
             </div>

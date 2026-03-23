@@ -254,10 +254,14 @@ async function fetchArticleBody(url) {
     // Try Mozilla Readability first (industry standard)
     try {
       const dom = new JSDOM(html, { url: resolvedUrl });
-      const reader = new Readability(dom.window.document);
-      const article = reader.parse();
-      if (article && article.textContent && article.textContent.length > 100) {
-        return article.textContent.replace(/\s+/g, " ").trim().slice(0, 1500);
+      try {
+        const reader = new Readability(dom.window.document);
+        const article = reader.parse();
+        if (article && article.textContent && article.textContent.length > 100) {
+          return article.textContent.replace(/\s+/g, " ").trim().slice(0, 1500);
+        }
+      } finally {
+        dom.window.close(); // Free JSDOM resources to prevent memory leak
       }
     } catch {
       // Readability failed, fall through to regex
@@ -412,7 +416,7 @@ async function fetchOutletRSS() {
       name: "France 24",
     },
     {
-      url: "https://rss.dw.com/xml/rss-en-mid",
+      url: "https://rss.dw.com/rdf/rss-en-world",
       name: "DW News",
     },
     {
@@ -441,26 +445,22 @@ async function fetchOutletRSS() {
       name: "Fox News",
     },
     {
-      url: "https://feeds.cbsnews.com/CBSNewsWorld",
+      url: "https://www.cbsnews.com/latest/rss/world",
       name: "CBS News",
     },
     {
       url: "https://feeds.abcnews.com/abcnews/internationalheadlines",
       name: "ABC News",
     },
-    // ── Wire Services ──
-    {
-      url: "https://feeds.reuters.com/Reuters/worldNews",
-      name: "Reuters",
-    },
+    // ── Wire Services (Reuters has no public RSS; covered via Google News) ──
     {
       url: "https://news.un.org/feed/subscribe/en/news/region/middle-east/feed/rss.xml",
       name: "UN News",
     },
     // ── Israeli / Regional ──
     {
-      url: "https://www.timesofisrael.com/feed/",
-      name: "Times of Israel",
+      url: "https://www.jpost.com/rss/rssfeedsfrontpage.aspx",
+      name: "Jerusalem Post",
     },
     {
       url: "https://www.middleeasteye.net/rss",
@@ -671,9 +671,37 @@ function writeJSON(filePath, data) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Stopwords — filtered out for meaningful word-overlap similarity
+// ---------------------------------------------------------------------------
+const STOPWORDS = new Set([
+  "a","an","the","and","or","but","in","on","at","to","for","of","with","by",
+  "from","is","was","are","were","be","been","being","has","had","have","do",
+  "does","did","will","would","shall","should","may","might","can","could",
+  "not","no","nor","so","if","then","than","that","this","these","those",
+  "it","its","he","she","they","we","you","i","me","my","his","her","their",
+  "our","your","who","whom","which","what","when","where","how","why","all",
+  "each","every","both","few","more","most","other","some","such","only",
+  "also","just","about","after","before","during","between","into","through",
+  "up","down","out","off","over","under","again","further","once","here",
+  "there","very","too","as","per","via","near","since","until","while",
+  "according","said","says","told","reported","reports","according",
+]);
+
 /**
- * Simple similarity check between two strings.
- * Returns a ratio between 0 and 1 (1 = identical).
+ * Extract significant (non-stopword) words from text.
+ */
+function significantWords(text) {
+  if (!text) return new Set();
+  return new Set(
+    text.toLowerCase().trim().split(/\s+/)
+      .filter(w => w.length > 2 && !STOPWORDS.has(w))
+  );
+}
+
+/**
+ * Word-overlap similarity using significant words only (stopwords removed).
+ * Returns Jaccard similarity: |intersection| / |union|.
  */
 function similarity(a, b) {
   if (!a || !b) return 0;
@@ -681,15 +709,88 @@ function similarity(a, b) {
   const bl = b.toLowerCase().trim();
   if (al === bl) return 1;
 
-  // Jaccard similarity on word sets
-  const setA = new Set(al.split(/\s+/));
-  const setB = new Set(bl.split(/\s+/));
+  const setA = significantWords(a);
+  const setB = significantWords(b);
+  if (setA.size === 0 || setB.size === 0) return 0;
+
   let intersection = 0;
   for (const w of setA) {
     if (setB.has(w)) intersection++;
   }
   const union = setA.size + setB.size - intersection;
   return union === 0 ? 0 : intersection / union;
+}
+
+// ---------------------------------------------------------------------------
+// Dedup log — records every dedup decision for auditing
+// ---------------------------------------------------------------------------
+const DEDUP_LOG_FILE = path.join(DATA_DIR, "dedup-log.json");
+
+function loadDedupLog() {
+  try {
+    if (fs.existsSync(DEDUP_LOG_FILE)) {
+      const raw = fs.readFileSync(DEDUP_LOG_FILE, "utf-8");
+      const log = JSON.parse(raw);
+      // Keep only last 500 entries
+      return Array.isArray(log) ? log.slice(-500) : [];
+    }
+  } catch {}
+  return [];
+}
+
+function saveDedupLog(log) {
+  try {
+    fs.writeFileSync(DEDUP_LOG_FILE, JSON.stringify(log.slice(-500), null, 2), "utf-8");
+  } catch (err) {
+    console.error(`ERROR writing dedup log: ${err.message}`);
+  }
+}
+
+/**
+ * Log a dedup decision.
+ * @param {string} action - "rejected_duplicate" | "merged_fatalities" | "rejected_spatiotemporal"
+ * @param {object} candidate - the candidate event
+ * @param {object} matchedExisting - the existing event it matched
+ * @param {object} details - similarity scores, distances, etc.
+ */
+function logDedupDecision(dedupLog, action, candidate, matchedExisting, details) {
+  dedupLog.push({
+    timestamp: new Date().toISOString(),
+    action,
+    candidate: {
+      date: candidate.date?.slice(0, 10),
+      country: candidate.country,
+      event_type: candidate.event_type,
+      description: (candidate.description || "").slice(0, 120),
+      fatalities: candidate.fatalities || 0,
+      source_url: candidate.source_url,
+    },
+    matched_existing: {
+      date: matchedExisting.date?.slice(0, 10),
+      country: matchedExisting.country,
+      description: (matchedExisting.description || "").slice(0, 120),
+      fatalities: matchedExisting.fatalities || 0,
+    },
+    details,
+  });
+}
+
+/**
+ * Normalize country names to handle inconsistencies.
+ */
+function normalizeCountry(country) {
+  if (!country) return "";
+  const map = {
+    "international waters": "International Waters",
+    "international": "International Waters",
+    "palestinian territories": "Palestine",
+    "gaza": "Palestine",
+    "west bank": "Palestine",
+    "vatican city": "Vatican",
+    "indian ocean (near sri lanka)": "Indian Ocean",
+    "indian ocean": "Indian Ocean",
+  };
+  return map[country.toLowerCase()] || country;
 }
 
 /**
@@ -706,91 +807,34 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Spatial-temporal duplicate check.
- * Two events are likely duplicates if ALL of:
- * - Same country
- * - Within 10km (Haversine) — tighter radius since multiple strikes hit nearby targets
- * - Within 6 hours — wars have multiple events per day in the same area
- * - At least one overlapping actor AND same event_type (require BOTH, not either)
- * - AND description similarity > 0.5 (to distinguish different strikes in same area)
+ * Check if two events are about the same incident.
+ * Uses a multi-signal approach:
+ * 1. Word-overlap similarity on significant words (stopwords removed)
+ * 2. Same country (normalized)
+ * 3. Within 24 hours of each other
+ * 4. Threshold: >60% significant word overlap = likely same event
+ *
+ * Returns { isDup: boolean, match: object|null, sim: number, method: string }
  */
-function isSpatioTemporalDuplicate(candidate, existingEvents) {
+function findDuplicateMatch(candidate, existingEvents) {
   const candidateTime = new Date(candidate.date).getTime();
-  if (isNaN(candidateTime)) return false;
+  const candidateCountry = normalizeCountry(candidate.country);
+  const candidateWords = significantWords(candidate.description);
 
   for (const existing of existingEvents) {
-    // Same country
-    if (candidate.country !== existing.country) continue;
+    const existingCountry = normalizeCountry(existing.country);
 
-    // Within 10km (tightened from 50km — multiple targets in same city are distinct events)
-    if (
-      typeof candidate.latitude !== "number" ||
-      typeof candidate.longitude !== "number" ||
-      typeof existing.latitude !== "number" ||
-      typeof existing.longitude !== "number"
-    ) continue;
-    const dist = haversineKm(
-      candidate.latitude, candidate.longitude,
-      existing.latitude, existing.longitude
-    );
-    if (dist > 10) continue;
-
-    // Within 6 hours (tightened from 24h — wars have many events per day)
-    const existingTime = new Date(existing.date).getTime();
-    if (isNaN(existingTime)) continue;
-    const timeDiffHours = Math.abs(candidateTime - existingTime) / 3600000;
-    if (timeDiffHours > 6) continue;
-
-    // Require BOTH: overlapping actor AND same event_type (was OR — way too aggressive)
-    const candidateActors = Array.isArray(candidate.actors) ? candidate.actors : [];
-    const existingActors = Array.isArray(existing.actors) ? existing.actors : [];
-    const hasOverlappingActor = candidateActors.some((a) =>
-      existingActors.some((b) => a.toLowerCase() === b.toLowerCase())
-    );
-    const sameEventType = candidate.event_type === existing.event_type;
-
-    if (hasOverlappingActor && sameEventType) {
-      // Final check: descriptions must also be somewhat similar
-      const descSim = similarity(candidate.description, existing.description);
-      if (descSim > 0.5) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-/**
- * Check if a candidate event is a duplicate of any existing event.
- * Uses description similarity threshold of 0.85 (raised from 0.7 — in an active
- * war, many distinct events share common words like "Israeli", "strikes", "Iran",
- * "killed" which inflate Jaccard similarity between genuinely different events).
- * Date matching compares only the date portion (YYYY-MM-DD) not full timestamps,
- * since Claude may assign slightly different times to the same event.
- */
-function isDuplicate(candidate, existingEvents) {
-  for (const existing of existingEvents) {
-    // Exact description match
+    // --- Method 1: Exact description match (any country/date) ---
     if (
       candidate.description &&
       existing.description &&
       candidate.description.toLowerCase().trim() ===
         existing.description.toLowerCase().trim()
     ) {
-      return true;
+      return { isDup: true, match: existing, sim: 1.0, method: "exact_description" };
     }
-    // High similarity + same date (day only) + same country + same event_type
-    const candidateDay = (candidate.date || "").slice(0, 10);
-    const existingDay = (existing.date || "").slice(0, 10);
-    if (
-      candidateDay === existingDay &&
-      candidate.country === existing.country &&
-      candidate.event_type === existing.event_type &&
-      similarity(candidate.description, existing.description) > 0.7
-    ) {
-      return true;
-    }
-    // Same source_url ONLY for non-liveblog URLs (liveblogs share URLs across many events)
+
+    // --- Method 2: Same source_url (non-liveblog) ---
     if (
       candidate.source_url &&
       existing.source_url &&
@@ -799,9 +843,65 @@ function isDuplicate(candidate, existingEvents) {
       !candidate.source_url.includes("live-") &&
       !candidate.source_url.includes("/live/")
     ) {
-      return true;
+      return { isDup: true, match: existing, sim: 1.0, method: "same_source_url" };
+    }
+
+    // --- Method 3: Word-overlap similarity (the core dedup) ---
+    // Same country (normalized) + within 24 hours + >60% significant word overlap
+    if (candidateCountry !== existingCountry) continue;
+
+    const existingTime = new Date(existing.date).getTime();
+    if (isNaN(existingTime) || isNaN(candidateTime)) continue;
+    const timeDiffHours = Math.abs(candidateTime - existingTime) / 3600000;
+    if (timeDiffHours > 24) continue;
+
+    // Compute word-overlap on significant words
+    const existingWords = significantWords(existing.description);
+    if (candidateWords.size === 0 || existingWords.size === 0) continue;
+    let intersection = 0;
+    for (const w of candidateWords) {
+      if (existingWords.has(w)) intersection++;
+    }
+    const union = candidateWords.size + existingWords.size - intersection;
+    const sim = union === 0 ? 0 : intersection / union;
+
+    if (sim > 0.6) {
+      return { isDup: true, match: existing, sim, method: "word_overlap" };
+    }
+
+    // --- Method 4: Spatio-temporal proximity with looser description match ---
+    // Within 50km + within 12 hours + same event_type + >40% word overlap
+    if (
+      typeof candidate.latitude === "number" &&
+      typeof candidate.longitude === "number" &&
+      typeof existing.latitude === "number" &&
+      typeof existing.longitude === "number"
+    ) {
+      const dist = haversineKm(
+        candidate.latitude, candidate.longitude,
+        existing.latitude, existing.longitude
+      );
+      if (
+        dist <= 50 &&
+        timeDiffHours <= 12 &&
+        candidate.event_type === existing.event_type &&
+        sim > 0.4
+      ) {
+        return { isDup: true, match: existing, sim, method: "spatiotemporal" };
+      }
     }
   }
+
+  return { isDup: false, match: null, sim: 0, method: null };
+}
+
+// Legacy wrappers for backward compatibility
+function isDuplicate(candidate, existingEvents) {
+  return findDuplicateMatch(candidate, existingEvents).isDup;
+}
+
+function isSpatioTemporalDuplicate(candidate, existingEvents) {
+  // Now handled inside findDuplicateMatch
   return false;
 }
 
@@ -914,6 +1014,7 @@ function sendNewEventsNotification(uniqueEvents) {
         timeout: 5000,
       },
       (res) => {
+        res.resume(); // Consume response body to free socket
         console.log(`Notification POST responded with status ${res.statusCode}`);
       }
     );
@@ -1165,19 +1266,19 @@ async function main() {
     date: "2026-03-09T00:00:00Z",
     event_type: "airstrike",
     description:
-      "US Air Force conducted strikes on IRGC missile storage facilities near Isfahan, destroying multiple underground bunkers according to CENTCOM.",
+      "12 civilians including 3 children killed and a hospital partially destroyed when US Air Force strikes hit IRGC missile storage facilities near residential areas in Isfahan.",
     latitude: 32.65,
     longitude: 51.68,
     country: "Iran",
     region: "Isfahan",
     actors: ["US Air Force", "IRGC"],
-    fatalities: 0,
+    fatalities: 12,
     source: "Al Jazeera",
     source_url: "https://www.aljazeera.com/news/2026/3/9/example-article",
     confidence: 0.9,
     verification_status: "reported",
     location_precision: "city",
-    civilian_impact: "12 civilians killed, hospital partially destroyed",
+    civilian_impact: "12 civilians killed including 3 children; hospital partially destroyed; residents displaced from surrounding neighborhood",
   };
 
   const prompt = `Extract ALL distinct conflict events from these articles about the 2026 US-Israel war on Iran (Operation Epic Fury). Be thorough — extract every unique event mentioned: strikes, attacks, deaths, political developments, interceptions, regional spillover. Only real events — never fabricate.
@@ -1188,12 +1289,30 @@ CRITICAL RULES:
 - For headline-only articles: use the headline as description, infer event_type from keywords, use the article's source/date/URL.
 - Return ONLY a valid JSON array. No markdown code fences, no explanation text, no commentary.
 
+HUMAN-FIRST DESCRIPTION RULES (VERY IMPORTANT):
+- When people were hurt or killed, the description MUST lead with the HUMAN IMPACT:
+  - First: WHO was affected (civilians, children, families, workers, students, patients, etc.)
+  - Then: WHAT happened to them (killed, wounded, displaced, trapped, burned, etc.)
+  - Then: HOW it happened (airstrike, missile strike, explosion, etc.)
+  - Then: WHERE (location details)
+- Example BAD: "Airstrike on school complex in Lamerd, Iran. 18 fatalities reported."
+- Example GOOD: "18 girls killed during sports practice when an airstrike hit their school complex in Lamerd, Iran."
+- Example BAD: "US Navy submarine torpedo strike sinks Iranian warship Iris Dena in the Indian Ocean."
+- Example GOOD: "87 Iranian sailors killed when a US Navy submarine torpedo strike sank the warship Iris Dena in the Indian Ocean."
+- For events with NO civilian impact and NO casualties (purely military/strategic, 0 fatalities), use standard operational framing.
+- The civilian_impact field should always describe the human suffering in plain language when applicable.
+
 FATALITY RULES (VERY IMPORTANT):
 - fatalities = the number killed IN THIS SPECIFIC EVENT ONLY.
 - If an article says "death toll reaches 1,000" or "X people killed so far" — that is a CUMULATIVE TOTAL, NOT per-event. Set fatalities=0 and event_type="strategic_development".
 - NEVER use cumulative/running death toll numbers as fatalities for an individual event.
 - Only use fatalities > 0 when the article says people were killed IN THIS SPECIFIC strike/attack/incident.
 - If unsure whether a number is per-event or cumulative, set fatalities=0.
+
+DEDUPLICATION RULES:
+- Each event you extract must be a DISTINCT incident. Do NOT extract the same strike/attack/development multiple times from different articles.
+- If two articles cover the same event, extract it ONCE with the best available details.
+- Pay attention to the ALREADY IN DATABASE section below — do NOT re-extract events already tracked.
 
 DATE RULES:
 - The conflict started 2026-02-28. Do NOT extract events dated before 2026-02-28.
@@ -1203,7 +1322,7 @@ event_type: "airstrike"|"missile_attack"|"drone_attack"|"battle"|"explosion"|"vi
 verification_status: "confirmed"|"reported"|"claimed"|"disputed"|"unconfirmed"
 location_precision: "exact"|"city"|"region"|"country"
 fatalities: exact number killed IN THIS SPECIFIC EVENT. 0 if unknown or cumulative. NEVER use running totals.
-civilian_impact: brief phrase if civilians affected.
+civilian_impact: brief description of human suffering if civilians affected. Lead with people, not operations.
 confidence: 0.0–1.0 based on source reliability. Headline-only = 0.5-0.7 depending on source.
 
 JSON SCHEMA (each event):
@@ -1399,10 +1518,15 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
       e.event_type = "strategic_development";
     }
     // Cap suspicious single-event fatalities at 500 (no single strike in this war has killed 500+)
-    if (e.fatalities > 500) {
+    if (e.fatalities >= 500) {
       console.log(`  FIX suspicious fatalities ${e.fatalities}->0: ${e.description?.slice(0, 60)}...`);
       e.fatalities = 0;
     }
+  }
+
+  // 8f. Normalize country names
+  for (const event of newEvents) {
+    event.country = normalizeCountry(event.country);
   }
 
   // 9. Validate and deduplicate
@@ -1421,21 +1545,89 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
 
   pipelineStats.events_valid = validEvents.length;
 
+  // Load dedup log for auditing
+  const dedupLog = loadDedupLog();
+  let fatalityUpdates = 0;
+
+  // Track events accepted this batch (to catch intra-batch duplicates)
+  const acceptedThisBatch = [];
+
   const uniqueEvents = validEvents.filter((e) => {
-    if (isDuplicate(e, allEvents)) {
-      console.log(`  SKIP (duplicate): ${e.description?.slice(0, 60)}...`);
+    // Check against ALL existing events
+    const existingMatch = findDuplicateMatch(e, allEvents);
+    if (existingMatch.isDup) {
+      // If the new event has a higher fatality count, update the existing event
+      const newFat = e.fatalities || 0;
+      const existingFat = existingMatch.match.fatalities || 0;
+      if (newFat > existingFat && newFat <= 500) {
+        console.log(`  MERGE fatalities ${existingFat}->${newFat}: ${e.description?.slice(0, 60)}...`);
+        existingMatch.match.fatalities = newFat;
+        fatalityUpdates++;
+        logDedupDecision(dedupLog, "merged_fatalities", e, existingMatch.match, {
+          similarity: existingMatch.sim,
+          method: existingMatch.method,
+          old_fatalities: existingFat,
+          new_fatalities: newFat,
+        });
+      } else {
+        logDedupDecision(dedupLog, "rejected_duplicate", e, existingMatch.match, {
+          similarity: existingMatch.sim,
+          method: existingMatch.method,
+        });
+      }
+      console.log(`  SKIP (${existingMatch.method}, sim=${existingMatch.sim.toFixed(2)}): ${e.description?.slice(0, 60)}...`);
       pipelineStats.events_rejected_duplicate++;
       return false;
     }
-    if (isSpatioTemporalDuplicate(e, allEvents)) {
-      console.log(`  SKIP (spatio-temporal duplicate): ${e.description?.slice(0, 60)}...`);
-      pipelineStats.events_rejected_spatiotemporal++;
+
+    // Check against events already accepted in THIS batch (intra-batch dedup)
+    const batchMatch = findDuplicateMatch(e, acceptedThisBatch);
+    if (batchMatch.isDup) {
+      const newFat = e.fatalities || 0;
+      const existingFat = batchMatch.match.fatalities || 0;
+      if (newFat > existingFat && newFat <= 500) {
+        batchMatch.match.fatalities = newFat;
+        fatalityUpdates++;
+        logDedupDecision(dedupLog, "merged_fatalities", e, batchMatch.match, {
+          similarity: batchMatch.sim,
+          method: "intra_batch_" + batchMatch.method,
+          old_fatalities: existingFat,
+          new_fatalities: newFat,
+        });
+      } else {
+        logDedupDecision(dedupLog, "rejected_duplicate", e, batchMatch.match, {
+          similarity: batchMatch.sim,
+          method: "intra_batch_" + batchMatch.method,
+        });
+      }
+      console.log(`  SKIP (intra-batch ${batchMatch.method}, sim=${batchMatch.sim.toFixed(2)}): ${e.description?.slice(0, 60)}...`);
+      pipelineStats.events_rejected_duplicate++;
       return false;
     }
+
+    acceptedThisBatch.push(e);
     return true;
   });
 
   pipelineStats.events_unique = uniqueEvents.length;
+
+  // Save dedup log
+  saveDedupLog(dedupLog);
+
+  // If fatalities were updated on existing events, write back the affected files
+  if (fatalityUpdates > 0) {
+    console.log(`  Updated fatalities on ${fatalityUpdates} existing event(s). Writing back data files...`);
+    // Write back events_latest.json (most likely to have updated events)
+    const latestWrapper2 = {
+      events: eventsLatest,
+      metadata: {
+        generated: new Date().toISOString().split("T")[0],
+        source: "multiple",
+        note: `Auto-updated. ${eventsLatest.length} total events in latest file. ${fatalityUpdates} fatality update(s).`,
+      },
+    };
+    writeJSON(latestFile, latestWrapper2);
+  }
 
   // Compute stats from accepted (unique) events
   if (uniqueEvents.length > 0) {

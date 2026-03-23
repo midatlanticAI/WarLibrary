@@ -230,6 +230,20 @@ const CRON_INTERVALS: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  // CSRF protection: verify Origin header matches our host
+  const origin = req.headers.get("origin");
+  const host = req.headers.get("host");
+  if (origin && host) {
+    try {
+      const originHost = new URL(origin).host;
+      if (originHost !== host) {
+        return NextResponse.json({ error: "CSRF check failed" }, { status: 403 });
+      }
+    } catch {
+      return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
+    }
+  }
+
   if (!isAdmin(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -335,7 +349,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         ? `${filtered}\n${cronLine}\n`
         : `${cronLine}\n`;
 
-      execSync(`echo ${JSON.stringify(newCrontab)} | crontab -`, {
+      execSync("crontab -", {
+        input: newCrontab,
         timeout: 5_000,
         encoding: "utf-8",
       });
