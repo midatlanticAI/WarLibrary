@@ -42,3 +42,13 @@ yarn-error.log*
 next-env.d.ts
 push-subscriptions.json
 test-results/
+
+# runtime data (mutated by pipeline/app, do not track)
+src/data/events_latest.json
+src/data/article-url-cache.json
+src/data/pipeline-history.json
+src/data/pipeline-stats.json
+src/data/analytics.json
+src/data/notification.json
+src/data/dedup-log.json
+src/data/*.backup-*.json
