@@ -519,7 +519,8 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "Alma Research Center"
+      "source": "Alma Research Center",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-03T04:00:00Z",
@@ -533,7 +534,8 @@
         "Hezbollah"
       ],
       "fatalities": null,
-      "source": "Times of Israel"
+      "source": "Times of Israel",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-05T16:00:00Z",
@@ -548,7 +550,9 @@
         "Israel"
       ],
       "fatalities": 2,
-      "source": "Times of Israel"
+      "source": "Times of Israel",
+      "civilian_impact": "Eight Israeli soldiers injured (five severely) in projectile attack; two IDF soldiers killed in follow-up rocket attack",
+      "verification_status": "reported"
     },
     {
       "date": "2026-02-28T04:00:00Z",
@@ -686,7 +690,8 @@
         "Iran"
       ],
       "fatalities": null,
-      "source": "Naval News"
+      "source": "Naval News",
+      "verification_status": "reported"
     },
     {
       "date": "2026-02-28T09:00:00Z",
@@ -701,7 +706,8 @@
         "Iran"
       ],
       "fatalities": null,
-      "source": "Naval News"
+      "source": "Naval News",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-02T04:00:00Z",
@@ -716,7 +722,8 @@
         "Iran"
       ],
       "fatalities": null,
-      "source": "Stars and Stripes"
+      "source": "Stars and Stripes",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-05T06:00:00Z",
@@ -745,7 +752,8 @@
         "Iran"
       ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "verification_status": "reported"
     },
     {
       "date": "2026-03-01T06:00:00Z",
@@ -813,7 +821,7 @@
     {
       "date": "2026-03-02T20:00:00Z",
       "event_type": "airstrike",
-      "description": "IRGC commander Abdolhamid Rahbar of the 15 Khordad Air Defense Group and four other members killed in an Israeli strike in Isfahan. The 15 Khordad group operates Iran's domestically produced air defense systems.",
+      "description": "IRGC commander Abdolhamid Rahbar of the 15 Khordad Air Defense Group killed in an Israeli strike in Isfahan. Four other members of the air defense group also killed. The 15 Khordad group operates Iran's domestically produced air defense systems.",
       "latitude": 32.6546,
       "longitude": 51.668,
       "country": "Iran",

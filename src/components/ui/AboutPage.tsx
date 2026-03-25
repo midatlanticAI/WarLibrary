@@ -43,8 +43,8 @@ export default function AboutPage({ onBack }: AboutPageProps) {
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-zinc-400">
               When conflict spreads across multiple countries and involves dozens
-              of actors, it becomes nearly impossible to follow through
-              individual news articles. War Library aggregates, maps, and
+              of actors, it becomes nearly impossible to keep up through
+              individual news articles alone. War Library aggregates, maps, and
               contextualizes events from verified sources so that anyone — not
               just analysts or journalists — can understand the full picture.
             </p>
@@ -55,12 +55,12 @@ export default function AboutPage({ onBack }: AboutPageProps) {
               How is data collected?
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-              Events are sourced from academic conflict databases (ACLED, UCDP),
-              real-time news monitoring (GDELT), and direct reporting from
-              international news organizations (Al Jazeera, CNN, BBC, Reuters,
-              NPR, and others). Military and official sources (CENTCOM, UNIFIL,
-              SIPRI) supplement the data. Each event is attributed to its
-              original source.
+              Events are sourced from an automated news pipeline that ingests
+              articles from NewsData.io, Google News RSS, and direct RSS feeds
+              from major outlets (Al Jazeera, BBC, NYT, The Guardian, France 24,
+              DW News, CNN, Reuters, and others). Each article is processed
+              through Claude AI for structured event extraction. Every event is
+              attributed to its original source with a confidence score.
             </p>
           </section>
 

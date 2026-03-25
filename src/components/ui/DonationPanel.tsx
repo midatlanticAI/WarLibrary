@@ -393,8 +393,9 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 The Iranian government reports 1,444 killed and 18,551 injured
                 (civilian figures only). Independent monitor Hengaw reports
                 5,900 killed (595 civilian, 5,305 military) as of March 20.
-                The government figure counts only civilians; Hengaw&apos;s includes
-                all casualties. Both are presented for transparency.
+                The government figure counts civilians only; Hengaw&apos;s figure
+                includes both civilian and military casualties. Both are
+                presented for transparency.
               </p>
             </div>
 

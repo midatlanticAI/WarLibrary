@@ -148,9 +148,9 @@
       "actors": [
         "Iran"
       ],
-      "fatalities": 2,
+      "fatalities": 3,
       "source": "Al Jazeera",
-      "civilian_impact": "One Asian worker killed on March 2 when debris from intercepted missile fell onto foreign vessel in Salman Industrial City; one person killed on March 10 in Bahrain when residential building in Manama hit; total of 2 killed in UAE/Bahrain area",
+      "civilian_impact": "Three people killed (one Asian worker on March 2 in Salman Industrial City, one 29-year-old woman on March 10 in Manama, Bahrain, one person in Dubai on March 7); debris from intercepted missiles caused casualties",
       "verification_status": "confirmed"
     },
     {
@@ -166,7 +166,7 @@
       ],
       "fatalities": 3,
       "source": "Al Jazeera",
-      "civilian_impact": "One person killed in drone strike on Kuwait International Airport; two Kuwait Fire Force officers killed while performing duties",
+      "civilian_impact": "Two Kuwait Fire Force officers killed while performing duties at Kuwait International Airport",
       "verification_status": "confirmed"
     },
     {
@@ -527,7 +527,7 @@
       ],
       "fatalities": null,
       "source": "NPR",
-      "civilian_impact": "At least 294 killed and 1,023 wounded in Lebanon from Israeli attacks; 95,000 displaced",
+      "civilian_impact": "At least 294 killed and 1,023 wounded in Lebanon from Israeli attacks; 95,000 displaced as of March 6",
       "verification_status": "reported"
     },
     {

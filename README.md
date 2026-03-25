@@ -11,7 +11,7 @@ A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on I
 ## What It Does
 
 - **Interactive conflict map** — Mapbox-powered map with event markers, country filtering, and a timeline slider to scrub through events by date
-- **2,900+ verified events** across 28+ countries, sourced from Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Reuters, and 20+ other outlets
+- **3,800+ verified events** across 28+ countries, sourced from Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Reuters, and 20+ other outlets
 - **Automated news pipeline** — Ingests articles from RSS feeds and NewsData.io every 30 minutes, extracts structured events via Claude Haiku 4.5 with source attribution and confidence scoring
 - **AI-powered Q&A** — Ask questions about the conflict and get sourced, guardrailed answers
 - **Admin dashboard** — Pipeline monitoring, source health, analytics, controls (installable as separate mobile app)
@@ -37,7 +37,7 @@ A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on I
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 22+
 - A [Mapbox access token](https://account.mapbox.com/access-tokens/) (free tier works)
 - An [Anthropic API key](https://console.anthropic.com/) (required for pipeline + AI chat)
 
@@ -96,8 +96,9 @@ src/
 
 scripts/
 ├── update-events.js            # Main news ingestion + event extraction pipeline
-├── auto-update.sh              # Cron wrapper with logging
-└── reconcile-fatalities.js     # Fatality verification against authoritative sources
+├── auto-update.sh              # Cron wrapper with flock + logging
+├── backup-data.sh              # Data file backup utility
+└── generate-icons.mjs          # PWA icon generator (Sharp)
 ```
 
 ## News Pipeline

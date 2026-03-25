@@ -1,116 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { isAdmin } from "@/lib/auth";
-import fs from "fs";
-import path from "path";
+import {
+  store,
+  flushToDisk,
+  trackAiQuestion,
+  VALID_PAGES,
+  type PageName,
+  type DailyEntry,
+} from "@/lib/analytics-store";
 
 // ---------------------------------------------------------------------------
 // Privacy-respecting analytics — no PII, no cookies, no fingerprinting
 // Persisted to disk so data survives restarts
 // ---------------------------------------------------------------------------
-
-const VALID_PAGES = ["map", "feed", "ask", "donate", "sources", "about"] as const;
-type PageName = (typeof VALID_PAGES)[number];
-
-const ANALYTICS_PATH = path.join(process.cwd(), "src", "data", "analytics.json");
-
-interface DailyEntry {
-  date: string;
-  views: Record<PageName, number>;
-  uniqueVisitors: number;
-  // In-memory only (not persisted — hashes are ephemeral per day)
-}
-
-interface PersistedData {
-  totalViews: number;
-  aiQuestions: number;
-  pageViews: Record<PageName, number>;
-  daily: DailyEntry[];
-}
-
-interface MemoryDay {
-  date: string;
-  views: Record<PageName, number>;
-  visitors: Set<string>;
-  restoredUniqueCount: number; // persisted count from before last restart
-}
-
-// In-memory store
-const store = {
-  totalViews: 0,
-  aiQuestions: 0,
-  pageViews: { map: 0, feed: 0, ask: 0, donate: 0, sources: 0, about: 0 } as Record<PageName, number>,
-  dailyStats: new Map<string, MemoryDay>(),
-  viewsSinceFlush: 0,
-  lastFlush: Date.now(),
-};
-
-// Load from disk on startup
-function loadFromDisk(): void {
-  try {
-    if (!fs.existsSync(ANALYTICS_PATH)) return;
-    const raw = fs.readFileSync(ANALYTICS_PATH, "utf-8");
-    const data: PersistedData = JSON.parse(raw);
-    store.totalViews = data.totalViews || 0;
-    store.aiQuestions = data.aiQuestions || 0;
-    if (data.pageViews) {
-      for (const key of VALID_PAGES) {
-        store.pageViews[key] = data.pageViews[key] || 0;
-      }
-    }
-    if (data.daily) {
-      for (const day of data.daily) {
-        store.dailyStats.set(day.date, {
-          date: day.date,
-          views: { ...day.views },
-          visitors: new Set(),
-          restoredUniqueCount: day.uniqueVisitors || 0, // preserve count from disk
-        });
-      }
-    }
-  } catch (err) {
-    console.error("[analytics] Failed to load from disk:", err);
-  }
-}
-
-function flushToDisk(): void {
-  try {
-    const daily: DailyEntry[] = [];
-    // Keep last 30 days
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 30);
-    const cutoffStr = cutoff.toISOString().split("T")[0];
-
-    for (const [date, day] of store.dailyStats) {
-      if (date >= cutoffStr) {
-        daily.push({
-          date: day.date,
-          views: { ...day.views },
-          uniqueVisitors: Math.max(day.restoredUniqueCount, day.visitors.size),
-        });
-      }
-    }
-    daily.sort((a, b) => b.date.localeCompare(a.date));
-
-    const data: PersistedData = {
-      totalViews: store.totalViews,
-      aiQuestions: store.aiQuestions,
-      pageViews: { ...store.pageViews },
-      daily,
-    };
-    fs.writeFileSync(ANALYTICS_PATH, JSON.stringify(data, null, 2), "utf-8");
-    store.viewsSinceFlush = 0;
-    store.lastFlush = Date.now();
-  } catch (err) {
-    console.error("[analytics] Failed to flush to disk:", err);
-  }
-}
-
-// Load on module init
-loadFromDisk();
-
-// Flush every 5 minutes
-setInterval(flushToDisk, 5 * 60 * 1000);
 
 // Rate limit: 1 hit per page per IP per minute
 const rateLimitMap = new Map<string, number>();
@@ -149,9 +52,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   // Track AI questions
   if (type === "ai_question") {
-    store.aiQuestions++;
-    store.viewsSinceFlush++;
-    if (store.viewsSinceFlush >= 50) flushToDisk();
+    trackAiQuestion();
     return NextResponse.json({ ok: true });
   }
 

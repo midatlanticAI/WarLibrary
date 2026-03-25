@@ -72,14 +72,14 @@ External Services:
 JSON files (src/data/)
   ├── events.json          (48 seed events)
   ├── events_expanded.json (64 expanded events)
-  └── events_latest.json   (2,798+ pipeline-appended events, growing)
+  └── events_latest.json   (3,700+ pipeline-appended events, growing)
         │
         ▼
   /api/events route
   (merges, deduplicates, sorts chronologically)
         │
         ▼
-  useEvents.ts hook → 2,900+ ConflictEvent objects
+  useEvents.ts hook → 3,800+ ConflictEvent objects
   (shared across all components)
 
 Pipeline sources:

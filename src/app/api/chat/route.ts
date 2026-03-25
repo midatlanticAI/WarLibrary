@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { isAdmin } from "@/lib/auth";
+import { trackAiQuestion } from "@/lib/analytics-store";
 import { retrieveEvents, getAllEvents, getDatabaseSummary, buildContext } from "@/lib/rag";
 
 const client = new Anthropic({
@@ -493,12 +494,8 @@ export async function POST(req: NextRequest) {
       ...new Set([...mentionedSources, ...relevantSources]),
     ].slice(0, 6);
 
-    // Track AI question in analytics (fire-and-forget)
-    fetch(new URL("/api/analytics", req.url), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "ai_question" }),
-    }).catch(() => {});
+    // Track AI question directly via shared store (no HTTP self-call)
+    trackAiQuestion();
 
     return NextResponse.json({
       data: {

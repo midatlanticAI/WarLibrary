@@ -1,6 +1,13 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "warlibrary",
+  "version": "1.0.0",
+  "description": "Real-time, open-source conflict tracker for the 2026 US-Israel war on Iran (Operation Epic Fury)",
+  "author": "midatlanticAI <john@midatlantic.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/midatlanticAI/WarLibrary.git"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",

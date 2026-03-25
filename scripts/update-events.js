@@ -303,32 +303,37 @@ async function fetchNewsDataAPI() {
 
   const allArticles = [];
 
-  for (const q of queries) {
-    const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${encodeURIComponent(q)}&language=en&category=politics,world&size=10`;
-    try {
+  // Fetch all queries in parallel with individual timeouts — don't let one slow
+  // query block the rest. Each query gets 10s; if NewsData is down they all fail
+  // fast instead of serializing 5 × 15s = 75s of timeouts.
+  const results = await Promise.allSettled(
+    queries.map(async (q) => {
+      const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${encodeURIComponent(q)}&language=en&category=politics,world&size=10`;
       const res = await fetch(url, {
         headers: { "User-Agent": "WarLibrary/1.0" },
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(10000),
       });
       if (!res.ok) {
         console.warn(`  NewsData query returned ${res.status} for: ${q}`);
-        continue;
+        return [];
       }
       const data = await res.json();
-      const articles = data.results || [];
-      for (const art of articles) {
-        allArticles.push({
-          title: art.title || "",
-          url: art.link || "",
-          source: art.source_name || art.source_id || extractSourceFromUrl(art.link || ""),
-          date: art.pubDate || "",
-          description: art.description || art.title || "",
-          // NewsData provides content directly — huge advantage over RSS scraping
-          body: (art.content || art.description || "").slice(0, 1500),
-        });
-      }
-    } catch (err) {
-      console.warn(`  NewsData fetch failed for "${q}": ${err.message}`);
+      return (data.results || []).map((art) => ({
+        title: art.title || "",
+        url: art.link || "",
+        source: art.source_name || art.source_id || extractSourceFromUrl(art.link || ""),
+        date: art.pubDate || "",
+        description: art.description || art.title || "",
+        body: (art.content || art.description || "").slice(0, 1500),
+      }));
+    })
+  );
+
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].status === "fulfilled") {
+      allArticles.push(...results[i].value);
+    } else {
+      console.warn(`  NewsData fetch failed for "${queries[i]}": ${results[i].reason?.message || "unknown error"}`);
     }
   }
 
@@ -360,29 +365,29 @@ async function fetchGoogleNewsRSS() {
     "https://news.google.com/rss/search?q=iran+humanitarian+civilian+casualties+2026&hl=en-US&gl=US&ceid=US:en",
   ];
 
-  const allArticles = [];
-
-  for (const feedUrl of feeds) {
-    try {
+  // Fetch all feeds in parallel — much faster than serial
+  const results = await Promise.allSettled(
+    feeds.map(async (feedUrl) => {
       const res = await fetch(feedUrl, {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; WarLibrary/1.0)",
           Accept: "application/rss+xml, application/xml, text/xml",
         },
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(12000),
       });
       if (!res.ok) {
         console.warn(`  Google News RSS returned ${res.status}`);
-        continue;
+        return [];
       }
       const xml = await res.text();
-      const items = parseRSSItems(xml);
-      for (const item of items) {
-        allArticles.push(item);
-      }
-    } catch (err) {
-      console.warn(`  Google News RSS fetch failed: ${err.message}`);
-    }
+      return parseRSSItems(xml);
+    })
+  );
+
+  const allArticles = [];
+  for (const r of results) {
+    if (r.status === "fulfilled") allArticles.push(...r.value);
+    else console.warn(`  Google News RSS fetch failed: ${r.reason?.message || "unknown"}`);
   }
 
   // Deduplicate by URL
@@ -468,10 +473,9 @@ async function fetchOutletRSS() {
     },
   ];
 
-  const allArticles = [];
-
-  for (const feed of feeds) {
-    try {
+  // Fetch all outlet feeds in parallel
+  const results = await Promise.allSettled(
+    feeds.map(async (feed) => {
       const res = await fetch(feed.url, {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; WarLibrary/1.0)",
@@ -481,7 +485,7 @@ async function fetchOutletRSS() {
       });
       if (!res.ok) {
         console.warn(`  ${feed.name} RSS returned ${res.status}`);
-        continue;
+        return [];
       }
       const xml = await res.text();
       const items = parseRSSItems(xml);
@@ -521,13 +525,15 @@ async function fetchOutletRSS() {
           (text.includes("ceasefire") || text.includes("peace talk") || text.includes("negotiat"))
         );
       });
-      for (const item of relevant) {
-        item.source = feed.name;
-        allArticles.push(item);
-      }
-    } catch (err) {
-      console.warn(`  ${feed.name} RSS fetch failed: ${err.message}`);
-    }
+      for (const item of relevant) item.source = feed.name;
+      return relevant;
+    })
+  );
+
+  const allArticles = [];
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].status === "fulfilled") allArticles.push(...results[i].value);
+    else console.warn(`  ${feeds[i].name} RSS fetch failed: ${results[i].reason?.message || "unknown"}`);
   }
 
   return allArticles;
@@ -606,6 +612,35 @@ function decodeHTMLEntities(str) {
 }
 
 /**
+ * Sanitize article text before injecting into Claude prompt.
+ * Strips patterns that could be used for prompt injection:
+ * - Instruction-like phrases ("ignore previous", "you are now", "return this JSON")
+ * - System/assistant role markers
+ * - JSON array/object openers that could hijack the output format
+ * Preserves legitimate news content.
+ */
+function sanitizeArticleText(text) {
+  if (!text) return "";
+  return text
+    // Strip prompt injection patterns (case-insensitive)
+    .replace(/ignore\s+(all\s+)?previous\s+instructions?/gi, "[redacted]")
+    .replace(/ignore\s+(all\s+)?above\s+instructions?/gi, "[redacted]")
+    .replace(/you\s+are\s+now\s+a/gi, "[redacted]")
+    .replace(/disregard\s+(all\s+)?previous/gi, "[redacted]")
+    .replace(/return\s+(only\s+)?this\s+json/gi, "[redacted]")
+    .replace(/override\s+(the\s+)?system\s+prompt/gi, "[redacted]")
+    .replace(/new\s+instructions?:/gi, "[redacted]")
+    .replace(/\bsystem\s*:/gi, "[redacted]")
+    .replace(/\bassistant\s*:/gi, "[redacted]")
+    .replace(/\bhuman\s*:/gi, "[redacted]")
+    // Strip standalone JSON arrays/objects that could hijack output
+    .replace(/^\s*\[[\s\S]{0,50}\{/gm, "[redacted]")
+    // Collapse excessive whitespace
+    .replace(/\s{3,}/g, " ")
+    .trim();
+}
+
+/**
  * Extract a human-readable source name from a URL.
  */
 function extractSourceFromUrl(url) {
@@ -660,11 +695,20 @@ function readJSON(filePath) {
   }
 }
 
+/**
+ * Atomic write: write to a .tmp file, then rename over the target.
+ * fs.renameSync is atomic on Linux (same filesystem). This prevents
+ * data corruption if the process crashes mid-write.
+ */
 function writeJSON(filePath, data) {
+  const tmpPath = filePath + ".tmp";
   try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), "utf-8");
+    fs.renameSync(tmpPath, filePath);
   } catch (err) {
     console.error(`ERROR writing ${filePath}: ${err.message}`);
+    // Clean up tmp file if rename failed
+    try { fs.unlinkSync(tmpPath); } catch {}
     if (typeof pipelineStats !== "undefined" && Array.isArray(pipelineStats.errors)) {
       pipelineStats.errors.push(`Write failed: ${filePath}: ${err.message}`);
     }
@@ -808,11 +852,13 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 
 /**
  * Check if two events are about the same incident.
- * Uses a multi-signal approach:
- * 1. Word-overlap similarity on significant words (stopwords removed)
- * 2. Same country (normalized)
- * 3. Within 24 hours of each other
- * 4. Threshold: >60% significant word overlap = likely same event
+ * Uses a multi-signal approach (checked in order):
+ *   0. Canonical fingerprint: same country + same event_type + close date + similar fatalities
+ *   1. Exact description match
+ *   2. Same source_url (non-liveblog)
+ *   3. Mass-casualty dedup: >50 fatalities, same country, ±3 days (catches Minab-class dupes)
+ *   4. Word-overlap similarity (Jaccard >0.6, same country, ±24h)
+ *   5. Spatio-temporal proximity (50km, 12h, same type, Jaccard >0.4)
  *
  * Returns { isDup: boolean, match: object|null, sim: number, method: string }
  */
@@ -820,6 +866,7 @@ function findDuplicateMatch(candidate, existingEvents) {
   const candidateTime = new Date(candidate.date).getTime();
   const candidateCountry = normalizeCountry(candidate.country);
   const candidateWords = significantWords(candidate.description);
+  const candidateFat = candidate.fatalities || 0;
 
   for (const existing of existingEvents) {
     const existingCountry = normalizeCountry(existing.country);
@@ -846,16 +893,48 @@ function findDuplicateMatch(candidate, existingEvents) {
       return { isDup: true, match: existing, sim: 1.0, method: "same_source_url" };
     }
 
-    // --- Method 3: Word-overlap similarity (the core dedup) ---
-    // Same country (normalized) + within 24 hours + >60% significant word overlap
+    // Country must match for all remaining methods
     if (candidateCountry !== existingCountry) continue;
 
     const existingTime = new Date(existing.date).getTime();
     if (isNaN(existingTime) || isNaN(candidateTime)) continue;
     const timeDiffHours = Math.abs(candidateTime - existingTime) / 3600000;
+    const existingFat = existing.fatalities || 0;
+
+    // --- Method 0: Canonical fingerprint ---
+    // Same country + same event_type + within 48 hours + fatalities within 20%
+    // This catches "same event, different wording" — the core Minab/IRIS Dena problem.
+    if (
+      timeDiffHours <= 48 &&
+      candidate.event_type === existing.event_type &&
+      candidateFat > 0 && existingFat > 0
+    ) {
+      const fatRatio = Math.min(candidateFat, existingFat) / Math.max(candidateFat, existingFat);
+      if (fatRatio >= 0.7) {
+        // Fatalities within 30% of each other + same type + same country + close date = same event
+        return { isDup: true, match: existing, sim: fatRatio, method: "canonical_fingerprint" };
+      }
+    }
+
+    // --- Method 3: Mass-casualty dedup ---
+    // Any event with >50 fatalities in the same country within ±3 days and same event_type
+    // is almost certainly the same incident (Minab, IRIS Dena, etc.)
+    if (
+      timeDiffHours <= 72 &&
+      candidateFat > 50 && existingFat > 50 &&
+      candidate.event_type === existing.event_type
+    ) {
+      const fatRatio = Math.min(candidateFat, existingFat) / Math.max(candidateFat, existingFat);
+      if (fatRatio >= 0.4) {
+        // Broader tolerance for mass-casualty — even 85 vs 180 (0.47) should match as the same school bombing
+        return { isDup: true, match: existing, sim: fatRatio, method: "mass_casualty_dedup" };
+      }
+    }
+
     if (timeDiffHours > 24) continue;
 
-    // Compute word-overlap on significant words
+    // --- Method 4: Word-overlap similarity ---
+    // Same country (normalized) + within 24 hours + >60% significant word overlap
     const existingWords = significantWords(existing.description);
     if (candidateWords.size === 0 || existingWords.size === 0) continue;
     let intersection = 0;
@@ -869,7 +948,7 @@ function findDuplicateMatch(candidate, existingEvents) {
       return { isDup: true, match: existing, sim, method: "word_overlap" };
     }
 
-    // --- Method 4: Spatio-temporal proximity with looser description match ---
+    // --- Method 5: Spatio-temporal proximity with looser description match ---
     // Within 50km + within 12 hours + same event_type + >40% word overlap
     if (
       typeof candidate.latitude === "number" &&
@@ -1085,6 +1164,18 @@ async function main() {
     ? latestRaw
     : latestRaw.events || [];
 
+  // Empty-file guard: if events_latest.json exists but returned very few events,
+  // it may be corrupted. Abort rather than risk replacing 3000+ events with nothing.
+  const MINIMUM_LATEST_EVENTS = 1000;
+  if (fs.existsSync(latestFile) && eventsLatest.length < MINIMUM_LATEST_EVENTS && eventsLatest.length > 0) {
+    console.error(`FATAL: events_latest.json has only ${eventsLatest.length} events (expected >=${MINIMUM_LATEST_EVENTS}). File may be corrupted. Aborting to prevent data loss.`);
+    process.exit(3);
+  }
+  if (fs.existsSync(latestFile) && eventsLatest.length === 0) {
+    console.error(`FATAL: events_latest.json exists but parsed to 0 events. File is likely corrupted. Aborting to prevent data loss.`);
+    process.exit(3);
+  }
+
   // Combine all events for deduplication
   const allEvents = [...events, ...eventsExpanded, ...eventsLatest];
   console.log(
@@ -1237,8 +1328,9 @@ async function main() {
   const articleSummaries = articlesToProcess
     .map(
       (art, i) => {
-        const bodySnippet = art.body ? `\n    Body: ${art.body.slice(0, 800)}` : "";
-        return `[${i + 1}] ${art.title}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}${bodySnippet}`;
+        const safeTitle = sanitizeArticleText(art.title);
+        const bodySnippet = art.body ? `\n    Body: ${sanitizeArticleText(art.body.slice(0, 800))}` : "";
+        return `[${i + 1}] ${safeTitle}\n    URL: ${art.url}\n    Source: ${art.source}\n    Date: ${art.date}${bodySnippet}`;
       }
     )
     .join("\n\n");
@@ -1343,7 +1435,7 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
   try {
     response = await client.messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [{ role: "user", content: prompt }],
     });
   } catch (err) {
@@ -1362,7 +1454,14 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
     console.log(`  API tokens used: ${pipelineStats.api_input_tokens} input, ${pipelineStats.api_output_tokens} output`);
   }
 
-  const rawText =
+  // Detect truncated responses — if stop_reason is "max_tokens", the JSON is cut off
+  const wasTruncated = response.stop_reason === "max_tokens";
+  if (wasTruncated) {
+    console.warn("  WARNING: Response was truncated (hit max_tokens). Will attempt JSON recovery.");
+    pipelineStats.errors.push("Response truncated at max_tokens — partial extraction");
+  }
+
+  let rawText =
     response.content &&
     response.content[0] &&
     response.content[0].type === "text"
@@ -1408,6 +1507,32 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
       // Fix trailing commas before ] or }
       cleaned = cleaned.replace(/,\s*([}\]])/g, "$1");
       return JSON.parse(cleaned);
+    },
+    // 5. Truncation recovery — response was cut off at max_tokens.
+    //    Find the last complete JSON object in the array and close it.
+    () => {
+      let cleaned = rawText;
+      cleaned = cleaned.replace(/```(?:json)?/g, "").replace(/```/g, "");
+      const start = cleaned.indexOf("[");
+      if (start === -1) throw new Error("No array start");
+      cleaned = cleaned.slice(start);
+      // Find the last complete object — look for the last "}," or "}" that closes a full object
+      const lastCompleteObj = cleaned.lastIndexOf("},");
+      const lastObj = cleaned.lastIndexOf("}");
+      let cutPoint = -1;
+      if (lastCompleteObj > 0) {
+        cutPoint = lastCompleteObj + 1; // include the }
+      } else if (lastObj > 0) {
+        cutPoint = lastObj + 1;
+      }
+      if (cutPoint <= 1) throw new Error("No complete object found");
+      cleaned = cleaned.slice(0, cutPoint) + "]";
+      // Fix trailing commas
+      cleaned = cleaned.replace(/,\s*\]/g, "]");
+      const result = JSON.parse(cleaned);
+      if (!Array.isArray(result) || result.length === 0) throw new Error("Empty recovery");
+      console.warn(`  Recovered ${result.length} events from truncated response.`);
+      return result;
     },
   ];
 
@@ -1506,20 +1631,33 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
       pipelineStats.events_rejected_invalid = (pipelineStats.events_rejected_invalid || 0) + 1;
       continue;
     }
-    // Flag cumulative death tolls — if description says "death toll" / "total killed" / "surpasses" with high fatalities, zero them out
+    // Flag cumulative death tolls — detect language patterns regardless of fatality count
     const descLower = (e.description || "").toLowerCase();
-    if (e.fatalities > 200 && (
-      descLower.includes("death toll") || descLower.includes("cumulative") ||
-      descLower.includes("surpasses") || descLower.includes("total killed") ||
-      descLower.includes("people killed in") && descLower.includes("attacks")
-    )) {
-      console.log(`  FIX cumulative fatalities ${e.fatalities}->0: ${e.description?.slice(0, 60)}...`);
+    const isCumulative = (
+      descLower.includes("death toll") ||
+      descLower.includes("cumulative") ||
+      descLower.includes("surpasses") ||
+      descLower.includes("total killed") ||
+      descLower.includes("total dead") ||
+      descLower.includes("total deaths") ||
+      /rises?\s+to\s+\d/.test(descLower) ||
+      /risen?\s+to\s+\d/.test(descLower) ||
+      /climbs?\s+to\s+\d/.test(descLower) ||
+      /reaches?\s+\d/.test(descLower) ||
+      /reached\s+\d/.test(descLower) ||
+      /killed\s+(so\s+far|since|over\s+the\s+past|in\s+the\s+past|across\s+.*\s+since)/.test(descLower) ||
+      /\d+\s+(people|civilians|soldiers?|children)\s+killed\s+(since|across\s+\w+\s+(since|over))/.test(descLower) ||
+      /since\s+(the\s+)?(start|beginning|onset|launch|escalat)/.test(descLower) ||
+      (descLower.includes("people killed in") && descLower.includes("attacks"))
+    );
+    if (e.fatalities > 0 && isCumulative) {
+      console.log(`  FIX cumulative fatalities ${e.fatalities}->0: ${e.description?.slice(0, 80)}...`);
       e.fatalities = 0;
       e.event_type = "strategic_development";
     }
     // Cap suspicious single-event fatalities at 500 (no single strike in this war has killed 500+)
     if (e.fatalities >= 500) {
-      console.log(`  FIX suspicious fatalities ${e.fatalities}->0: ${e.description?.slice(0, 60)}...`);
+      console.log(`  FIX suspicious fatalities ${e.fatalities}->0: ${e.description?.slice(0, 80)}...`);
       e.fatalities = 0;
     }
   }

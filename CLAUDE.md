@@ -27,7 +27,7 @@ the world. 100% of monetization proceeds go to humanitarian aid.
 ```
 src/
 ├── app/
-│   ├── page.tsx              # Main page — tab router (map|ask|donate|sources|about)
+│   ├── page.tsx              # Main page — tab router (map|feed|ask|donate|sources|about)
 │   ├── layout.tsx            # Root layout, dark theme, Mapbox CSS, PWA meta
 │   ├── globals.css           # Dark war-room aesthetic, custom scrollbars
 │   ├── sitemap.ts            # Dynamic sitemap for SEO
@@ -69,7 +69,7 @@ src/
 ├── data/
 │   ├── events.json           # Base seed events (48)
 │   ├── events_expanded.json  # Expanded events (64)
-│   ├── events_latest.json    # Pipeline-appended events (2,798+, growing)
+│   ├── events_latest.json    # Pipeline-appended events (3,700+, growing)
 │   ├── notification.json     # Latest notification (persisted to disk)
 │   ├── analytics.json        # Page view + AI question analytics (persisted unique visitors)
 │   ├── pipeline-stats.json   # Current pipeline run stats
@@ -79,9 +79,13 @@ src/
 │   ├── useEvents.ts          # Fetches & merges all event data from API
 │   └── useNotifications.ts   # Polls for notifications, shows in-app banner + push
 ├── lib/
+│   ├── analytics-store.ts    # Shared singleton analytics (used by /api/analytics + /api/chat)
 │   ├── auth.ts               # Shared admin auth (SHA-256, timing-safe, cookie + header)
 │   ├── constants.ts          # EVENT_COLORS and shared constants
-│   └── api.ts                # API client utilities
+│   ├── api.ts                # API client utilities
+│   ├── push.ts               # Web push notification helpers
+│   ├── rag.ts                # RAG context builder for AI chat (event retrieval + grounding)
+│   └── share.ts              # Social sharing utilities
 └── types/
     └── index.ts              # ConflictEvent, Faction, MapViewState, etc.
 ```
@@ -89,23 +93,25 @@ src/
 ### Scripts
 ```
 scripts/
-├── update-events.js          # Main pipeline (~1700 lines)
-│   - Fetches from NewsData.io API, Google News RSS, outlet RSS feeds
+├── update-events.js          # Main pipeline (~1800 lines)
+│   - Fetches from NewsData.io API, Google News RSS, outlet RSS feeds (all parallel)
 │   - Resolves Google News redirect URLs
 │   - Extracts article bodies via Mozilla Readability
-│   - Sends to Claude Haiku 4.5 for structured event extraction
+│   - Sends to Claude Haiku 4.5 for structured event extraction (8192 max tokens)
+│   - Truncation recovery: salvages partial JSON if response hits token limit
 │   - Validates: schema, date range (post-Feb 28), fatality sanity checks
-│   - Deduplicates: exact match + spatio-temporal proximity
+│   - Deduplicates: canonical fingerprint + spatio-temporal proximity
 │   - Rejects cumulative death toll reports (prevents double-counting)
 │   - Rejects pre-war events (before 2026-02-28)
 │   - Caps suspicious single-event fatalities (>500 = zeroed)
 │   - Source tier confidence adjustment (Tier 1 boost, Tier 3 penalty)
 │   - Geocode fallback for missing coordinates
+│   - Atomic writes (tmp + rename) to prevent data corruption
 │   - Sends notification on new events
 │   - 180-second execution timeout
-├── auto-update.sh            # Cron wrapper with logging
-├── reconcile-fatalities.js   # Fatality reconciliation against authoritative sources
-└── generate-icons.mjs        # PWA icon generator
+├── auto-update.sh            # Cron wrapper with flock + logging
+├── backup-data.sh            # Data file backup utility
+└── generate-icons.mjs        # PWA icon generator (Sharp)
 ```
 
 ### Public
@@ -124,7 +130,7 @@ public/
     └── favicon-16.png, favicon-32.png
 ```
 
-### Data: 2,900+ verified events across 28+ countries
+### Data: 3,800+ verified events across 28+ countries
 Sources: Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Washington Post,
 Reuters, NPR, Times of Israel, Axios, PBS, Naval News, UN News, and more.
 
@@ -133,7 +139,7 @@ Per-event fatalities: ~568 (individual event attributions only — cumulative to
 ### Event Pipeline
 - Runs every 30 minutes via cron
 - Pulls from 3 source types: NewsData.io API (25+ articles), Google News RSS (3 queries), Outlet RSS (6 feeds)
-- Token-optimized: 20 articles max, 800 chars body per article, 4096 max output tokens
+- Token-optimized: 20 articles max, 800 chars body per article, 8192 max output tokens
 - Estimated cost: ~$0.003-0.005 per run, ~$7/month at 48 runs/day
 - Source tiers: Tier 1 (Reuters, AP, BBC, etc.) get confidence boost; Tier 3 penalized
 
@@ -186,7 +192,6 @@ Per-event fatalities: ~568 (individual event attributions only — cumulative to
 - Deduplication via description similarity + spatio-temporal proximity.
 
 ### API Design
-- All responses: `{ data, meta, errors }` envelope.
 - Rate limited: all endpoints, stricter on AI.
 - Parameterized queries only.
 
@@ -204,7 +209,6 @@ Per-event fatalities: ~568 (individual event attributions only — cumulative to
 ## Environment Variables (.env.local)
 ```
 NEXT_PUBLIC_MAPBOX_TOKEN=...
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 ANTHROPIC_API_KEY=...
 ADMIN_SECRET=...
 NEWSDATA_API_KEY=...  # Optional, enhances article content quality
