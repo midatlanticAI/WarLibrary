@@ -1,12 +1,18 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
+import path from "path";
 
-// Read ADMIN_SECRET from .env.local
+// Read ADMIN_SECRET from env var or .env.local (graceful if missing)
 function getAdminSecret(): string {
-  const envPath = "/opt/warlibrary/.env.local";
-  const content = fs.readFileSync(envPath, "utf-8");
-  const match = content.match(/ADMIN_SECRET=(.+)/);
-  return match ? match[1].trim() : "";
+  if (process.env.ADMIN_SECRET) return process.env.ADMIN_SECRET;
+  try {
+    const envPath = path.join(process.cwd(), ".env.local");
+    const content = fs.readFileSync(envPath, "utf-8");
+    const match = content.match(/ADMIN_SECRET=(.+)/);
+    return match ? match[1].trim() : "";
+  } catch {
+    return "";
+  }
 }
 
 test.describe("Admin Dashboard", () => {
