@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { useI18n } from "@/i18n";
 
 /* ─── Icons (inline SVGs to avoid deps) ─── */
 
@@ -263,6 +264,7 @@ interface DonationPanelProps {
 }
 
 export default function DonationPanel({ onBack }: DonationPanelProps) {
+  const { t } = useI18n();
   const [showSources, setShowSources] = useState(false);
 
   return (
@@ -281,9 +283,9 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
           </svg>
         </button>
         <div>
-          <h1 className="text-lg font-bold text-zinc-100">Humanitarian Aid</h1>
+          <h1 className="text-lg font-bold text-zinc-100">{t("donate.title")}</h1>
           <p className="text-xs text-zinc-500">
-            Human cost of the conflict · Verified organizations
+            {t("donate.subtitle")}
           </p>
         </div>
       </div>
@@ -309,12 +311,9 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
               </svg>
               <p className="text-xs leading-relaxed text-red-300/90">
                 <span className="font-semibold text-red-300">
-                  War Library does not collect or process donations.
+                  {t("donate.disclaimer")}
                 </span>{" "}
-                All links go directly to each organization&apos;s official donation
-                page. We receive no commission, referral fees, or financial
-                benefit of any kind. Verify the URL in your browser before
-                submitting payment information.
+                {t("donate.disclaimerText")}
               </p>
             </div>
           </div>
@@ -325,14 +324,10 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
 
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
             <h2 className="text-sm font-semibold text-zinc-200">
-              Human Cost — March 2026
+              {t("donate.humanCost")}
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-              Following the escalation of hostilities on February 28, 2026,
-              the humanitarian situation across the Middle East has deteriorated
-              rapidly. Armed attacks involving airstrikes on Iran, retaliatory
-              strikes on Israel and Arab Gulf states, and regional military
-              operations have created an acute, multi-country crisis.
+              {t("donate.humanCostIntro")}
             </p>
 
             {/* 6-card stat grid */}
@@ -389,20 +384,12 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
             {/* Iran casualty discrepancy note */}
             <div className="mt-3 rounded-md border border-amber-900/40 bg-amber-950/20 p-2.5">
               <p className="text-[11px] leading-relaxed text-amber-300/80">
-                <span className="font-semibold text-amber-300">* Casualty figures vary by source.</span>{" "}
-                The Iranian government reports 1,444 killed and 18,551 injured
-                (civilian figures only). Independent monitor Hengaw reports
-                5,900 killed (595 civilian, 5,305 military) as of March 20.
-                The government figure counts civilians only; Hengaw&apos;s figure
-                includes both civilian and military casualties. Both are
-                presented for transparency.
+                {t("donate.casualtyNote")}
               </p>
             </div>
 
             <p className="mt-3 text-[10px] italic text-zinc-600">
-              Figures are from official and independent sources as cited. Numbers
-              are preliminary and expected to change as the conflict continues.
-              Last verified: mid-March 2026.
+              {t("donate.figuresNote")}
             </p>
           </div>
 
@@ -412,7 +399,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
 
           <div>
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Country-by-Country Breakdown
+              {t("donate.countryBreakdown")}
             </h2>
             <div className="space-y-2">
               {/* IRAN */}
@@ -422,28 +409,28 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 icon={<span className="text-xs">🇮🇷</span>}
               >
                 <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label="Killed (govt figure)" value="1,444" source="Iran Min. of Health" />
-                  <StatLine label="Injured (govt figure)" value="18,551" source="Iran Min. of Health" />
-                  <StatLine label="Killed (independent)" value="5,900 total" source="Hengaw 6th report, March 20" />
-                  <StatLine label="  — Civilian" value="595" source="Hengaw" />
-                  <StatLine label="  — Military" value="5,305" source="Hengaw" />
-                  <StatLine label="Women killed" value="160+" source="Hengaw, March 20" />
-                  <StatLine label="Children killed" value="240+" source="Iran Health Min., March 17" />
-                  <StatLine label="Children killed in schools" value="~180" source="UNICEF, March 5" />
-                  <StatLine label="Internally displaced" value="Up to 3.2M" source="UNHCR, March 12" />
+                  <StatLine label={`${t("donate.killed")} (${t("donate.govtFigure")})`} value="1,444" source="Iran Min. of Health" />
+                  <StatLine label={`${t("donate.injured")} (${t("donate.govtFigure")})`} value="18,551" source="Iran Min. of Health" />
+                  <StatLine label={`${t("donate.killed")} (${t("donate.independent")})`} value="5,900 total" source="Hengaw 6th report, March 20" />
+                  <StatLine label={`  — ${t("donate.civiliansKilled")}`} value="595" source="Hengaw" />
+                  <StatLine label={`  — ${t("donate.serviceMembersKilled")}`} value="5,305" source="Hengaw" />
+                  <StatLine label={t("donate.womenKilled")} value="160+" source="Hengaw, March 20" />
+                  <StatLine label={t("donate.childrenKilled")} value="240+" source="Iran Health Min., March 17" />
+                  <StatLine label={t("donate.childrenKilledSchools")} value="~180" source="UNICEF, March 5" />
+                  <StatLine label={t("donate.internallyDisplaced")} value="Up to 3.2M" source="UNHCR, March 12" />
                 </div>
                 <div className="mt-3 border-t border-zinc-800/30 pt-3">
                   <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Infrastructure
+                    {t("donate.infrastructure")}
                   </p>
                   <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                    <StatLine label="Hospitals damaged" value="25 (9 out of service)" source="Iranian health officials via NPR" />
-                    <StatLine label="Medical facilities targeted" value="32+" source="Iranian Red Crescent" />
-                    <StatLine label="Schools damaged" value="65+" source="Iranian Red Crescent" />
-                    <StatLine label="Residential units damaged" value="10,000+" source="Iranian Red Crescent via Common Dreams" />
-                    <StatLine label="Civilian sites damaged" value="20,000+" source="Iranian Red Crescent via Common Dreams" />
-                    <StatLine label="UNESCO Heritage sites" value="6 damaged" source="UNESCO" />
-                    <StatLine label="Internet connectivity" value="4% (92M+ affected)" source="NetBlocks" />
+                    <StatLine label={t("donate.hospitalsDesc")} value="25 (9 out of service)" source="Iranian health officials via NPR" />
+                    <StatLine label={t("donate.medicalFacilities")} value="32+" source="Iranian Red Crescent" />
+                    <StatLine label={t("donate.schoolsDamaged")} value="65+" source="Iranian Red Crescent" />
+                    <StatLine label={t("donate.residentialDamaged")} value="10,000+" source="Iranian Red Crescent via Common Dreams" />
+                    <StatLine label={t("donate.civilianSites")} value="20,000+" source="Iranian Red Crescent via Common Dreams" />
+                    <StatLine label={t("donate.heritageDesc")} value="6 damaged" source="UNESCO" />
+                    <StatLine label={t("donate.internetDesc")} value="4% (92M+ affected)" source="NetBlocks" />
                   </div>
                 </div>
                 <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
@@ -459,12 +446,12 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 icon={<span className="text-xs">🇱🇧</span>}
               >
                 <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label="Killed" value="1,021+" source="Lebanon Health Min., March 21" />
-                  <StatLine label="Injured" value="2,641" source="Lebanon Health Min., March 21" />
-                  <StatLine label="Children killed" value="107" source="UNICEF, March 16" />
-                  <StatLine label="Displaced" value="1M+" source="CARE, March 17" />
-                  <StatLine label="Children displaced" value="200,000+" source="Mercy Corps" />
-                  <StatLine label="Fled to Syria" value="~140,000" source="IRC, March 19" />
+                  <StatLine label={t("donate.killed")} value="1,021+" source="Lebanon Health Min., March 21" />
+                  <StatLine label={t("donate.injured")} value="2,641" source="Lebanon Health Min., March 21" />
+                  <StatLine label={t("donate.childrenKilled")} value="107" source="UNICEF, March 16" />
+                  <StatLine label={t("donate.displaced")} value="1M+" source="CARE, March 17" />
+                  <StatLine label={t("donate.childrenDisplaced")} value="200,000+" source="Mercy Corps" />
+                  <StatLine label={t("donate.fleeTo")} value="~140,000" source="IRC, March 19" />
                 </div>
                 <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
                   Shelters at capacity across the country. Syrian refugees are
@@ -480,9 +467,9 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 icon={<span className="text-xs">🇮🇱</span>}
               >
                 <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label="Civilians killed" value="18" source="Alma Research Center, March 20" />
-                  <StatLine label="Injured" value="4,002+" source="Alma Research Center, March 20" />
-                  <StatLine label="Children killed" value="4" source="UNICEF, March 11" />
+                  <StatLine label={t("donate.civiliansKilled")} value="18" source="Alma Research Center, March 20" />
+                  <StatLine label={t("donate.injured")} value="4,002+" source="Alma Research Center, March 20" />
+                  <StatLine label={t("donate.childrenKilled")} value="4" source="UNICEF, March 11" />
                 </div>
                 <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
                   300+ Iranian attack waves reported. State of emergency declared.
@@ -495,10 +482,10 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                 icon={<span className="text-xs">🇺🇸</span>}
               >
                 <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label="Service members killed" value="13" source="US CENTCOM" />
-                  <StatLine label="  — By enemy fire" value="7" source="US CENTCOM" />
-                  <StatLine label="Service members wounded" value="~200" source="US CENTCOM via TIME, March 17" />
-                  <StatLine label="  — Returned to duty" value="180+" source="TIME, March 17" />
+                  <StatLine label={t("donate.serviceMembersKilled")} value="13" source="US CENTCOM" />
+                  <StatLine label={`  — ${t("donate.byEnemyFire")}`} value="7" source="US CENTCOM" />
+                  <StatLine label={t("donate.serviceMembersWounded")} value="~200" source="US CENTCOM via TIME, March 17" />
+                  <StatLine label={`  — ${t("donate.returnedToDuty")}`} value="180+" source="TIME, March 17" />
                 </div>
                 <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
                   US bases attacked across 4+ countries. CENTCOM reports 7,000+
@@ -535,7 +522,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
 
           <div>
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Children &amp; Education
+              {t("donate.childrenEducation")}
             </h2>
 
             {/* Highlight card */}
@@ -543,7 +530,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-400">1,800+</div>
                 <div className="mt-1 text-xs text-zinc-300">
-                  Children killed or injured across the region
+                  {t("donate.childrenImpact")}
                 </div>
                 <div className="mt-1">
                   <SourceTag text="UNICEF, March 16, 2026" />
@@ -554,7 +541,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
             {/* Breakdown */}
             <div className="mt-3 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                By country
+                {t("donate.byCountry")}
               </p>
               <div className="space-y-0.5 divide-y divide-zinc-800/30">
                 <StatLine label="Iran — children killed" value="240+" source="Iran Health Min., March 17" />
@@ -570,7 +557,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
               <div className="mb-1.5 flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400">
-                  Named event
+                  {t("donate.namedEvent")}
                 </span>
               </div>
               <h3 className="text-sm font-semibold text-zinc-200">
@@ -591,7 +578,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
             {/* Education impact */}
             <div className="mt-3 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                Education impact
+                {t("donate.educationImpact")}
               </p>
               <ul className="space-y-1.5 text-xs leading-relaxed text-zinc-400">
                 <li className="flex items-start gap-2">
@@ -622,24 +609,24 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
 
           <div>
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Economic &amp; Food Security Impact
+              {t("donate.economicImpact")}
             </h2>
             <div className="rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
               <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                <StatLine label="Oil prices" value="Above $100/barrel" source="Multiple outlets" />
-                <StatLine label="Strait of Hormuz" value="Virtual standstill" source="WFP" />
-                <StatLine label="Shipping costs" value="Up 18%" source="WFP, March 12" />
-                <StatLine label="War cost estimate" value="~$891M–$2B/day" source="CSIS / IRC" />
-                <StatLine label="Additional people at risk of hunger" value="45 million" source="WFP/UN News, March 18" />
-                <StatLine label="World fertilizer through Hormuz" value="25% — disrupted" source="WFP" />
+                <StatLine label={t("donate.oilPrices")} value="Above $100/barrel" source="Multiple outlets" />
+                <StatLine label={t("donate.straitOfHormuz")} value="Virtual standstill" source="WFP" />
+                <StatLine label={t("donate.shippingCosts")} value="Up 18%" source="WFP, March 12" />
+                <StatLine label={t("donate.warCost")} value="~$891M–$2B/day" source="CSIS / IRC" />
+                <StatLine label={t("donate.hungerRisk")} value="45 million" source="WFP/UN News, March 18" />
+                <StatLine label={t("donate.fertilizerDisrupted")} value="25% — disrupted" source="WFP" />
               </div>
               <div className="mt-3 border-t border-zinc-800/30 pt-3">
                 <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                  Lebanon food response
+                  {t("donate.foodResponse")}
                 </p>
                 <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label="People reached by WFP" value="230,000" source="WFP" />
-                  <StatLine label="Hot meals served since March 2" value="1,000,000+" source="WFP, mid-March" />
+                  <StatLine label={t("donate.peopleReached")} value="230,000" source="WFP" />
+                  <StatLine label={t("donate.mealsServed")} value="1,000,000+" source="WFP, mid-March" />
                 </div>
               </div>
             </div>
@@ -651,7 +638,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
 
           <div>
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Verified Organizations
+              {t("donate.verifiedOrgs")}
             </h2>
             <div className="space-y-3">
               {ORGANISATIONS.map((org) => (
@@ -687,7 +674,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                                 clipRule="evenodd"
                               />
                             </svg>
-                            Verified
+                            {t("donate.verifiedBadge")}
                           </span>
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-950/40 px-2 py-0.5 text-[10px] text-amber-400">
                             <svg
@@ -713,7 +700,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                       rel="noopener noreferrer"
                       className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-md bg-red-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
                     >
-                      Donate
+                      {t("donate.donateButton")}
                       <svg
                         className="h-3 w-3"
                         fill="none"
@@ -739,7 +726,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                     <div className="mb-1 flex items-center gap-1.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-green-400">
-                        What they&apos;re doing now
+                        {t("donate.whatTheyDo")}
                       </span>
                     </div>
                     <p className="text-[11px] leading-relaxed text-zinc-500">
@@ -770,20 +757,17 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
 
           <div>
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Sources
+              {t("donate.sourcesTitle")}
             </h2>
             <div className="rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
               <p className="text-xs leading-relaxed text-zinc-400">
-                All humanitarian data on this page is sourced from the
-                organizations and agencies listed below. Every figure includes
-                its source and reporting date. Where figures conflict between
-                sources, both are presented with attribution.
+                {t("donate.sourcesIntro")}
               </p>
               <button
                 onClick={() => setShowSources(!showSources)}
                 className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-zinc-300 transition-colors hover:text-zinc-100"
               >
-                {showSources ? "Hide" : "View"} all {SOURCES.length} sources
+                {showSources ? t("donate.hideAll") : t("donate.viewAll")} {t("donate.allSources", { n: SOURCES.length })}
                 <ChevronDown open={showSources} />
               </button>
 
@@ -818,23 +802,13 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
 
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-4">
             <h3 className="text-xs font-semibold text-zinc-300">
-              About this page
+              {t("donate.aboutPage")}
             </h3>
             <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
-              War Library is a neutral conflict-tracking resource. 100% of any
-              monetization proceeds from this site are directed toward
-              humanitarian aid. The organizations listed above were selected
-              because they are internationally recognized, independently rated,
-              and have verified active operations in the current conflict zone.
-              Donation URLs were verified on March 8, 2026. Humanitarian data
-              last verified mid-March 2026.
+              {t("donate.aboutPageText1")}
             </p>
             <p className="mt-2 text-[10px] italic text-zinc-600">
-              Inclusion on this page does not constitute an endorsement of any
-              organization&apos;s political positions. These organizations were chosen
-              for their humanitarian mandate, operational presence, and financial
-              transparency. If you believe any information on this page is
-              outdated or incorrect, reach out at john@midatlantic.ai.
+              {t("donate.aboutPageText2")}
             </p>
           </div>
         </div>

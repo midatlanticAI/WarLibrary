@@ -320,10 +320,13 @@ describe("AskPanel", () => {
 
 describe("EventPanel", () => {
   let EventPanel: typeof import("@/components/ui/EventPanel").default;
+  let I18nProvider: typeof import("@/i18n").I18nProvider;
 
   beforeEach(async () => {
     const mod = await import("@/components/ui/EventPanel");
     EventPanel = mod.default;
+    const i18nMod = await import("@/i18n");
+    I18nProvider = i18nMod.I18nProvider;
   });
 
   afterEach(() => {
@@ -339,12 +342,12 @@ describe("EventPanel", () => {
   };
 
   it("renders the event feed header", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
     expect(screen.getByText("Event Feed")).toBeInTheDocument();
   });
 
   it("shows event count in header", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
     // "5 events . latest first" (5 events in mock data)
     expect(
       screen.getByText((content) => content.includes("5") && content.includes("events"))
@@ -352,21 +355,21 @@ describe("EventPanel", () => {
   });
 
   it("renders filter chips for each event type present", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
 
     // "All" chip should exist
     expect(screen.getByText("All")).toBeInTheDocument();
 
-    // Event types in our mock data (may appear multiple times: chip + event cards)
-    expect(screen.getAllByText("airstrike").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("missile attack").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("strategic development").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("drone attack").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("protest").length).toBeGreaterThanOrEqual(1);
+    // Event types in our mock data — translated labels from i18n
+    expect(screen.getAllByText("Airstrike").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Missile Attack").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Strategic Development").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Drone Attack").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Protest / Unrest").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders all events in the list", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
 
     for (const event of mockEvents) {
       expect(screen.getByText(event.description)).toBeInTheDocument();
@@ -374,12 +377,12 @@ describe("EventPanel", () => {
   });
 
   it("renders search input", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
     expect(screen.getByPlaceholderText("Search events...")).toBeInTheDocument();
   });
 
   it("search input filters events by description", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
 
     const search = screen.getByPlaceholderText("Search events...");
     fireEvent.change(search, { target: { value: "Houthi" } });
@@ -400,7 +403,7 @@ describe("EventPanel", () => {
   });
 
   it("search input filters events by country", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
 
     const search = screen.getByPlaceholderText("Search events...");
     fireEvent.change(search, { target: { value: "Germany" } });
@@ -417,7 +420,7 @@ describe("EventPanel", () => {
   });
 
   it("shows relative dates for events", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
 
     // Events are from early March 2026 — since tests run in 2026,
     // formatRelativeDate will show relative strings. We just check
@@ -431,7 +434,7 @@ describe("EventPanel", () => {
 
   it("calls onSelectEvent when clicking an event", () => {
     const onSelectEvent = vi.fn();
-    render(<EventPanel {...defaultProps} onSelectEvent={onSelectEvent} />);
+    render(<I18nProvider><EventPanel {...defaultProps} onSelectEvent={onSelectEvent} /></I18nProvider>);
 
     fireEvent.click(
       screen.getByText(
@@ -451,7 +454,7 @@ describe("EventPanel", () => {
 
   it("highlights selected event", () => {
     render(
-      <EventPanel {...defaultProps} selectedEvent={mockEvents[0]} />
+      <I18nProvider><EventPanel {...defaultProps} selectedEvent={mockEvents[0]} /></I18nProvider>
     );
 
     // The selected event button should have the active background class
@@ -464,10 +467,10 @@ describe("EventPanel", () => {
   });
 
   it("filter chip toggles event type filter", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
 
-    // Click on "airstrike" filter chip (first match is the chip)
-    const airstrikeElements = screen.getAllByText("airstrike");
+    // Click on "Airstrike" filter chip (first match is the chip)
+    const airstrikeElements = screen.getAllByText("Airstrike");
     fireEvent.click(airstrikeElements[0]);
 
     // Should only show airstrike events
@@ -486,16 +489,16 @@ describe("EventPanel", () => {
   });
 
   it("shows stats footer with event count, countries, and fatalities", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
 
-    // Stats footer
-    expect(screen.getByText("Events")).toBeInTheDocument();
-    expect(screen.getByText("Countries")).toBeInTheDocument();
+    // Stats footer — labels come from i18n keys
+    expect(screen.getByText("events")).toBeInTheDocument();
+    expect(screen.getByText("countries")).toBeInTheDocument();
     expect(screen.getByText("Fatalities")).toBeInTheDocument();
   });
 
   it("shows empty state when no events match filter", () => {
-    render(<EventPanel {...defaultProps} />);
+    render(<I18nProvider><EventPanel {...defaultProps} /></I18nProvider>);
 
     const search = screen.getByPlaceholderText("Search events...");
     fireEvent.change(search, { target: { value: "zzzznonexistent" } });

@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import type { ConflictEvent } from "@/types";
+import { useI18n } from "@/i18n";
 
 interface TimelineSliderProps {
   events: ConflictEvent[];
@@ -22,6 +23,7 @@ export default function TimelineSlider({
   dateRange,
   onChange,
 }: TimelineSliderProps) {
+  const { t } = useI18n();
   // Determine the scale based on the selected range
   const scale = useMemo((): BucketScale => {
     const start = new Date(dateRange.start).getTime();
@@ -80,10 +82,10 @@ export default function TimelineSlider({
   const tickLabels = getTickLabels(buckets, scale);
 
   const quickFilters = [
-    { label: "All", start: minDate, end: maxDate },
-    { label: "24h", start: hoursAgoISO(24), end: nowISO() },
-    { label: "3d", start: daysAgoISO(3), end: nowISO() },
-    { label: "7d", start: daysAgoISO(7), end: nowISO() },
+    { label: t("timeline.all"), start: minDate, end: maxDate },
+    { label: t("timeline.24h"), start: hoursAgoISO(24), end: nowISO() },
+    { label: t("timeline.3d"), start: daysAgoISO(3), end: nowISO() },
+    { label: t("timeline.7d"), start: daysAgoISO(7), end: nowISO() },
   ];
 
   return (
@@ -116,16 +118,16 @@ export default function TimelineSlider({
       <div className="hidden sm:flex sm:flex-col sm:gap-1.5 sm:p-3">
         <div className="flex items-center justify-between text-xs text-zinc-400">
           <span>{formatDateFull(dateRange.start)}</span>
-          <span className="font-semibold text-zinc-200">Timeline</span>
+          <span className="font-semibold text-zinc-200">{t("timeline.timeline")}</span>
           <span>{formatDateFull(dateRange.end)}</span>
         </div>
 
         {/* Scale indicator */}
         <div className="text-center text-[10px] text-zinc-500">
-          {scale === "30min" && "30-minute intervals"}
-          {scale === "6h" && "6-hour intervals"}
-          {scale === "daily" && "Daily intervals"}
-          {" · "}{buckets.reduce((s, b) => s + b.count, 0)} events in range
+          {scale === "30min" && t("timeline.30minIntervals")}
+          {scale === "6h" && t("timeline.6hIntervals")}
+          {scale === "daily" && t("timeline.dailyIntervals")}
+          {" · "}{buckets.reduce((s, b) => s + b.count, 0)} {t("timeline.eventsInRange")}
         </div>
 
         {/* Histogram */}

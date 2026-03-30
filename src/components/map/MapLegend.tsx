@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { ConflictEvent } from "@/types";
+import { useI18n } from "@/i18n";
 
 const EVENT_TYPE_CONFIG: Record<
   string,
@@ -44,6 +45,7 @@ export default function MapLegend({
   isOpen,
   onToggle,
 }: MapLegendProps) {
+  const { t } = useI18n();
   const { typeCounts, countryCounts } = useMemo(() => {
     const types: Record<string, number> = {};
     const countries: Record<string, number> = {};
@@ -66,7 +68,7 @@ export default function MapLegend({
         aria-expanded={isOpen}
         aria-label={isOpen ? "Hide legend and filters" : "Show legend and filters"}
       >
-        {isOpen ? "Hide" : "Legend & Filters"}
+        {isOpen ? t("map.hide") : t("map.legendFilters")}
       </button>
 
       {isOpen && (
@@ -74,7 +76,7 @@ export default function MapLegend({
           {/* Event types */}
           <div className="mb-3">
             <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-              Event Type
+              {t("map.eventType")}
             </div>
             <div className="space-y-0.5">
               {typeCounts.map(([type, count]) => {
@@ -89,14 +91,14 @@ export default function MapLegend({
                       hidden ? "opacity-30" : "opacity-100"
                     } hover:bg-zinc-800/50 focus:outline-none focus:ring-1 focus:ring-zinc-600`}
                     aria-pressed={!hidden}
-                    aria-label={`${hidden ? "Show" : "Hide"} ${config.label}`}
+                    aria-label={`${hidden ? "Show" : "Hide"} ${t(`eventTypes.${type}`)}`}
                   >
                     <span
                       className="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full"
                       style={{ backgroundColor: config.color }}
                     />
                     <span className="flex-1 text-xs text-zinc-300">
-                      {config.label}
+                      {t(`eventTypes.${type}`)}
                     </span>
                     <span className="text-[10px] text-zinc-500">{count}</span>
                   </button>
@@ -108,7 +110,7 @@ export default function MapLegend({
           {/* Countries */}
           <div>
             <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-              Country
+              {t("map.country")}
             </div>
             <div className="max-h-40 space-y-0.5 overflow-y-auto">
               {countryCounts.map(([country, count]) => {
@@ -143,7 +145,7 @@ export default function MapLegend({
               }}
               className="flex-1 rounded bg-zinc-800 py-1 text-[10px] text-zinc-400 hover:bg-zinc-700"
             >
-              Show All
+              {t("map.showAll")}
             </button>
           </div>
         </div>

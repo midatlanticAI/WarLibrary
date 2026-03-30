@@ -1,7 +1,10 @@
 "use client";
 
+import { useI18n } from "@/i18n";
+
 const SOURCE_GROUPS = [
   {
+    categoryKey: "sources.catAcademic" as const,
     category: "Verified Conflict Data",
     sources: [
       {
@@ -25,6 +28,7 @@ const SOURCE_GROUPS = [
     ],
   },
   {
+    categoryKey: "sources.catNews" as const,
     category: "International News Organizations",
     sources: [
       { name: "Al Jazeera", description: "Qatar-based international news network with extensive Middle East bureau.", frequency: "Continuous", type: "Journalism" },
@@ -36,6 +40,7 @@ const SOURCE_GROUPS = [
     ],
   },
   {
+    categoryKey: "sources.catRegional" as const,
     category: "Regional & Specialist Sources",
     sources: [
       { name: "Times of Israel", description: "Israeli English-language news with real-time conflict reporting.", frequency: "Continuous", type: "Regional journalism" },
@@ -47,6 +52,7 @@ const SOURCE_GROUPS = [
     ],
   },
   {
+    categoryKey: "sources.catMilitary" as const,
     category: "Military & Official Sources",
     sources: [
       { name: "CENTCOM", description: "US Central Command. Official statements on US military operations in the Middle East.", frequency: "Event-driven", type: "Official / Government" },
@@ -56,6 +62,7 @@ const SOURCE_GROUPS = [
     ],
   },
   {
+    categoryKey: "sources.catThinkTank" as const,
     category: "Analysis & Think Tanks",
     sources: [
       { name: "FDD", description: "Foundation for Defense of Democracies. Analysis of strikes and military capabilities.", frequency: "Event-driven", type: "Think tank" },
@@ -71,6 +78,8 @@ interface SourcesPageProps {
 }
 
 export default function SourcesPage({ onBack }: SourcesPageProps) {
+  const { t } = useI18n();
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[#0a0a0a]">
       <div className="flex items-center gap-3 border-b border-zinc-800 p-4">
@@ -86,9 +95,9 @@ export default function SourcesPage({ onBack }: SourcesPageProps) {
           </svg>
         </button>
         <div>
-          <h1 className="text-lg font-bold text-zinc-100">Data Sources</h1>
+          <h1 className="text-lg font-bold text-zinc-100">{t("sources.title")}</h1>
           <p className="text-xs text-zinc-500">
-            Every data point in War Library is traceable to its source.
+            {t("sources.subtitle")}
           </p>
         </div>
       </div>
@@ -98,19 +107,16 @@ export default function SourcesPage({ onBack }: SourcesPageProps) {
           {/* Methodology note */}
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
             <h3 className="text-sm font-semibold text-zinc-200">
-              How we source and verify data
+              {t("sources.howWeSource")}
             </h3>
             <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-              Events are ingested from multiple independent sources and
-              cross-referenced. Each event displays its source, and where
-              possible, a direct link to the original reporting. We distinguish
-              between <span className="text-green-400">verified</span> events
-              (confirmed by ACLED or multiple independent sources),{" "}
-              <span className="text-yellow-400">reported</span> events (from a
-              single reputable news organization), and{" "}
-              <span className="text-zinc-400">unconfirmed</span> events (social
-              media or single-source). Casualty figures are reported numbers and
-              may be revised.
+              {t("sources.methodology")}{" "}
+              <span className="text-green-400">{t("sources.verified")}</span>{" "}
+              {t("sources.verifiedDesc")}{" "}
+              <span className="text-yellow-400">{t("sources.reported")}</span>{" "}
+              {t("sources.reportedDesc")}{" "}
+              <span className="text-zinc-400">{t("sources.unconfirmed")}</span>{" "}
+              {t("sources.unconfirmedDesc")}
             </p>
           </div>
 
@@ -118,7 +124,7 @@ export default function SourcesPage({ onBack }: SourcesPageProps) {
           {SOURCE_GROUPS.map((group) => (
             <div key={group.category}>
               <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                {group.category}
+                {t(group.categoryKey)}
               </h2>
               <div className="space-y-1">
                 {group.sources.map((source) => (

@@ -17,7 +17,7 @@ const STORAGE_KEY = "warlibrary_lang";
 interface I18nContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
   dir: "ltr" | "rtl";
   isRTL: boolean;
 }
@@ -25,7 +25,7 @@ interface I18nContextType {
 const I18nContext = createContext<I18nContextType>({
   locale: "en",
   setLocale: () => {},
-  t: (key) => key,
+  t: (key: string) => key,
   dir: "ltr",
   isRTL: false,
 });
@@ -54,7 +54,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Nested key lookup: t("app.title") -> translations[locale].app.title
-  const t = useCallback((key: string): string => {
+  // Supports interpolation: t("time.hoursAgo", { n: 3 }) -> "3h ago"
+  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     const parts = key.split(".");
     let value: unknown = translations[locale];
     for (const part of parts) {
@@ -70,10 +71,17 @@ export function I18nProvider({ children }: { children: ReactNode }) {
             return key; // Key not found at all
           }
         }
-        return typeof fallback === "string" ? fallback : key;
+        value = fallback;
+        break;
       }
     }
-    return typeof value === "string" ? value : key;
+    let result = typeof value === "string" ? value : key;
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        result = result.replace(new RegExp(`\\{\\{${k}\\}\\}`, "g"), String(v));
+      }
+    }
+    return result;
   }, [locale]);
 
   const dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";

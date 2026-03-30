@@ -46,6 +46,7 @@ export default function Home() {
 }
 
 function HomeContent() {
+  const { t } = useI18n();
   const { notification, dismiss: dismissNotif } = useNotifications();
   const { events, loading, error, lastUpdated } = useEvents();
   const [selectedEvent, setSelectedEvent] = useState<ConflictEvent | null>(
@@ -110,7 +111,7 @@ function HomeContent() {
       <div className="flex h-dvh w-screen items-center justify-center bg-[#0a0a0a]">
         <div className="flex flex-col items-center gap-3">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-amber-500" />
-          <p className="text-sm text-zinc-500">Loading events...</p>
+          <p className="text-sm text-zinc-500">{t("app.loading")}</p>
           {error && (
             <p className="max-w-xs text-center text-xs text-red-400">{error}</p>
           )}
@@ -168,7 +169,7 @@ function HomeContent() {
       aria-live="polite"
     >
       <span className="shrink-0 bg-red-700 px-3 py-2 text-xs font-bold uppercase tracking-wider" aria-hidden="true">
-        Breaking
+        {t("ticker.breaking")}
       </span>
       <div className="flex-1 min-w-0 overflow-hidden py-2">
         <div className="ticker-track hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
@@ -179,7 +180,7 @@ function HomeContent() {
       <button
         onClick={dismissNotif}
         className="shrink-0 px-3 py-2 text-xs hover:bg-white/20 focus:bg-white/20 focus:outline-none"
-        aria-label="Dismiss breaking news notification"
+        aria-label={t("ticker.dismiss")}
       >
         ✕
       </button>
@@ -304,7 +305,7 @@ function HomeContent() {
 
       {loading && (
         <div className="absolute left-1/2 top-14 z-30 -translate-x-1/2 rounded-full bg-black/80 px-4 py-1.5 text-xs text-zinc-400 backdrop-blur-sm">
-          Updating...
+          {t("app.updating")}
         </div>
       )}
 

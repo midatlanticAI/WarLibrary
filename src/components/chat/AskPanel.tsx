@@ -90,7 +90,7 @@ export default function AskPanel({ events, onBack }: AskPanelProps) {
             {
               role: "assistant",
               content:
-                "Rate limit reached. You can ask up to 10 questions per hour. Please wait a bit before asking again.",
+                t("ask.rateLimitReached"),
               timestamp: new Date(),
             },
           ]);
@@ -111,7 +111,7 @@ export default function AskPanel({ events, onBack }: AskPanelProps) {
             ...prev,
             {
               role: "assistant",
-              content: json.error || "Something went wrong. Try again.",
+              content: json.error || t("ask.genericError"),
               timestamp: new Date(),
             },
           ]);

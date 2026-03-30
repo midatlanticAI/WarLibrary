@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ConflictEvent } from "@/types";
 import { EVENT_COLORS } from "@/lib/constants";
+import { useI18n } from "@/i18n";
 
 const CONFLICT_START = "2026-02-28";
 
@@ -13,6 +14,7 @@ interface OverviewBannerProps {
 }
 
 export default function OverviewBanner({ events }: OverviewBannerProps) {
+  const { t } = useI18n();
   const [collapsed, setCollapsed] = useState(true);
   const [activeModal, setActiveModal] = useState<StatKey | null>(null);
 
@@ -67,14 +69,14 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
     <div className="border-b border-zinc-800 bg-[#0e0e0e]">
       {/* ── Mobile: compact two-row grid (no scrolling) ── */}
       <div className="grid grid-cols-4 sm:hidden" role="region" aria-label="Conflict statistics">
-        <MobileStat label="DAY" value={String(stats.daysOfConflict)} color="text-zinc-100" />
-        <MobileStat label="KILLED" value={`${(stats.totalKilled / 1000).toFixed(1)}k+`} color="text-red-400" onClick={() => openModal("killed")} />
-        <MobileStat label="EVENTS" value={String(stats.totalEvents)} color="text-zinc-200" onClick={() => openModal("events")} />
-        <MobileStat label="COUNTRIES" value={String(stats.countries)} color="text-blue-400" onClick={() => openModal("countries")} />
-        <MobileStat label="AIRSTRIKES" value={String(stats.airstrikes)} color="text-red-300" onClick={() => openModal("airstrikes")} />
-        <MobileStat label="MISSILES" value={String(stats.missiles)} color="text-orange-400" onClick={() => openModal("missiles")} />
-        <MobileStat label="DRONES" value={String(stats.drones)} color="text-yellow-400" onClick={() => openModal("drones")} />
-        <MobileStat label={stats.recentEvents.length > 0 ? "24H" : "CIVILIAN"} value={stats.recentEvents.length > 0 ? String(stats.recentEvents.length) : String(stats.civilianImpactEvents.length)} color={stats.recentEvents.length > 0 ? "text-green-400" : "text-amber-400"} onClick={() => openModal(stats.recentEvents.length > 0 ? "24h" : "civilian")} />
+        <MobileStat label={t("stats.day")} value={String(stats.daysOfConflict)} color="text-zinc-100" />
+        <MobileStat label={t("stats.killed")} value={`${(stats.totalKilled / 1000).toFixed(1)}k+`} color="text-red-400" onClick={() => openModal("killed")} />
+        <MobileStat label={t("stats.events")} value={String(stats.totalEvents)} color="text-zinc-200" onClick={() => openModal("events")} />
+        <MobileStat label={t("stats.countries")} value={String(stats.countries)} color="text-blue-400" onClick={() => openModal("countries")} />
+        <MobileStat label={t("stats.airstrikes")} value={String(stats.airstrikes)} color="text-red-300" onClick={() => openModal("airstrikes")} />
+        <MobileStat label={t("stats.missiles")} value={String(stats.missiles)} color="text-orange-400" onClick={() => openModal("missiles")} />
+        <MobileStat label={t("stats.drones")} value={String(stats.drones)} color="text-yellow-400" onClick={() => openModal("drones")} />
+        <MobileStat label={stats.recentEvents.length > 0 ? t("stats.24h") : t("stats.civilian")} value={stats.recentEvents.length > 0 ? String(stats.recentEvents.length) : String(stats.civilianImpactEvents.length)} color={stats.recentEvents.length > 0 ? "text-green-400" : "text-amber-400"} onClick={() => openModal(stats.recentEvents.length > 0 ? "24h" : "civilian")} />
       </div>
 
       {/* ── Desktop: collapsible accordion ── */}
@@ -87,13 +89,13 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
         >
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Situation Overview
+              {t("stats.situationOverview")}
             </span>
             {collapsed && (
               <span className="text-xs text-zinc-500">
-                Day {stats.daysOfConflict} ·{" "}
-                <span className="text-red-400">{stats.totalKilled.toLocaleString()}+</span> killed ·{" "}
-                {stats.totalEvents} events · {stats.countries} countries
+                {t("stats.day")} {stats.daysOfConflict} ·{" "}
+                <span className="text-red-400">{stats.totalKilled.toLocaleString()}+</span> {t("stats.killed").toLowerCase()} ·{" "}
+                {stats.totalEvents} {t("stats.events").toLowerCase()} · {stats.countries} {t("stats.countriesText")}
               </span>
             )}
           </div>
@@ -106,29 +108,29 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
           <div className="space-y-3 px-4 pb-3">
             <p className="text-sm leading-relaxed text-zinc-300">
               <span className="font-semibold text-zinc-100">
-                Operation Epic Fury: Day {stats.daysOfConflict}.
+                {t("stats.operationEpicFury")}: {t("stats.day")} {stats.daysOfConflict}.
               </span>{" "}
-              {stats.totalEvents} verified events across {stats.countries} countries
-              ({stats.topCountries.join(", ")}). {stats.airstrikes} airstrikes,{" "}
-              {stats.missiles} missile attacks, {stats.drones} drone strikes
-              {stats.battles > 0 ? `, ${stats.battles} ground engagements` : ""}
-              {stats.strategicDevs > 0 ? `, ${stats.strategicDevs} strategic developments` : ""}.{" "}
+              {stats.totalEvents} {t("stats.verifiedEvents")} {stats.countries} {t("stats.countriesText")}
+              ({stats.topCountries.join(", ")}). {stats.airstrikes} {t("stats.airstrikesStat")},{" "}
+              {stats.missiles} {t("stats.missileAttacks")}, {stats.drones} {t("stats.droneStrikes")}
+              {stats.battles > 0 ? `, ${stats.battles} ${t("stats.groundEngagements")}` : ""}
+              {stats.strategicDevs > 0 ? `, ${stats.strategicDevs} ${t("stats.strategicDevelopments")}` : ""}.{" "}
               {stats.totalKilled > 0
-                ? `${stats.totalKilled.toLocaleString()}+ fatalities reported.`
-                : "Casualty figures being compiled."}{" "}
+                ? `${stats.totalKilled.toLocaleString()}+ ${t("stats.fatalitiesReported")}`
+                : t("stats.casualtiesBeing")}{" "}
               {stats.recentEvents.length > 0
-                ? `${stats.recentEvents.length} event${stats.recentEvents.length !== 1 ? "s" : ""} in the last 24 hours.`
+                ? `${stats.recentEvents.length} event${stats.recentEvents.length !== 1 ? "s" : ""} ${t("stats.eventsInLast24h")}`
                 : ""}
             </p>
 
             <div className="grid grid-cols-7 gap-2">
-              <StatChip label="Killed" value={`${(stats.totalKilled / 1000).toFixed(1)}k+`} color="text-red-400" onClick={() => openModal("killed")} />
-              <StatChip label="Countries" value={String(stats.countries)} color="text-blue-400" onClick={() => openModal("countries")} />
-              <StatChip label="Airstrikes" value={String(stats.airstrikes)} color="text-red-300" onClick={() => openModal("airstrikes")} />
-              <StatChip label="Missiles" value={String(stats.missiles)} color="text-orange-400" onClick={() => openModal("missiles")} />
-              <StatChip label="Drones" value={String(stats.drones)} color="text-yellow-400" onClick={() => openModal("drones")} />
-              <StatChip label="Civilian" value={String(stats.civilianImpactEvents.length)} color="text-amber-400" onClick={() => openModal("civilian")} />
-              <StatChip label="Events" value={String(stats.totalEvents)} color="text-zinc-300" onClick={() => openModal("events")} />
+              <StatChip label={t("stats.killed")} value={`${(stats.totalKilled / 1000).toFixed(1)}k+`} color="text-red-400" onClick={() => openModal("killed")} />
+              <StatChip label={t("stats.countries")} value={String(stats.countries)} color="text-blue-400" onClick={() => openModal("countries")} />
+              <StatChip label={t("stats.airstrikes")} value={String(stats.airstrikes)} color="text-red-300" onClick={() => openModal("airstrikes")} />
+              <StatChip label={t("stats.missiles")} value={String(stats.missiles)} color="text-orange-400" onClick={() => openModal("missiles")} />
+              <StatChip label={t("stats.drones")} value={String(stats.drones)} color="text-yellow-400" onClick={() => openModal("drones")} />
+              <StatChip label={t("stats.civilian")} value={String(stats.civilianImpactEvents.length)} color="text-amber-400" onClick={() => openModal("civilian")} />
+              <StatChip label={t("stats.events")} value={String(stats.totalEvents)} color="text-zinc-300" onClick={() => openModal("events")} />
             </div>
 
             {stats.latestEvent && (
@@ -139,7 +141,7 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
                 </span>
                 <div className="min-w-0">
                   <div className="text-xs font-medium text-zinc-400">
-                    Latest:{" "}
+                    {t("stats.latest")}:{" "}
                     <span className="capitalize text-zinc-300">
                       {stats.latestEvent.event_type.replace(/_/g, " ")}
                     </span>{" "}
@@ -149,7 +151,7 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
                     {stats.latestEvent.description}
                   </p>
                   <span className="mt-0.5 text-[10px] text-zinc-500">
-                    Source: {stats.latestEvent.source}
+                    {t("stats.source")}: {stats.latestEvent.source}
                   </span>
                 </div>
               </div>
@@ -200,18 +202,19 @@ interface BreakdownModalProps {
   onClose: () => void;
 }
 
-const MODAL_TITLES: Record<StatKey, string> = {
-  killed: "Fatalities Breakdown",
-  events: "Events by Type",
-  countries: "Events by Country",
-  airstrikes: "Airstrike Details",
-  missiles: "Missile Attack Details",
-  drones: "Drone Strike Details",
-  civilian: "Civilian Impact",
-  "24h": "Last 24 Hours",
-};
-
 function BreakdownModal({ statKey, events, stats, onClose }: BreakdownModalProps) {
+  const { t } = useI18n();
+  const MODAL_TITLES: Record<StatKey, string> = {
+    killed: t("modal.killedTitle"),
+    events: t("modal.eventsTitle"),
+    countries: t("modal.countriesTitle"),
+    airstrikes: t("modal.airstrikesTitle"),
+    missiles: t("modal.missilesTitle"),
+    drones: t("modal.dronesTitle"),
+    civilian: t("modal.civilianTitle"),
+    "24h": t("modal.24hTitle"),
+  };
+
   const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -251,7 +254,7 @@ function BreakdownModal({ statKey, events, stats, onClose }: BreakdownModalProps
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-600"
-            aria-label="Close breakdown"
+            aria-label={t("modal.close")}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -274,7 +277,7 @@ function BreakdownModal({ statKey, events, stats, onClose }: BreakdownModalProps
         {/* Source attribution */}
         <div className="border-t border-zinc-800 px-4 py-2">
           <p className="text-[10px] text-zinc-500">
-            Data sourced from Al Jazeera, BBC, Reuters, CNN, AP, and other verified outlets. Figures represent individually attributed events and may undercount actual totals.
+            {t("modal.dataSourced")}
           </p>
         </div>
       </div>
@@ -284,6 +287,7 @@ function BreakdownModal({ statKey, events, stats, onClose }: BreakdownModalProps
 
 /* ── Killed Breakdown ── */
 function KilledBreakdown({ events, stats }: { events: ConflictEvent[]; stats: StatsData }) {
+  const { t } = useI18n();
   const byCountry = useMemo(() => {
     const map: Record<string, number> = {};
     for (const e of events) {
@@ -302,14 +306,14 @@ function KilledBreakdown({ events, stats }: { events: ConflictEvent[]; stats: St
     <>
       <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
         <div className="text-2xl font-bold text-red-400">{stats.totalKilled.toLocaleString()}+</div>
-        <div className="text-xs text-zinc-500">Total reported fatalities</div>
+        <div className="text-xs text-zinc-500">{t("modal.totalReportedFatalities")}</div>
         <div className="mt-1 text-[10px] text-zinc-500">
-          {stats.summedFatalities.toLocaleString()} individually attributed
-          {stats.reportedTotal > stats.summedFatalities && ` · ${stats.reportedTotal.toLocaleString()} in aggregate reports`}
+          {stats.summedFatalities.toLocaleString()} {t("modal.individuallyAttributed")}
+          {stats.reportedTotal > stats.summedFatalities && ` · ${stats.reportedTotal.toLocaleString()} ${t("modal.inAggregateReports")}`}
         </div>
       </div>
 
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">By Country</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t("modal.byCountry")}</h3>
       <div className="space-y-1">
         {byCountry.map(([country, count]) => (
           <div key={country} className="flex items-center justify-between rounded bg-zinc-900/40 px-3 py-2">
@@ -321,14 +325,14 @@ function KilledBreakdown({ events, stats }: { events: ConflictEvent[]; stats: St
 
       {totalCivilian > 0 && (
         <div className="rounded-lg border border-amber-900/30 bg-amber-950/10 p-3">
-          <div className="text-xs font-semibold text-amber-400">Civilian fatalities (identified)</div>
+          <div className="text-xs font-semibold text-amber-400">{t("modal.civilianFatalities")}</div>
           <div className="text-lg font-bold text-amber-300">{totalCivilian.toLocaleString()}</div>
-          <div className="text-[10px] text-zinc-500">From events tagged as violence against civilians or with civilian impact</div>
+          <div className="text-[10px] text-zinc-500">{t("modal.fromEvents")}</div>
         </div>
       )}
 
       <p className="text-[10px] text-zinc-500">
-        Source: War Library database. Figures reflect per-event attributions from verified news reports. Actual totals are likely higher due to fog of war.
+        {t("modal.dataSourced")}
       </p>
     </>
   );
@@ -336,38 +340,28 @@ function KilledBreakdown({ events, stats }: { events: ConflictEvent[]; stats: St
 
 /* ── Events Breakdown ── */
 function EventsBreakdown({ events }: { events: ConflictEvent[] }) {
+  const { t } = useI18n();
   const byType = useMemo(() => {
     const map: Record<string, number> = {};
     for (const e of events) map[e.event_type] = (map[e.event_type] || 0) + 1;
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [events]);
 
-  const TYPE_LABELS: Record<string, string> = {
-    airstrike: "Airstrikes",
-    missile_attack: "Missile Attacks",
-    drone_attack: "Drone Attacks",
-    battle: "Battles / Ground Clashes",
-    explosion: "Explosions",
-    violence_against_civilians: "Violence Against Civilians",
-    strategic_development: "Strategic Developments",
-    protest: "Protests / Unrest",
-  };
-
   return (
     <>
       <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
         <div className="text-2xl font-bold text-zinc-200">{events.length}</div>
-        <div className="text-xs text-zinc-500">Total verified events</div>
+        <div className="text-xs text-zinc-500">{t("modal.totalVerifiedEvents")}</div>
       </div>
 
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">By Type</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t("modal.byType")}</h3>
       <div className="space-y-1">
         {byType.map(([type, count]) => {
           const pct = ((count / events.length) * 100).toFixed(1);
           return (
             <div key={type} className="flex items-center gap-2 rounded bg-zinc-900/40 px-3 py-2">
               <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ backgroundColor: EVENT_COLORS[type] || "#666" }} />
-              <span className="flex-1 text-sm text-zinc-300">{TYPE_LABELS[type] || type.replace(/_/g, " ")}</span>
+              <span className="flex-1 text-sm text-zinc-300">{t(`eventTypes.${type}`) !== `eventTypes.${type}` ? t(`eventTypes.${type}`) : type.replace(/_/g, " ")}</span>
               <span className="text-xs text-zinc-500">{pct}%</span>
               <span className="min-w-[40px] text-right text-sm font-semibold text-zinc-200">{count}</span>
             </div>
@@ -380,6 +374,7 @@ function EventsBreakdown({ events }: { events: ConflictEvent[] }) {
 
 /* ── Countries Breakdown ── */
 function CountriesBreakdown({ events }: { events: ConflictEvent[] }) {
+  const { t } = useI18n();
   const [sortBy, setSortBy] = useState<"events" | "fatalities">("events");
 
   const byCountry = useMemo(() => {
@@ -398,15 +393,15 @@ function CountriesBreakdown({ events }: { events: ConflictEvent[] }) {
     <>
       <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
         <div className="text-2xl font-bold text-blue-400">{byCountry.length}</div>
-        <div className="text-xs text-zinc-500">Countries affected</div>
+        <div className="text-xs text-zinc-500">{t("modal.countriesAffected")}</div>
       </div>
 
       <div className="flex gap-2">
         <button onClick={() => setSortBy("events")} className={`rounded px-3 py-1.5 text-xs ${sortBy === "events" ? "bg-zinc-700 text-zinc-200" : "bg-zinc-900 text-zinc-500"}`} aria-pressed={sortBy === "events"}>
-          Sort by events
+          {t("modal.sortByEvents")}
         </button>
         <button onClick={() => setSortBy("fatalities")} className={`rounded px-3 py-1.5 text-xs ${sortBy === "fatalities" ? "bg-zinc-700 text-zinc-200" : "bg-zinc-900 text-zinc-500"}`} aria-pressed={sortBy === "fatalities"}>
-          Sort by fatalities
+          {t("modal.sortByFatalities")}
         </button>
       </div>
 
@@ -415,8 +410,8 @@ function CountriesBreakdown({ events }: { events: ConflictEvent[] }) {
           <div key={country} className="flex items-center justify-between rounded bg-zinc-900/40 px-3 py-2">
             <span className="text-sm text-zinc-300">{country}</span>
             <div className="flex gap-3 text-sm">
-              <span className="text-zinc-400">{data.events} events</span>
-              {data.fatalities > 0 && <span className="text-red-400">{data.fatalities} killed</span>}
+              <span className="text-zinc-400">{data.events} {t("modal.eventsLabel")}</span>
+              {data.fatalities > 0 && <span className="text-red-400">{data.fatalities} {t("modal.killedLabel")}</span>}
             </div>
           </div>
         ))}
@@ -427,12 +422,13 @@ function CountriesBreakdown({ events }: { events: ConflictEvent[] }) {
 
 /* ── Military Breakdown (Airstrikes / Missiles / Drones) ── */
 function MilitaryBreakdown({ events, type }: { events: ConflictEvent[]; type: string }) {
+  const { t } = useI18n();
   const filtered = useMemo(
     () => events.filter((e) => e.event_type === type).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     [events, type]
   );
 
-  const label = type === "airstrike" ? "Airstrikes" : type === "missile_attack" ? "Missile Attacks" : "Drone Strikes";
+  const label = t(`eventTypes.${type}`) !== `eventTypes.${type}` ? t(`eventTypes.${type}`) : type.replace(/_/g, " ");
   const totalFatalities = filtered.reduce((s, e) => s + (e.fatalities || 0), 0);
 
   return (
@@ -440,15 +436,15 @@ function MilitaryBreakdown({ events, type }: { events: ConflictEvent[]; type: st
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
           <div className="text-xl font-bold" style={{ color: EVENT_COLORS[type] }}>{filtered.length}</div>
-          <div className="text-xs text-zinc-500">Total {label}</div>
+          <div className="text-xs text-zinc-500">{t("modal.totalLabel")} {label}</div>
         </div>
         <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
           <div className="text-xl font-bold text-red-400">{totalFatalities}</div>
-          <div className="text-xs text-zinc-500">Fatalities</div>
+          <div className="text-xs text-zinc-500">{t("modal.fatalities")}</div>
         </div>
       </div>
 
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Recent {label}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t("modal.recent")} {label}</h3>
       <div className="space-y-1.5">
         {filtered.slice(0, 15).map((e) => (
           <div key={e.id} className="rounded bg-zinc-900/40 px-3 py-2">
@@ -458,14 +454,14 @@ function MilitaryBreakdown({ events, type }: { events: ConflictEvent[]; type: st
             </div>
             <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300">{e.description}</p>
             <div className="mt-0.5 flex items-center gap-2 text-[10px] text-zinc-500">
-              {e.fatalities !== null && e.fatalities > 0 && <span className="text-red-400">{e.fatalities} killed</span>}
-              <span>Source: {e.source}</span>
+              {e.fatalities !== null && e.fatalities > 0 && <span className="text-red-400">{e.fatalities} {t("modal.killedLabel")}</span>}
+              <span>{t("stats.source")}: {e.source}</span>
             </div>
           </div>
         ))}
       </div>
       {filtered.length > 15 && (
-        <p className="text-center text-xs text-zinc-500">Showing 15 of {filtered.length} events</p>
+        <p className="text-center text-xs text-zinc-500">{t("modal.showing")} 15 {t("modal.of")} {filtered.length} {t("modal.eventsLabel")}</p>
       )}
     </>
   );
@@ -473,17 +469,27 @@ function MilitaryBreakdown({ events, type }: { events: ConflictEvent[]; type: st
 
 /* ── Civilian Breakdown ── */
 function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]; civilianEvents: ConflictEvent[] }) {
+  const { t } = useI18n();
   const totalCivKilled = civilianEvents.reduce((s, e) => s + (e.fatalities || 0), 0);
+
+  const IMPACT_KEYS: Record<string, string> = {
+    displaced: "modal.displaced",
+    healthcare: "modal.healthcareAffected",
+    schools: "modal.schoolsEducation",
+    infrastructure: "modal.infrastructureDamaged",
+    aid: "modal.aidDisrupted",
+  };
+
   const impactCategories = useMemo(() => {
     const cats: Record<string, number> = {};
     for (const e of civilianEvents) {
       if (e.civilian_impact) {
         const ci = e.civilian_impact.toLowerCase();
-        if (ci.includes("displac")) cats["Displaced"] = (cats["Displaced"] || 0) + 1;
-        if (ci.includes("hospital") || ci.includes("medical")) cats["Healthcare Affected"] = (cats["Healthcare Affected"] || 0) + 1;
-        if (ci.includes("school") || ci.includes("education")) cats["Schools/Education"] = (cats["Schools/Education"] || 0) + 1;
-        if (ci.includes("infrastructure")) cats["Infrastructure Damaged"] = (cats["Infrastructure Damaged"] || 0) + 1;
-        if (ci.includes("aid") || ci.includes("humanitarian")) cats["Aid Disrupted"] = (cats["Aid Disrupted"] || 0) + 1;
+        if (ci.includes("displac")) cats["displaced"] = (cats["displaced"] || 0) + 1;
+        if (ci.includes("hospital") || ci.includes("medical")) cats["healthcare"] = (cats["healthcare"] || 0) + 1;
+        if (ci.includes("school") || ci.includes("education")) cats["schools"] = (cats["schools"] || 0) + 1;
+        if (ci.includes("infrastructure")) cats["infrastructure"] = (cats["infrastructure"] || 0) + 1;
+        if (ci.includes("aid") || ci.includes("humanitarian")) cats["aid"] = (cats["aid"] || 0) + 1;
       }
     }
     return Object.entries(cats).sort((a, b) => b[1] - a[1]);
@@ -494,29 +500,29 @@ function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
           <div className="text-xl font-bold text-amber-400">{civilianEvents.length}</div>
-          <div className="text-xs text-zinc-500">Civilian Impact Events</div>
+          <div className="text-xs text-zinc-500">{t("modal.civilianImpactEvents")}</div>
         </div>
         <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
           <div className="text-xl font-bold text-red-400">{totalCivKilled}</div>
-          <div className="text-xs text-zinc-500">Civilian Fatalities</div>
+          <div className="text-xs text-zinc-500">{t("modal.civilianFatalitiesLabel")}</div>
         </div>
       </div>
 
       {impactCategories.length > 0 && (
         <>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Impact Categories</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t("modal.impactCategories")}</h3>
           <div className="space-y-1">
             {impactCategories.map(([cat, count]) => (
               <div key={cat} className="flex items-center justify-between rounded bg-zinc-900/40 px-3 py-2">
-                <span className="text-sm text-zinc-300">{cat}</span>
-                <span className="text-sm font-semibold text-amber-400">{count} events</span>
+                <span className="text-sm text-zinc-300">{t(IMPACT_KEYS[cat] || cat)}</span>
+                <span className="text-sm font-semibold text-amber-400">{count} {t("modal.eventsLabel")}</span>
               </div>
             ))}
           </div>
         </>
       )}
 
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Recent Civilian Impact Events</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t("modal.recentCivilianEvents")}</h3>
       <div className="space-y-1.5">
         {civilianEvents
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -531,13 +537,13 @@ function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]
             {e.civilian_impact && (
               <p className="mt-0.5 text-[10px] text-amber-400">{e.civilian_impact}</p>
             )}
-            <span className="text-[10px] text-zinc-500">Source: {e.source}</span>
+            <span className="text-[10px] text-zinc-500">{t("stats.source")}: {e.source}</span>
           </div>
         ))}
       </div>
 
       <p className="text-[10px] text-zinc-500">
-        Note: These figures reflect events with identified civilian impact. Actual civilian toll is significantly higher.
+        {t("modal.figuresNote")}
       </p>
     </>
   );
@@ -545,6 +551,7 @@ function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]
 
 /* ── 24H Breakdown ── */
 function RecentBreakdown({ recentEvents }: { recentEvents: ConflictEvent[] }) {
+  const { t } = useI18n();
   const sorted = useMemo(
     () => [...recentEvents].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     [recentEvents]
@@ -558,7 +565,7 @@ function RecentBreakdown({ recentEvents }: { recentEvents: ConflictEvent[] }) {
   }, [sorted]);
 
   if (sorted.length === 0) {
-    return <p className="py-8 text-center text-sm text-zinc-500">No events in the last 24 hours.</p>;
+    return <p className="py-8 text-center text-sm text-zinc-500">{t("modal.noEventsIn24h")}</p>;
   }
 
   return (
@@ -566,25 +573,25 @@ function RecentBreakdown({ recentEvents }: { recentEvents: ConflictEvent[] }) {
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
           <div className="text-xl font-bold text-green-400">{sorted.length}</div>
-          <div className="text-xs text-zinc-500">Events in 24h</div>
+          <div className="text-xs text-zinc-500">{t("modal.eventsIn24h")}</div>
         </div>
         <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
           <div className="text-xl font-bold text-red-400">{totalFatalities}</div>
-          <div className="text-xs text-zinc-500">Fatalities in 24h</div>
+          <div className="text-xs text-zinc-500">{t("modal.fatalitiesIn24h")}</div>
         </div>
       </div>
 
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">By Type</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t("modal.byType")}</h3>
       <div className="flex flex-wrap gap-1.5">
         {byType.map(([type, count]) => (
           <span key={type} className="flex items-center gap-1 rounded-full bg-zinc-900/60 px-2.5 py-1 text-xs text-zinc-300">
             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: EVENT_COLORS[type] || "#666" }} />
-            {type.replace(/_/g, " ")}: {count}
+            {t(`eventTypes.${type}`) !== `eventTypes.${type}` ? t(`eventTypes.${type}`) : type.replace(/_/g, " ")}: {count}
           </span>
         ))}
       </div>
 
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Timeline</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{t("modal.timeline")}</h3>
       <div className="space-y-1.5">
         {sorted.map((e) => (
           <div key={e.id} className="rounded bg-zinc-900/40 px-3 py-2">
@@ -598,8 +605,8 @@ function RecentBreakdown({ recentEvents }: { recentEvents: ConflictEvent[] }) {
             <p className="mt-0.5 line-clamp-2 pl-4 text-xs text-zinc-300">{e.description}</p>
             <div className="mt-0.5 flex items-center gap-2 pl-4 text-[10px] text-zinc-500">
               <span>{e.region}, {e.country}</span>
-              {e.fatalities !== null && e.fatalities > 0 && <span className="text-red-400">{e.fatalities} killed</span>}
-              <span>Source: {e.source}</span>
+              {e.fatalities !== null && e.fatalities > 0 && <span className="text-red-400">{e.fatalities} {t("modal.killedLabel")}</span>}
+              <span>{t("stats.source")}: {e.source}</span>
             </div>
           </div>
         ))}
