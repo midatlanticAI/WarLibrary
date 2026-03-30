@@ -156,6 +156,8 @@ export default function ConflictMap({
                 border: "2px solid rgba(255,255,255,0.3)",
                 fontSize: viewState.zoom > 6 ? "14px" : "10px",
               }}
+              role="button"
+              aria-label={`${event.event_type.replace(/_/g, " ")}: ${event.region}, ${event.country}${event.fatalities ? ` — ${event.fatalities} fatalities` : ""}`}
               title={event.description}
             >
               {viewState.zoom > 5 && (
@@ -173,6 +175,7 @@ export default function ConflictMap({
             onClose={() => onSelectEvent(null)}
             closeOnClick={false}
             maxWidth="320px"
+            focusAfterOpen={false}
           >
             <EventPopup event={selectedEvent} />
           </Popup>

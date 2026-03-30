@@ -244,7 +244,7 @@ function FirstVisit({
         Enter War Library
       </button>
 
-      <div className="text-center text-[11px] leading-relaxed text-zinc-600 sm:text-xs">
+      <div className="text-center text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
         <span className="font-medium">{eventCount} verified events</span> from{" "}
         <span className="font-medium">
           Al Jazeera, CNN, BBC, Reuters, AP
@@ -284,7 +284,7 @@ function ReturnVisit({
         <p className="text-sm text-zinc-500">
           No new events reported since your last visit ({timeAgo}).
         </p>
-        <p className="text-xs text-zinc-600">Continuing to library...</p>
+        <p className="text-xs text-zinc-500">Continuing to library...</p>
       </div>
     );
   }
@@ -333,7 +333,7 @@ function ReturnVisit({
         Continue to Library
       </button>
 
-      <label className="flex cursor-pointer items-center justify-center gap-2 text-xs text-zinc-600">
+      <label className="flex cursor-pointer items-center justify-center gap-2 text-xs text-zinc-500">
         <input
           type="checkbox"
           onChange={onToggleSkip}

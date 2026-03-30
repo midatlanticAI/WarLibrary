@@ -111,6 +111,58 @@ button, nav {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ── WCAG: Focus visible indicators ── */
+:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* Remove default focus outline only when :focus-visible is supported */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── WCAG: Skip navigation link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: #1a1a1a;
+  color: #60a5fa;
+  font-size: 14px;
+  text-decoration: underline;
+  border: 2px solid #60a5fa;
+  border-radius: 4px;
+}
+
+.skip-link:focus {
+  top: 8px;
+  left: 8px;
+}
+
+/* ── WCAG: Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .ticker-track {
+    animation: none !important;
+    white-space: normal;
+  }
+}
+
+/* ── WCAG: High contrast mode support ── */
+@media (forced-colors: active) {
+  .mapboxgl-popup-content {
+    border: 2px solid CanvasText !important;
+  }
+}
+
 /* News ticker scroll animation — seamless loop */
 .ticker-track {
   display: inline-flex;
@@ -121,4 +173,51 @@ button, nav {
 @keyframes ticker-scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+/* RTL ticker direction */
+[dir="rtl"] .ticker-track {
+  animation: ticker-scroll-rtl 45s linear infinite;
+}
+
+@keyframes ticker-scroll-rtl {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50%); }
+}
+
+/* RTL support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Arabic font stack */
+[lang="ar"] body {
+  font-family: var(--font-noto-arabic), "Noto Sans Arabic", "Tajawal", var(--font-sans), Arial, sans-serif;
+}
+
+/* Hebrew font stack */
+[lang="he"] body {
+  font-family: "Noto Sans Hebrew", var(--font-sans), Arial, sans-serif;
+}
+
+/* RTL scrollbar positioning */
+[dir="rtl"] ::-webkit-scrollbar {
+  direction: rtl;
+}
+
+/* Flip map controls in RTL */
+[dir="rtl"] .mapboxgl-ctrl-top-left {
+  left: auto !important;
+  right: 0 !important;
+}
+
+[dir="rtl"] .mapboxgl-ctrl-bottom-left {
+  left: auto !important;
+  right: 0 !important;
+}
+
+/* RTL panel border */
+[dir="rtl"] .border-l {
+  border-left: 0;
+  border-right: 1px solid;
 }

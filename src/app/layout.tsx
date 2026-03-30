@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Arabic } from "next/font/google";
 import JsonLd from "@/components/seo/JsonLd";
 import "./globals.css";
 
@@ -13,12 +13,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const notoArabic = Noto_Sans_Arabic({
+  variable: "--font-noto-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+});
+
 const siteUrl = "https://warlibrary.midatlantic.ai";
 const siteTitle = "War Library — Live Conflict Tracker";
 const siteDescription =
-  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). 3,800+ verified conflict events mapped across 28+ countries — airstrikes, missile attacks, drone strikes, and strategic developments. Every event is source-attributed from Al Jazeera, BBC, Reuters, CNN, and AP with confidence scoring. Includes AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
-const ogImage = `${siteUrl}/icons/icon-512.png`;
-
+  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). 4,600+ verified conflict events mapped across 60+ countries — airstrikes, missile attacks, drone strikes, and strategic developments. Every event is source-attributed from Al Jazeera, BBC, Reuters, CNN, and AP with confidence scoring. Includes AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
 export const metadata: Metadata = {
   title: {
     default: siteTitle,
@@ -59,20 +63,11 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "War Library",
     locale: "en_US",
-    images: [
-      {
-        url: ogImage,
-        width: 512,
-        height: 512,
-        alt: "War Library — Live Conflict Tracker",
-      },
-    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
-    images: [ogImage],
   },
   robots: {
     index: true,
@@ -96,7 +91,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" dir="ltr" className="dark" suppressHydrationWarning>
       <head>
         <link
           href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css"
@@ -116,7 +111,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoArabic.variable} antialiased`}
       >
         <JsonLd />
         {children}

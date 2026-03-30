@@ -154,7 +154,7 @@ export default function Header({
               role="listbox"
               aria-label={t("language.label")}
             >
-              {LOCALES.map((l) => (
+              {LOCALES.map((l: Locale) => (
                 <button
                   key={l}
                   onClick={() => { setLocale(l); setLangOpen(false); }}

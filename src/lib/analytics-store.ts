@@ -21,11 +21,19 @@ export interface DailyEntry {
   uniqueVisitors: number;
 }
 
+interface PersistedDailyEntry {
+  date: string;
+  views: Record<PageName, number>;
+  uniqueVisitors: number;
+  visitorHashes?: string[];
+}
+
 interface PersistedData {
   totalViews: number;
   aiQuestions: number;
+  botViews?: number;
   pageViews: Record<PageName, number>;
-  daily: DailyEntry[];
+  daily: PersistedDailyEntry[];
 }
 
 export interface MemoryDay {
@@ -39,6 +47,7 @@ export interface MemoryDay {
 export const store = {
   totalViews: 0,
   aiQuestions: 0,
+  botViews: 0,
   pageViews: { map: 0, feed: 0, ask: 0, donate: 0, sources: 0, about: 0 } as Record<PageName, number>,
   dailyStats: new Map<string, MemoryDay>(),
   viewsSinceFlush: 0,
@@ -52,6 +61,7 @@ function loadFromDisk(): void {
     const data: PersistedData = JSON.parse(raw);
     store.totalViews = data.totalViews || 0;
     store.aiQuestions = data.aiQuestions || 0;
+    store.botViews = data.botViews || 0;
     if (data.pageViews) {
       for (const key of VALID_PAGES) {
         store.pageViews[key] = data.pageViews[key] || 0;
@@ -62,7 +72,7 @@ function loadFromDisk(): void {
         store.dailyStats.set(day.date, {
           date: day.date,
           views: { ...day.views },
-          visitors: new Set(),
+          visitors: new Set(day.visitorHashes || []),
           restoredUniqueCount: day.uniqueVisitors || 0,
         });
       }
@@ -74,7 +84,7 @@ function loadFromDisk(): void {
 
 export function flushToDisk(): void {
   try {
-    const daily: DailyEntry[] = [];
+    const daily: PersistedDailyEntry[] = [];
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
     const cutoffStr = cutoff.toISOString().split("T")[0];
@@ -85,6 +95,7 @@ export function flushToDisk(): void {
           date: day.date,
           views: { ...day.views },
           uniqueVisitors: Math.max(day.restoredUniqueCount, day.visitors.size),
+          visitorHashes: Array.from(day.visitors),
         });
       }
     }
@@ -93,6 +104,7 @@ export function flushToDisk(): void {
     const data: PersistedData = {
       totalViews: store.totalViews,
       aiQuestions: store.aiQuestions,
+      botViews: store.botViews,
       pageViews: { ...store.pageViews },
       daily,
     };

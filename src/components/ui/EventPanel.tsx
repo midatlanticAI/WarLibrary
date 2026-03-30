@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import type { ConflictEvent } from "@/types";
 import { EVENT_COLORS } from "@/lib/constants";
 import { shareEvent } from "@/lib/share";
@@ -24,6 +24,14 @@ export default function EventPanel({
 }: EventPanelProps) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Scroll event list to top when an event is selected (especially on mobile)
+  useEffect(() => {
+    if (selectedEvent && listRef.current) {
+      listRef.current.scrollTop = 0;
+    }
+  }, [selectedEvent]);
 
   const filtered = events.filter((e) => {
     if (activeFilter && e.event_type !== activeFilter) return false;
@@ -66,7 +74,7 @@ export default function EventPanel({
           <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
             Event Feed
           </h2>
-          <p className="mt-1 text-xs text-zinc-600">
+          <p className="mt-1 text-xs text-zinc-500">
             {sortedEvents.length}{activeFilter || searchQuery ? ` of ${events.length}` : ""} events • latest first
           </p>
         </div>
@@ -78,7 +86,8 @@ export default function EventPanel({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search events..."
-            className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 outline-none focus:border-zinc-600"
+            aria-label="Search events by description, country, or type"
+            className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-500"
           />
         </div>
 
@@ -103,14 +112,16 @@ export default function EventPanel({
         </div>
 
         {/* Event List */}
-        <div className="flex-1 overflow-y-auto">
+        <div ref={listRef} className="flex-1 overflow-y-auto">
           {sortedEvents.map((event) => (
             <div
               key={event.id}
               onClick={() => onSelectEvent(event)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectEvent(event); } }}
               role="button"
               tabIndex={0}
-              className={`w-full cursor-pointer select-text border-b border-zinc-800/50 p-3 text-left transition-colors hover:bg-zinc-800/50 ${
+              aria-label={`${event.event_type.replace(/_/g, " ")}: ${event.description.slice(0, 80)}`}
+              className={`w-full cursor-pointer select-text border-b border-zinc-800/50 p-3 text-left transition-colors hover:bg-zinc-800/50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-500 ${
                 selectedEvent?.id === event.id ? "bg-zinc-800/70" : ""
               }`}
             >
@@ -127,14 +138,14 @@ export default function EventPanel({
                     <span className="text-xs font-medium capitalize text-zinc-300">
                       {event.event_type.replace(/_/g, " ")}
                     </span>
-                    <span className="flex-shrink-0 text-xs text-zinc-600">
+                    <span className="flex-shrink-0 text-xs text-zinc-500">
                       {formatRelativeDate(event.date)}
                     </span>
                   </div>
                   <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-zinc-400">
                     {event.description}
                   </p>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-zinc-600">
+                  <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500">
                     <span>
                       {event.region}, {event.country}
                     </span>
@@ -147,7 +158,7 @@ export default function EventPanel({
                       <VerificationBadge status={event.verification_status} />
                     )}
                     {event.location_precision === "country" && (
-                      <span className="text-zinc-600 italic">(approximate location)</span>
+                      <span className="text-zinc-500 italic">(approximate location)</span>
                     )}
                   </div>
                   {event.civilian_impact && (
@@ -164,7 +175,7 @@ export default function EventPanel({
           ))}
 
           {sortedEvents.length === 0 && (
-            <div className="p-8 text-center text-sm text-zinc-600">
+            <div className="p-8 text-center text-sm text-zinc-500">
               No events in selected range
             </div>
           )}
@@ -226,7 +237,7 @@ function FilterChip({
         />
       )}
       <span className="capitalize">{label}</span>
-      <span className="text-zinc-600">{count}</span>
+      <span className="text-zinc-500">{count}</span>
     </button>
   );
 }
@@ -243,7 +254,7 @@ function StatBox({
   return (
     <div>
       <div className={`text-lg font-bold ${color}`}>{value}</div>
-      <div className="text-xs text-zinc-600">{label}</div>
+      <div className="text-xs text-zinc-500">{label}</div>
     </div>
   );
 }

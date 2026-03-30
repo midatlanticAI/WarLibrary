@@ -89,7 +89,7 @@ export default function TimelineSlider({
   return (
     <div className="flex flex-col gap-1.5 rounded-lg bg-black/70 backdrop-blur-sm">
       {/* Mobile: compact filter bar only */}
-      <div className="flex gap-1.5 p-2 sm:hidden">
+      <div className="flex gap-1.5 p-2 sm:hidden" role="group" aria-label="Time range filters">
         {quickFilters.map((preset) => {
           const isActive = isRangeMatch(dateRange, preset);
           return (
@@ -98,11 +98,13 @@ export default function TimelineSlider({
               onClick={() =>
                 onChange({ start: preset.start, end: preset.end })
               }
-              className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
+              className={`min-h-[44px] flex-1 rounded-md py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500 ${
                 isActive
                   ? "bg-red-600 text-white"
                   : "bg-zinc-800/80 text-zinc-400 active:bg-zinc-700"
               }`}
+              aria-pressed={isActive}
+              aria-label={`Show ${preset.label === "All" ? "all time" : `last ${preset.label}`}`}
             >
               {preset.label}
             </button>

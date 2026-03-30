@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/i18n";
+
 type MobileTab = "map" | "feed" | "ask" | "donate" | "sources" | "about";
 
 interface MobileNavProps {
@@ -13,10 +15,12 @@ export default function MobileNav({
   onChange,
   newEventCount,
 }: MobileNavProps) {
+  const { t } = useI18n();
+
   return (
-    <nav className="flex border-t border-zinc-800 bg-[#0e0e0e] pb-[env(safe-area-inset-bottom)] sm:hidden">
+    <nav className="flex border-t border-zinc-800 bg-[#0e0e0e] pb-[env(safe-area-inset-bottom)] sm:hidden" aria-label="Main navigation">
       <TabButton
-        label="Map"
+        label={t("nav.map")}
         icon={
           <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -29,7 +33,7 @@ export default function MobileNav({
         onClick={() => onChange("map")}
       />
       <TabButton
-        label="Feed"
+        label={t("nav.feed")}
         icon={
           <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -43,7 +47,7 @@ export default function MobileNav({
         badge={newEventCount}
       />
       <TabButton
-        label="Ask"
+        label={t("nav.ask")}
         icon={
           <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -56,7 +60,7 @@ export default function MobileNav({
         onClick={() => onChange("ask")}
       />
       <TabButton
-        label="Donate"
+        label={t("nav.donate")}
         icon={
           <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -70,7 +74,7 @@ export default function MobileNav({
         onClick={() => onChange("donate")}
       />
       <TabButton
-        label="About"
+        label={t("nav.about")}
         icon={
           <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -102,7 +106,9 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`relative flex flex-1 flex-col items-center gap-0.5 py-2.5 transition-colors ${
+      aria-label={label}
+      aria-current={active ? "page" : undefined}
+      className={`relative flex min-h-[48px] flex-1 flex-col items-center justify-center gap-0.5 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-500 ${
         active ? "text-zinc-100" : "text-zinc-600"
       }`}
     >

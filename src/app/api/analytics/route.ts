@@ -15,6 +15,27 @@ import {
 // Persisted to disk so data survives restarts
 // ---------------------------------------------------------------------------
 
+// Bot detection — filter known crawlers/bots from analytics without blocking them
+const BOT_PATTERNS = [
+  /bot\b/i, /crawl/i, /spider/i, /slurp/i, /mediapartners/i,
+  /googlebot/i, /bingbot/i, /yandex/i, /baiduspider/i, /duckduckbot/i,
+  /facebookexternalhit/i, /twitterbot/i, /linkedinbot/i, /whatsapp/i,
+  /telegrambot/i, /discordbot/i, /slackbot/i, /applebot/i,
+  /semrushbot/i, /ahrefsbot/i, /mj12bot/i, /dotbot/i, /petalbot/i,
+  /bytespider/i, /gptbot/i, /claudebot/i, /anthropic/i, /ccbot/i,
+  /ia_archiver/i, /archive\.org/i, /wget/i, /curl/i, /httpie/i,
+  /python-requests/i, /python-urllib/i, /java\//i, /okhttp/i,
+  /go-http-client/i, /node-fetch/i, /axios/i, /postman/i, /insomnia/i,
+  /lighthouse/i, /pagespeed/i, /gtmetrix/i, /pingdom/i, /uptimerobot/i,
+  /headlesschrome/i, /phantomjs/i, /selenium/i, /puppeteer/i,
+];
+
+function isBot(req: NextRequest): boolean {
+  const ua = req.headers.get("user-agent") || "";
+  if (!ua || ua.length < 10) return true; // Empty/suspiciously short UA
+  return BOT_PATTERNS.some((p) => p.test(ua));
+}
+
 // Rate limit: 1 hit per page per IP per minute
 const rateLimitMap = new Map<string, number>();
 
@@ -28,6 +49,7 @@ setInterval(() => {
 
 function getClientIp(req: NextRequest): string {
   return (
+    req.headers.get("cf-connecting-ip") ||
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     req.headers.get("x-real-ip") ||
     "unknown"
@@ -61,6 +83,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { error: "Invalid page. Must be one of: " + VALID_PAGES.join(", ") },
       { status: 400 }
     );
+  }
+
+  // Track bot traffic separately — bots can still access the site
+  if (isBot(req)) {
+    store.botViews++;
+    return NextResponse.json({ ok: true });
   }
 
   const ip = getClientIp(req);
@@ -128,6 +156,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       todayViews: todayStats ? Object.values(todayStats.views).reduce((a, b) => a + b, 0) : 0,
       todayUnique: todayStats ? Math.max(todayStats.restoredUniqueCount, todayStats.visitors.size) : 0,
       aiQuestions: store.aiQuestions,
+      botViews: store.botViews,
       pageViews: { ...store.pageViews },
       daily,
     },

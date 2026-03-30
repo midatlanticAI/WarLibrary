@@ -137,12 +137,15 @@ const mockApiEvents: ConflictEvent[] = [
 
 describe("AskPanel", () => {
   let AskPanel: typeof import("@/components/chat/AskPanel").default;
+  let I18nProvider: typeof import("@/i18n").I18nProvider;
 
   beforeEach(async () => {
     vi.stubGlobal("fetch", vi.fn());
     // Dynamic import to avoid issues with module-level side effects
     const mod = await import("@/components/chat/AskPanel");
     AskPanel = mod.default;
+    const i18nMod = await import("@/i18n");
+    I18nProvider = i18nMod.I18nProvider;
   });
 
   afterEach(() => {
@@ -150,7 +153,7 @@ describe("AskPanel", () => {
   });
 
   it("renders empty state with suggested questions", () => {
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     // Should show all 3 categories
     expect(screen.getByText("Situation")).toBeInTheDocument();
@@ -164,12 +167,12 @@ describe("AskPanel", () => {
   });
 
   it("shows War Library AI heading", () => {
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
     expect(screen.getByText("War Library AI")).toBeInTheDocument();
   });
 
   it("renders suggested questions as clickable buttons", () => {
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     const questionButton = screen.getByText("What is the current military situation in the 2026 Iran war?");
     expect(questionButton.tagName).toBe("BUTTON");
@@ -177,7 +180,7 @@ describe("AskPanel", () => {
   });
 
   it("renders input field with correct placeholder", () => {
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     const input = screen.getByPlaceholderText("Ask about the conflict...");
     expect(input).toBeInTheDocument();
@@ -185,14 +188,14 @@ describe("AskPanel", () => {
   });
 
   it("disables send button when input is empty", () => {
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     const sendButton = screen.getByLabelText("Send");
     expect(sendButton).toBeDisabled();
   });
 
   it("enables send button when input has text", () => {
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     const input = screen.getByPlaceholderText("Ask about the conflict...");
     fireEvent.change(input, { target: { value: "What is happening?" } });
@@ -215,7 +218,7 @@ describe("AskPanel", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     const input = screen.getByPlaceholderText("Ask about the conflict...");
     fireEvent.change(input, { target: { value: "What is happening?" } });
@@ -243,7 +246,7 @@ describe("AskPanel", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     const input = screen.getByPlaceholderText("Ask about the conflict...");
     fireEvent.change(input, { target: { value: "How did this start?" } });
@@ -272,7 +275,7 @@ describe("AskPanel", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     const input = screen.getByPlaceholderText("Ask about the conflict...");
     fireEvent.change(input, { target: { value: "Test question" } });
@@ -282,7 +285,7 @@ describe("AskPanel", () => {
       expect(fetchMock).toHaveBeenCalledWith("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: "Test question" }),
+        body: JSON.stringify({ question: "Test question", lang: "en" }),
       });
     });
   });
@@ -297,7 +300,7 @@ describe("AskPanel", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<AskPanel events={mockEvents} />);
+    render(<I18nProvider><AskPanel events={mockEvents} /></I18nProvider>);
 
     fireEvent.click(screen.getByText("How did Operation Epic Fury start and what triggered it?"));
 
@@ -305,7 +308,7 @@ describe("AskPanel", () => {
       expect(fetchMock).toHaveBeenCalledWith("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: "How did Operation Epic Fury start and what triggered it?" }),
+        body: JSON.stringify({ question: "How did Operation Epic Fury start and what triggered it?", lang: "en" }),
       });
     });
   });

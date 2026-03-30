@@ -17,6 +17,7 @@ import AskPanel from "@/components/chat/AskPanel";
 import MobileNav from "@/components/ui/MobileNav";
 import PWAProvider from "@/components/pwa/PWAProvider";
 import { useNotifications } from "@/hooks/useNotifications";
+import { I18nProvider, useI18n } from "@/i18n";
 
 const ConflictMap = dynamic(() => import("@/components/map/ConflictMap"), {
   ssr: false,
@@ -37,6 +38,14 @@ function toTab(t: MobileTab): Tab {
 }
 
 export default function Home() {
+  return (
+    <I18nProvider>
+      <HomeContent />
+    </I18nProvider>
+  );
+}
+
+function HomeContent() {
   const { notification, dismiss: dismissNotif } = useNotifications();
   const { events, loading, error, lastUpdated } = useEvents();
   const [selectedEvent, setSelectedEvent] = useState<ConflictEvent | null>(
@@ -118,64 +127,59 @@ export default function Home() {
         .map((item) => {
           // Extract source URL if appended with ||| delimiter
           const pipeIdx = item.indexOf("|||");
-          const url = pipeIdx !== -1 ? item.slice(pipeIdx + 3).trim() : null;
+          let url: string | null = pipeIdx !== -1 ? item.slice(pipeIdx + 3).trim() : null;
+          // Clean URL: strip trailing brackets/whitespace, validate
+          if (url) {
+            url = url.replace(/[\]\s]+$/, "");
+            try { new URL(url); } catch { url = null; }
+          }
           const text = (pipeIdx !== -1 ? item.slice(0, pipeIdx) : item)
             .replace(/^\[/, "")
             .replace(/\]/, " —")
             .trim();
           return { text, url };
         })
-        .filter((item) => /[.!?)"'\d]$/.test(item.text))
+        .filter((item) => item.text.length > 5)
     : [];
 
-  const notifBanner = notification ? (
-    <div className="relative z-40 flex items-center bg-amber-600/90 text-sm text-white backdrop-blur-sm">
-      <span className="shrink-0 bg-red-700 px-3 py-2 text-xs font-bold uppercase tracking-wider">
+  const renderHeadline = (item: { text: string; url: string | null }, i: number, isDup = false) => {
+    const key = isDup ? `dup-${i}` : i;
+    const props = {
+      className: "inline-block whitespace-nowrap px-8 hover:underline focus:underline focus:outline-none",
+      ...(isDup ? { "aria-hidden": true as const, tabIndex: -1 } : {}),
+    };
+    if (item.url) {
+      return (
+        <a key={key} href={item.url} target="_blank" rel="noopener noreferrer" {...props}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {item.text}
+        </a>
+      );
+    }
+    return <span key={key} className="inline-block whitespace-nowrap px-8">{item.text}</span>;
+  };
+
+  const notifBanner = notification && headlines.length > 0 ? (
+    <div
+      className="relative z-40 flex items-center bg-amber-600/90 text-sm text-white backdrop-blur-sm"
+      role="marquee"
+      aria-label="Breaking news"
+      aria-live="polite"
+    >
+      <span className="shrink-0 bg-red-700 px-3 py-2 text-xs font-bold uppercase tracking-wider" aria-hidden="true">
         Breaking
       </span>
       <div className="flex-1 min-w-0 overflow-hidden py-2">
-        <div className="ticker-track hover:[animation-play-state:paused]">
-          {headlines.map((item, i) =>
-            item.url ? (
-              <a
-                key={i}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block whitespace-nowrap px-8 hover:underline"
-              >
-                {item.text}
-              </a>
-            ) : (
-              <span key={i} className="inline-block whitespace-nowrap px-8">
-                {item.text}
-              </span>
-            )
-          )}
-          {headlines.map((item, i) =>
-            item.url ? (
-              <a
-                key={`dup-${i}`}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block whitespace-nowrap px-8 hover:underline"
-                aria-hidden="true"
-              >
-                {item.text}
-              </a>
-            ) : (
-              <span key={`dup-${i}`} className="inline-block whitespace-nowrap px-8" aria-hidden="true">
-                {item.text}
-              </span>
-            )
-          )}
+        <div className="ticker-track hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
+          {headlines.map((item, i) => renderHeadline(item, i))}
+          {headlines.map((item, i) => renderHeadline(item, i, true))}
         </div>
       </div>
       <button
         onClick={dismissNotif}
-        className="shrink-0 px-3 py-2 text-xs hover:bg-white/20"
-        aria-label="Dismiss notification"
+        className="shrink-0 px-3 py-2 text-xs hover:bg-white/20 focus:bg-white/20 focus:outline-none"
+        aria-label="Dismiss breaking news notification"
       >
         ✕
       </button>
@@ -242,12 +246,13 @@ export default function Home() {
 
   return (
     <div className="flex h-dvh w-screen flex-col overflow-hidden">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <Header lastUpdated={lastUpdated} activeTab="map" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
       {notifBanner}
 
       <OverviewBanner events={events} />
 
-      <div className="relative flex flex-1 overflow-hidden">
+      <div id="main-content" className="relative flex flex-1 overflow-hidden" role="main">
         <div className={`flex-1 ${showMobileFeed ? "hidden sm:block" : ""}`}>
           <ConflictMap
             events={events}
