@@ -257,6 +257,8 @@ function OverviewTab({ data, stats, sourceNames }: {
   const history = data.pipeline.history || [];
   const pm2 = data.pm2?.[0] || null;
   const sys = data.system;
+  const now = Date.now();
+  const uptimeSub = pm2?.uptime ? `Up ${fmtUptime((now - pm2.uptime) / 1000)}` : undefined;
 
   return (
     <div className="space-y-6">
@@ -268,7 +270,7 @@ function OverviewTab({ data, stats, sourceNames }: {
         <Stat
           label="Status"
           value={pm2?.status === "online" ? "Online" : "Offline"}
-          sub={pm2?.uptime ? `Up ${fmtUptime((Date.now() - pm2.uptime) / 1000)}` : undefined}
+          sub={uptimeSub}
         />
       </div>
 

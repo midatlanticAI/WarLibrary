@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Plain JS scripts use require() — not worth linting with TS rules
+    "scripts/**",
   ]),
 ]);
 
