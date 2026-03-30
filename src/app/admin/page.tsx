@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
+import Link from "next/link";
 
 // ─── Types matching GET /api/admin/dashboard response ─────────────────────
 
@@ -761,7 +762,7 @@ function Dashboard() {
       <header className="shrink-0 border-b border-[#1e1e1e] bg-[#0a0a0a]">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <a href="/" className="text-xs text-zinc-600 transition hover:text-amber-500">&larr;</a>
+            <Link href="/" className="text-xs text-zinc-600 transition hover:text-amber-500">&larr;</Link>
             <h1 className="text-sm font-bold text-zinc-200">Admin</h1>
           </div>
           <div className="flex items-center gap-3 text-[10px] text-zinc-600">
