@@ -201,6 +201,7 @@ describe("Cross-file consistency", () => {
 
     for (const fileName of fileNames) {
       const filePath = path.join(dataDir, fileName);
+      if (!fs.existsSync(filePath)) continue; // events_latest.json is gitignored
       const raw = fs.readFileSync(filePath, "utf-8");
       let parsed: unknown;
       expect(() => {
@@ -213,6 +214,7 @@ describe("Cross-file consistency", () => {
 
   it("each file contributes at least 1 event", () => {
     for (const file of allFiles) {
+      if (file.events.length === 0 && file.name === "events_latest.json") continue; // gitignored
       expect(
         file.events.length,
         `${file.name} has no events`,
