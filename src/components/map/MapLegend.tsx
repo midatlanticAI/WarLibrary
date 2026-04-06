@@ -60,8 +60,8 @@ export default function MapLegend({
   }, [events]);
 
   return (
-    <div className="absolute right-3 top-3 z-10">
-      {/* Toggle button */}
+    <div className="absolute end-3 top-3 z-10">
+      {/* Toggle button — positioned to avoid overlapping event counter on small screens */}
       <button
         onClick={onToggle}
         className="min-h-[44px] min-w-[44px] rounded-lg bg-black/80 px-3 py-2 text-xs font-medium text-zinc-300 backdrop-blur-sm transition-colors hover:bg-black/90 focus:outline-none focus:ring-2 focus:ring-zinc-500"
@@ -72,7 +72,7 @@ export default function MapLegend({
       </button>
 
       {isOpen && (
-        <div className="mt-2 max-h-[60vh] w-56 overflow-y-auto rounded-lg border border-zinc-800 bg-black/90 p-3 backdrop-blur-md">
+        <div className="mt-2 max-h-[60vh] w-56 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border border-zinc-800 bg-black/90 p-3 backdrop-blur-md">
           {/* Event types */}
           <div className="mb-3">
             <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
@@ -87,7 +87,7 @@ export default function MapLegend({
                   <button
                     key={type}
                     onClick={() => onToggleType(type)}
-                    className={`flex w-full items-center gap-2 rounded px-1.5 py-1.5 text-left transition-opacity ${
+                    className={`flex min-h-[44px] w-full items-center gap-2 rounded px-1.5 py-1.5 text-left transition-opacity sm:min-h-0 ${
                       hidden ? "opacity-30" : "opacity-100"
                     } hover:bg-zinc-800/50 focus:outline-none focus:ring-1 focus:ring-zinc-600`}
                     aria-pressed={!hidden}
@@ -119,7 +119,7 @@ export default function MapLegend({
                   <button
                     key={country}
                     onClick={() => onToggleCountry(country)}
-                    className={`flex w-full items-center gap-2 rounded px-1.5 py-1.5 text-left transition-opacity ${
+                    className={`flex min-h-[44px] w-full items-center gap-2 rounded px-1.5 py-1.5 text-left transition-opacity sm:min-h-0 ${
                       hidden ? "opacity-30" : "opacity-100"
                     } hover:bg-zinc-800/50 focus:outline-none focus:ring-1 focus:ring-zinc-600`}
                     aria-pressed={!hidden}

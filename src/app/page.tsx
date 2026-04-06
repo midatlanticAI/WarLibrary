@@ -129,10 +129,16 @@ function HomeContent() {
           // Extract source URL if appended with ||| delimiter
           const pipeIdx = item.indexOf("|||");
           let url: string | null = pipeIdx !== -1 ? item.slice(pipeIdx + 3).trim() : null;
-          // Clean URL: strip trailing brackets/whitespace, validate
+          // Clean URL: strip trailing brackets, parens, whitespace, punctuation
           if (url) {
-            url = url.replace(/[\]\s]+$/, "");
-            try { new URL(url); } catch { url = null; }
+            url = url.replace(/[\]\)\s,;:!?>'"]+$/, "");
+            url = url.replace(/^["'<(\[]+/, "");
+            if (url.startsWith("www.")) url = "https://" + url;
+            // Reject obviously broken URLs (too short, no dots, pure base64 fragments)
+            try {
+              const parsed = new URL(url);
+              if (!parsed.hostname.includes(".")) url = null;
+            } catch { url = null; }
           }
           const text = (pipeIdx !== -1 ? item.slice(0, pipeIdx) : item)
             .replace(/^\[/, "")
@@ -163,7 +169,7 @@ function HomeContent() {
 
   const notifBanner = notification && headlines.length > 0 ? (
     <div
-      className="relative z-40 flex items-center bg-amber-600/90 text-sm text-white backdrop-blur-sm"
+      className="left-0 right-0 z-40 flex items-center bg-amber-600/90 text-sm text-white backdrop-blur-sm max-sm:absolute max-sm:top-12 sm:relative"
       role="marquee"
       aria-label="Breaking news"
       aria-live="polite"
@@ -179,7 +185,7 @@ function HomeContent() {
       </div>
       <button
         onClick={dismissNotif}
-        className="shrink-0 px-3 py-2 text-xs hover:bg-white/20 focus:bg-white/20 focus:outline-none"
+        className="shrink-0 px-3 py-2 text-xs hover:bg-white/20 focus:bg-white/20 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label={t("ticker.dismiss")}
       >
         ✕
@@ -200,7 +206,7 @@ function HomeContent() {
   // Full-page views
   if (activeTab === "sources") {
     return (
-      <div className="flex h-dvh flex-col">
+      <div className="relative flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="sources" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
         {notifBanner}
         <SourcesPage onBack={() => navigate("map")} />
@@ -211,7 +217,7 @@ function HomeContent() {
 
   if (activeTab === "about") {
     return (
-      <div className="flex h-dvh flex-col">
+      <div className="relative flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="about" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
         {notifBanner}
         <AboutPage onBack={() => navigate("map")} />
@@ -222,7 +228,7 @@ function HomeContent() {
 
   if (activeTab === "ask") {
     return (
-      <div className="flex h-dvh flex-col">
+      <div className="relative flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="ask" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
         {notifBanner}
         <AskPanel events={events} onBack={() => navigate("map")} />
@@ -233,7 +239,7 @@ function HomeContent() {
 
   if (activeTab === "donate") {
     return (
-      <div className="flex h-dvh flex-col">
+      <div className="relative flex h-dvh flex-col">
         <Header lastUpdated={lastUpdated} activeTab="donate" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
         {notifBanner}
         <DonationPanel onBack={() => navigate("map")} />
@@ -246,7 +252,7 @@ function HomeContent() {
   const showMobileFeed = mobileTab === "feed";
 
   return (
-    <div className="flex h-dvh w-screen flex-col overflow-hidden">
+    <div className="relative flex h-dvh w-screen flex-col overflow-hidden">
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <Header lastUpdated={lastUpdated} activeTab="map" onTabChange={navigate} eventCount={events.length} dayCount={daysOfConflict} />
       {notifBanner}
@@ -254,21 +260,41 @@ function HomeContent() {
       <OverviewBanner events={events} />
 
       <div id="main-content" className="relative flex flex-1 overflow-hidden" role="main">
-        <div className={`flex-1 ${showMobileFeed ? "hidden sm:block" : ""}`}>
-          <ConflictMap
-            events={events}
-            selectedEvent={selectedEvent}
-            onSelectEvent={setSelectedEvent}
-            dateRange={dateRange}
-          />
-
-          {/* Full timeline on desktop, compact filter bar on mobile */}
-          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 sm:pb-3 md:right-[380px]">
-            <TimelineSlider
+        <div className={`flex flex-1 flex-col ${showMobileFeed ? "hidden sm:flex" : ""}`}>
+          <div className="relative flex-1">
+            <ConflictMap
               events={events}
+              totalEventCount={events.length}
+              selectedEvent={selectedEvent}
+              onSelectEvent={setSelectedEvent}
               dateRange={dateRange}
-              onChange={setDateRange}
             />
+
+            {/* Full timeline on desktop, compact filter bar on mobile */}
+            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 sm:pb-3 md:right-[380px]">
+              <TimelineSlider
+                events={events}
+                dateRange={dateRange}
+                onChange={setDateRange}
+              />
+            </div>
+          </div>
+
+          {/* Mapbox attribution footer — sits below map, above mobile nav */}
+          <div className="flex h-6 shrink-0 items-center gap-2 border-t border-zinc-800/50 bg-[#0a0a0a] px-2">
+            <a
+              href="https://www.mapbox.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] font-bold text-zinc-500 hover:text-zinc-400"
+              aria-label="Mapbox"
+            >
+              Mapbox
+            </a>
+            <span className="text-[9px] text-zinc-600">
+              © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-500">Mapbox</a>
+              {" "}© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-500">OpenStreetMap</a>
+            </span>
           </div>
         </div>
 

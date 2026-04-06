@@ -6,7 +6,6 @@ import Map, {
   Popup,
   NavigationControl,
   ScaleControl,
-  AttributionControl,
   MapRef,
 } from "react-map-gl/mapbox";
 import type { ConflictEvent } from "@/types";
@@ -30,6 +29,7 @@ const EVENT_ICONS: Record<string, string> = {
 
 interface ConflictMapProps {
   events: ConflictEvent[];
+  totalEventCount: number;
   selectedEvent: ConflictEvent | null;
   onSelectEvent: (event: ConflictEvent | null) => void;
   dateRange: { start: string; end: string } | null;
@@ -37,6 +37,7 @@ interface ConflictMapProps {
 
 export default function ConflictMap({
   events,
+  totalEventCount,
   selectedEvent,
   onSelectEvent,
   dateRange,
@@ -132,7 +133,6 @@ export default function ConflictMap({
       >
         <NavigationControl position="top-left" showCompass={false} />
         <ScaleControl position="bottom-right" />
-        <AttributionControl compact position="bottom-left" />
 
         {filteredEvents.map((event) => (
           <Marker
@@ -182,16 +182,13 @@ export default function ConflictMap({
         )}
       </Map>
 
-      {/* Event count badge */}
+      {/* Event count badge — uses totalEventCount from parent for consistency with stats bar */}
       <div className="absolute left-3 top-12 rounded-lg bg-black/70 px-3 py-1.5 text-xs font-mono backdrop-blur-sm">
-        <span className="text-red-400">{filteredEvents.length}</span>
-        <span className="text-zinc-400">
-          {" "}
-          / {events.length} events
-          {(hiddenTypes.size > 0 || hiddenCountries.size > 0) && (
-            <span className="text-yellow-500"> (filtered)</span>
-          )}
-        </span>
+        <span className="text-red-400">{totalEventCount}</span>
+        <span className="text-zinc-400"> events</span>
+        {(hiddenTypes.size > 0 || hiddenCountries.size > 0) && (
+          <span className="text-yellow-500 text-zinc-400"> · {filteredEvents.length} shown</span>
+        )}
       </div>
 
       {/* Legend & filters */}

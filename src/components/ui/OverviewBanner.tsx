@@ -635,13 +635,13 @@ function MobileStat({
   return (
     <Tag
       onClick={onClick}
-      className={`flex flex-col items-center border-b border-r border-zinc-800/50 px-1 py-1.5 last:border-r-0 [&:nth-child(4)]:border-r-0 ${
+      className={`flex min-h-[44px] flex-col items-center justify-center overflow-hidden border-b border-r border-zinc-800/50 px-0.5 py-1.5 last:border-r-0 [&:nth-child(4)]:border-r-0 ${
         onClick ? "cursor-pointer active:bg-zinc-800/50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-zinc-600" : ""
       }`}
       {...(onClick ? { "aria-label": `${label}: ${value}. Tap for details` } : {})}
     >
-      <span className={`text-xs font-bold leading-tight ${color}`}>{value}</span>
-      <span className="text-[8px] font-medium uppercase tracking-wider text-zinc-600">{label}</span>
+      <span className={`text-[11px] font-bold leading-tight ${color} sm:text-xs`}>{value}</span>
+      <span className="max-w-full truncate text-[7px] font-medium uppercase tracking-wider text-zinc-600">{label}</span>
     </Tag>
   );
 }

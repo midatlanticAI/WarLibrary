@@ -102,18 +102,23 @@ export default function Header({
   }, []);
 
   return (
-    <header className="flex h-12 flex-shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e0e]/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md" role="banner">
-      <div className="flex items-center gap-4">
+    <header className="relative z-50 flex h-12 flex-shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e0e]/95 px-3 pt-[env(safe-area-inset-top)] backdrop-blur-md sm:px-4" role="banner">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Logo */}
         <button
           onClick={() => onTabChange("map")}
           className="flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-zinc-600 rounded"
           aria-label={`${t("app.title")} - ${t("nav.overview")}`}
         >
-          <span className="text-base font-bold tracking-tight text-zinc-100">
+          <span className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
             {t("app.title")}
           </span>
-          <span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+          {/* LIVE badge: red dot on mobile, full badge on desktop */}
+          <span className="relative flex h-2 w-2 sm:hidden" aria-label={t("app.live")}>
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+          </span>
+          <span className="hidden rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white sm:inline-block">
             {t("app.live")}
           </span>
         </button>
@@ -128,12 +133,12 @@ export default function Header({
         </nav>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Language selector */}
         <div className="relative" ref={langRef}>
           <button
             onClick={() => setLangOpen(!langOpen)}
-            className="flex items-center gap-1 rounded-md border border-zinc-700 px-2 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-600 sm:border-transparent sm:py-1 sm:text-zinc-400"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 rounded-md border border-zinc-700 px-2 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-600 sm:border-transparent sm:min-h-0 sm:min-w-0 sm:py-1 sm:text-zinc-400"
             aria-expanded={langOpen}
             aria-haspopup="listbox"
             aria-label={t("language.label")}
@@ -149,48 +154,57 @@ export default function Header({
             </svg>
           </button>
           {langOpen && (
-            <div
-              className="absolute end-0 top-full z-50 mt-1 min-w-[140px] rounded-lg border border-zinc-800 bg-[#111] py-1 shadow-xl"
-              role="listbox"
-              aria-label={t("language.label")}
-            >
-              {LOCALES.map((l: Locale) => (
-                <button
-                  key={l}
-                  onClick={() => { setLocale(l); setLangOpen(false); }}
-                  role="option"
-                  aria-selected={l === locale}
-                  className={`flex w-full items-center gap-2 px-4 py-3 text-sm transition-colors sm:py-2 sm:text-xs ${
-                    l === locale ? "bg-zinc-800 text-zinc-200" : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-                  }`}
-                >
-                  {t(`language.${l}`)}
-                </button>
-              ))}
-            </div>
+            <>
+              {/* Mobile backdrop */}
+              <div
+                className="fixed inset-0 z-40 bg-black/50 sm:hidden"
+                aria-hidden="true"
+                onClick={() => setLangOpen(false)}
+              />
+              {/* Desktop: floating dropdown. Mobile: full-width bottom sheet style */}
+              <div
+                className="fixed inset-x-0 top-12 z-50 mx-2 rounded-lg border border-zinc-800 bg-[#111] py-1 shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:mx-0 sm:mt-1 sm:min-w-[160px] sm:end-0"
+                role="listbox"
+                aria-label={t("language.label")}
+              >
+                {LOCALES.map((l: Locale) => (
+                  <button
+                    key={l}
+                    onClick={() => { setLocale(l); setLangOpen(false); }}
+                    role="option"
+                    aria-selected={l === locale}
+                    className={`flex min-h-[44px] w-full items-center gap-2 px-4 py-3 text-sm transition-colors sm:min-h-0 sm:py-2 sm:text-xs ${
+                      l === locale ? "bg-zinc-800 text-zinc-200" : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+                    }`}
+                  >
+                    {t(`language.${l}`)}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </div>
 
-        {/* Subscribe button */}
+        {/* Subscribe button — icon-only on mobile to prevent header overflow */}
         {pushState === "idle" && (
           <button
             onClick={handleSubscribe}
-            className="flex shrink-0 items-center gap-1.5 rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center gap-1.5 rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 sm:min-h-0 sm:min-w-0 sm:px-2.5"
             aria-label={t("header.alerts")}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0" aria-hidden="true">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            {t("header.alerts")}
+            <span className="hidden sm:inline">{t("header.alerts")}</span>
           </button>
         )}
         {pushState === "subscribed" && (
-          <span className="flex shrink-0 items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1 text-xs text-green-400">
+          <span className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center gap-1.5 rounded-md bg-zinc-800 px-2 py-1 text-xs text-green-400 sm:min-h-0 sm:min-w-0 sm:px-2.5">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
               <path d="M20 6L9 17l-5-5" />
             </svg>
-            {t("header.alertsOn")}
+            <span className="hidden sm:inline">{t("header.alertsOn")}</span>
           </span>
         )}
 
