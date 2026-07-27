@@ -296,6 +296,14 @@ function geocodeFallback(event) {
  */
 const SUSPICIOUS_FATALITY_THRESHOLD = 500;
 
+/** Conflict start. Nothing before this is in scope for the dataset. */
+const CONFLICT_START_MS = new Date("2026-02-28T00:00:00Z").getTime();
+/**
+ * Publishers date stories in their own local time, so allow a little slack past
+ * "now" before calling a date impossible.
+ */
+const MAX_FUTURE_MS = 48 * 3600 * 1000;
+
 /** Great-circle distance in km between two lat/lng pairs. */
 function haversineKm(lat1, lng1, lat2, lng2) {
   const toRad = (d) => (d * Math.PI) / 180;
@@ -320,15 +328,43 @@ function haversineKm(lat1, lng1, lat2, lng2) {
 const SAME_INCIDENT_RADIUS_KM = 50;
 
 function isSpatiallyCompatible(a, b) {
+  return spatialRelation(a, b) !== "different";
+}
+
+/**
+ * Three-way spatial verdict: "same" | "different" | "unknown".
+ *
+ * The distinction between "different" and "unknown" is load-bearing, and
+ * collapsing them is how a fixed bug came back at reduced scope. An earlier
+ * version returned a plain boolean and answered `true` whenever either event
+ * sat on a country centroid — reasoning that a placeholder coordinate cannot
+ * disprove co-location. That is true, but callers then read `true` as "these
+ * are in the same place" and merged on country + type + day + fatality ratio
+ * alone, which is exactly the country-only rule the spatial guard exists to
+ * replace. Measured against production: every remaining false merge involved a
+ * centroid event, and none involved two precisely-located ones.
+ *
+ * With ~5,200 events on centroids, "unknown" is common enough that callers
+ * must handle it explicitly — by demanding corroborating evidence rather than
+ * treating absence of contradiction as confirmation.
+ */
+function spatialRelation(a, b) {
   const aApprox = a.approximate_location || a.location_precision === "country";
   const bApprox = b.approximate_location || b.location_precision === "country";
-  if (aApprox || bApprox) return true;
-  if (!hasUsableCoords(a) || !hasUsableCoords(b)) return true;
-  return (
-    haversineKm(a.latitude, a.longitude, b.latitude, b.longitude) <=
+  if (aApprox || bApprox) return "unknown";
+  if (!hasUsableCoords(a) || !hasUsableCoords(b)) return "unknown";
+  return haversineKm(a.latitude, a.longitude, b.latitude, b.longitude) <=
     SAME_INCIDENT_RADIUS_KM
-  );
+    ? "same"
+    : "different";
 }
+
+/**
+ * Minimum description overlap required to call two events the same incident
+ * when there is no usable spatial evidence. Calibrated against the retroactive
+ * deduper, whose thresholds were checked by eye on real clusters.
+ */
+const UNKNOWN_LOCATION_MIN_SIMILARITY = 0.5;
 
 // ---------------------------------------------------------------------------
 // Valid event types
@@ -987,8 +1023,18 @@ const STOPWORDS = new Set([
 function significantWords(text) {
   if (!text) return new Set();
   return new Set(
-    text.toLowerCase().trim().split(/\s+/)
-      .filter(w => w.length > 2 && !STOPWORDS.has(w))
+    text
+      .toLowerCase()
+      // Strip punctuation before tokenising. Splitting on whitespace alone
+      // left it attached, so "Fury;" never matched "Fury" and "Iran." never
+      // matched "Iran" — two descriptions of the same event scored far lower
+      // than they should purely on where the commas fell. The retroactive
+      // deduper normalises this way, which is part of why it found duplicates
+      // the ingest matcher walked straight past.
+      .replace(/[^\p{L}\p{N}\s]/gu, " ")
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !STOPWORDS.has(w))
   );
 }
 
@@ -1159,11 +1205,24 @@ function findDuplicateMatch(candidate, existingEvents) {
     // country alone, so two genuinely separate airstrikes on the same day in
     // Tehran and Isfahan (10 vs 12 dead, ratio 0.83) were declared one event and
     // the survivor's fatality count was overwritten with the other's.
+    //
+    // When location is UNKNOWN (either side is a country centroid — about a
+    // fifth of the dataset) the fatality ratio alone is not enough: that is the
+    // country-only rule again, just restricted to placeholder-located events.
+    // Measured on production, waiving the check for those pairs accounted for
+    // every remaining false merge. So an unknown location demands corroborating
+    // description overlap instead.
+    const spatial = spatialRelation(candidate, existing);
+    const descSim = similarity(candidate.description, existing.description);
+    const spatiallyOk =
+      spatial === "same" ||
+      (spatial === "unknown" && descSim >= UNKNOWN_LOCATION_MIN_SIMILARITY);
+
     if (
       timeDiffHours <= 48 &&
       candidate.event_type === existing.event_type &&
       candidateFat > 0 && existingFat > 0 &&
-      isSpatiallyCompatible(candidate, existing)
+      spatiallyOk
     ) {
       const fatRatio = Math.min(candidateFat, existingFat) / Math.max(candidateFat, existingFat);
       if (fatRatio >= 0.7) {
@@ -1179,7 +1238,7 @@ function findDuplicateMatch(candidate, existingEvents) {
       timeDiffHours <= 72 &&
       candidateFat > 50 && existingFat > 50 &&
       candidate.event_type === existing.event_type &&
-      isSpatiallyCompatible(candidate, existing)
+      spatiallyOk
     ) {
       const fatRatio = Math.min(candidateFat, existingFat) / Math.max(candidateFat, existingFat);
       if (fatRatio >= 0.4) {
@@ -1201,8 +1260,34 @@ function findDuplicateMatch(candidate, existingEvents) {
     const union = candidateWords.size + existingWords.size - intersection;
     const sim = union === 0 ? 0 : intersection / union;
 
-    if (sim > 0.6) {
+    // Threshold lowered from 0.6 to 0.55 to match the retroactive deduper,
+    // whose clusters were checked by eye against real data.
+    if (sim >= 0.55) {
       return { isDup: true, match: existing, sim, method: "word_overlap" };
+    }
+
+    // --- Method 6: Containment ---
+    //
+    // The single biggest recall gap, measured. Methods 0 and 3 both require
+    // fatalities on BOTH sides, and 97.9% of the duplicates actually found in
+    // production have zero on both — they are `strategic_development` records,
+    // which are 71% of the dataset. Those two methods can never fire on the
+    // bulk of real duplicates, leaving only a Jaccard threshold that a fuller
+    // retelling of the same story fails: "10-day ceasefire takes effect" and
+    // "10-day ceasefire between Israel and Lebanon takes effect at 21:00 GMT
+    // following negotiations facilitated by Trump" share nearly all of the
+    // shorter one's words but score low on Jaccard, because union is dominated
+    // by the longer text.
+    //
+    // Overlap coefficient measures against the SHORTER description instead, so
+    // it catches exactly that shape. Retroactively this rule accounted for 674
+    // of 1,442 real duplicates — more than any other.
+    const shorter = Math.min(candidateWords.size, existingWords.size);
+    if (shorter >= 6) {
+      const containment = intersection / shorter;
+      if (containment >= 0.8) {
+        return { isDup: true, match: existing, sim: containment, method: "containment" };
+      }
     }
 
     // --- Method 5: Spatio-temporal proximity with looser description match ---
@@ -1265,6 +1350,14 @@ function isValidEvent(event) {
   // Reject a zero month or day outright — some runtimes are lenient about these.
   const [, month, day] = event.date.slice(0, 10).split("-");
   if (month === "00" || day === "00") return false;
+  // Range checks live here, not only in main()'s validation loop. Two events
+  // dated 2026-10-01 reached production, and a validator that answers "valid"
+  // for a date months in the future is only safe as long as every caller
+  // remembers to apply the range check separately — which is precisely the
+  // assumption that failed. The guard now travels with the validator.
+  const eventTime = new Date(event.date).getTime();
+  if (eventTime < CONFLICT_START_MS) return false;
+  if (eventTime > Date.now() + MAX_FUTURE_MS) return false;
   // Lat/lng must be real, in range, and not the 0,0 missing-value sentinel.
   if (!hasUsableCoords(event)) return false;
   // event_type must be valid
@@ -2022,10 +2115,10 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
   }
 
   // 8e. Reject out-of-range events and fix cumulative fatalities
-  const CONFLICT_START = new Date("2026-02-28T00:00:00Z").getTime();
+  const CONFLICT_START = CONFLICT_START_MS;
   // Publishers date stories in their own local time, so allow a little slack
   // past "now" before calling a date impossible.
-  const MAX_FUTURE_MS = 48 * 3600 * 1000;
+  // MAX_FUTURE_MS is a module constant; isValidEvent applies the same bound.
   for (let i = newEvents.length - 1; i >= 0; i--) {
     const e = newEvents[i];
     const eventDate = new Date(e.date).getTime();
