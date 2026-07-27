@@ -157,6 +157,48 @@ describe("Event data quality", () => {
     }
   });
 
+  // ---------------------------------------------------------------------------
+  // Attribution is the premise of this dataset, so it gets asserted directly.
+  //
+  // Two shapes exist. Pipeline-extracted events carry a direct `source_url`.
+  // A small tail (the 112 seed events plus ~19 early multi-outlet entries) name
+  // their outlets in `source` without a link — attributed and checkable, but
+  // less directly. Backfilling links for those is open work.
+  //
+  // What this test rules out is the case that would actually undermine the
+  // project: an event with no attribution at all.
+  // ---------------------------------------------------------------------------
+
+  it("every event is attributed — a source URL, or named outlets, or both", () => {
+    const unattributed = allEvents.filter((e) => {
+      const hasUrl =
+        typeof (e as RawEvent & { source_url?: string }).source_url === "string" &&
+        (e as RawEvent & { source_url?: string }).source_url!.trim() !== "";
+      const hasNamedSource =
+        typeof e.source === "string" && e.source.trim() !== "";
+      return !hasUrl && !hasNamedSource;
+    });
+
+    expect(
+      unattributed.length,
+      `${unattributed.length} event(s) carry no attribution at all. First: ${
+        unattributed[0]?.description?.slice(0, 100) ?? "n/a"
+      }`
+    ).toBe(0);
+  });
+
+  it("any source_url that is present is a real http(s) link", () => {
+    const malformed = allEvents
+      .map((e) => (e as RawEvent & { source_url?: string }).source_url)
+      .filter((u): u is string => typeof u === "string" && u.trim() !== "")
+      .filter((u) => !/^https?:\/\//.test(u));
+
+    expect(
+      malformed.length,
+      `malformed source_url values: ${malformed.slice(0, 3).join(", ")}`
+    ).toBe(0);
+  });
+
   it("no event has an empty country", () => {
     for (const event of allEvents) {
       expect(event.country).toBeTruthy();
