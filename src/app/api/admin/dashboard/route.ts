@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth";
+import { publishNotification } from "@/lib/notifications";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
-import { execSync } from "child_process";
+import { execFile, execSync } from "child_process";
+import { promisify } from "util";
+
+const execFileAsync = promisify(execFile);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -22,14 +26,51 @@ function readJsonFile<T = unknown>(filename: string): T | null {
   }
 }
 
-function runCommand(cmd: string, timeoutMs = 10_000): string {
+/**
+ * Run a system command for the dashboard.
+ *
+ * Two deliberate properties:
+ *
+ * 1. **argv array, no shell.** This used to take a single command string and
+ *    hand it to `execSync`, which runs it through a shell. Nothing interpolated
+ *    request input into it, so there was no injection *today* — but a string
+ *    API is one careless template literal away from RCE on a box that also
+ *    holds the Anthropic key. `execFile` with an argv array cannot be talked
+ *    into running a second command.
+ *
+ * 2. **Async.** These ran synchronously on the single Node process that serves
+ *    every public request, and the dashboard polls this route every 30 seconds.
+ *    A slow `pm2 jlist` (15s timeout) blocked the entire site for its duration:
+ *    the map, the events API, everything. Awaiting them frees the event loop.
+ */
+async function runCommand(
+  file: string,
+  args: string[] = [],
+  timeoutMs = 10_000
+): Promise<string> {
   try {
-    return execSync(cmd, { timeout: timeoutMs, encoding: "utf-8" }).trim();
+    const { stdout } = await execFileAsync(file, args, {
+      timeout: timeoutMs,
+      encoding: "utf-8",
+      // Bound the output so a runaway command cannot exhaust memory on a 2GB box.
+      maxBuffer: 2 * 1024 * 1024,
+    });
+    return stdout.trim();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return `ERROR: ${message}`;
   }
 }
+
+/**
+ * Dashboard payload cache.
+ *
+ * The UI polls every 30 seconds and each poll shells out six times. Serving a
+ * recent snapshot costs the operator nothing in practice and takes that load
+ * off a process that is also serving readers.
+ */
+const DASHBOARD_CACHE_MS = 10_000;
+let dashboardCache: { at: number; payload: unknown } | null = null;
 
 interface EventFile {
   events: unknown[];
@@ -49,6 +90,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Serve a recent snapshot rather than shelling out six times per poll.
+  if (dashboardCache && Date.now() - dashboardCache.at < DASHBOARD_CACHE_MS) {
+    return NextResponse.json(dashboardCache.payload, {
+      headers: { "X-Dashboard-Cache": "hit" },
+    });
+  }
+
   // 1. Pipeline stats
   const pipelineStats = readJsonFile("pipeline-stats.json");
 
@@ -63,43 +111,41 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     else if (cacheRaw && typeof cacheRaw === "object") articleCacheSize = Object.keys(cacheRaw).length;
   } catch (err) { console.error("[dashboard] Failed to read article cache:", err); }
 
-  // 4. PM2 process info
+  // 4-7. System probes, gathered concurrently. These are independent reads, so
+  // there is no reason to pay for them serially — and none of them can block
+  // the event loop now that they are awaited rather than execSync'd.
+  const [pm2Raw, crontabRaw, logRaw, uptimeRaw, memRaw, diskRaw] =
+    await Promise.all([
+      runCommand("pm2", ["jlist"], 15_000),
+      runCommand("crontab", ["-l"]),
+      existsSync(LOG_PATH)
+        ? runCommand("tail", ["-n", "50", LOG_PATH])
+        : Promise.resolve(""),
+      runCommand("cat", ["/proc/uptime"]),
+      runCommand("free", ["-b"]),
+      runCommand("df", ["-B1", "/"]),
+    ]);
+
   let pm2Processes: unknown[] = [];
-  try {
-    const pm2Raw = runCommand("pm2 jlist", 15_000);
-    if (!pm2Raw.startsWith("ERROR:")) {
+  if (!pm2Raw.startsWith("ERROR:")) {
+    try {
       pm2Processes = JSON.parse(pm2Raw) as unknown[];
+    } catch (err) {
+      console.error("[dashboard] Failed to parse PM2 output:", err);
     }
-  } catch (err) {
-    console.error("[dashboard] Failed to get PM2 info:", err);
-    pm2Processes = [];
   }
 
-  // 5. Crontab entries
-  const crontabRaw = runCommand("crontab -l");
   const crontabEntries = crontabRaw.startsWith("ERROR:")
     ? []
     : crontabRaw
         .split("\n")
         .filter((line) => line.trim() && !line.startsWith("#"));
 
-  // 6. Last 50 lines of update log
-  let logLines: string[] = [];
-  if (existsSync(LOG_PATH)) {
-    try {
-      logLines = runCommand(`tail -n 50 ${LOG_PATH}`)
-        .split("\n")
-        .filter(Boolean);
-    } catch (err) {
-      console.error("[dashboard] Failed to read logs:", err);
-      logLines = [];
-    }
-  }
+  const logLines = logRaw.startsWith("ERROR:")
+    ? []
+    : logRaw.split("\n").filter(Boolean);
 
-  // 7. System info
-  const uptimeSeconds = parseFloat(runCommand("cat /proc/uptime").split(" ")[0]) || 0;
-
-  const memRaw = runCommand("free -b");
+  const uptimeSeconds = parseFloat(uptimeRaw.split(" ")[0]) || 0;
   let memoryInfo = { total: 0, used: 0, available: 0 };
   try {
     const memLine = memRaw.split("\n").find((l) => l.startsWith("Mem:"));
@@ -115,7 +161,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     console.error("[dashboard] Failed to parse memory info:", err);
   }
 
-  const diskRaw = runCommand("df -B1 /");
   let diskInfo = { total: 0, used: 0, available: 0, use_percent: "" };
   try {
     const diskLine = diskRaw.split("\n")[1];
@@ -154,7 +199,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     latestEvents = [];
   }
 
-  return NextResponse.json({
+  const payload = {
     data: {
       pipeline: {
         stats: pipelineStats,
@@ -207,6 +252,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       },
     },
     timestamp: new Date().toISOString(),
+  };
+
+  dashboardCache = { at: Date.now(), payload };
+  return NextResponse.json(payload, {
+    headers: { "X-Dashboard-Cache": "miss" },
   });
 }
 
@@ -230,18 +280,36 @@ const CRON_INTERVALS: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  // CSRF protection: verify Origin header matches our host
+  // CSRF protection.
+  //
+  // This used to run only `if (origin && host)`, so a request that simply
+  // omitted the Origin header skipped the check entirely — it read as a
+  // defence while providing none. Origin is now required. `sameSite: "strict"`
+  // on the cookie is what actually made the old version low-impact, but a
+  // check that fails open is worse than no check, because it stops anyone
+  // looking.
   const origin = req.headers.get("origin");
+  const secFetchSite = req.headers.get("sec-fetch-site");
   const host = req.headers.get("host");
-  if (origin && host) {
-    try {
-      const originHost = new URL(origin).host;
-      if (originHost !== host) {
-        return NextResponse.json({ error: "CSRF check failed" }, { status: 403 });
-      }
-    } catch {
-      return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
+
+  if (secFetchSite && secFetchSite !== "same-origin") {
+    return NextResponse.json({ error: "CSRF check failed" }, { status: 403 });
+  }
+  if (!origin) {
+    // Browsers always send Origin on a state-changing fetch. Absence means a
+    // non-browser client, which has no business driving admin controls.
+    return NextResponse.json(
+      { error: "Origin header required" },
+      { status: 403 }
+    );
+  }
+  try {
+    const originHost = new URL(origin).host;
+    if (!host || originHost !== host) {
+      return NextResponse.json({ error: "CSRF check failed" }, { status: 403 });
     }
+  } catch {
+    return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
   }
 
   if (!isAdmin(req)) {
@@ -311,7 +379,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // -----------------------------------------------------------------------
   if (action === "update_cron") {
     const interval = body.interval;
-    if (!interval || !CRON_INTERVALS[interval]) {
+    // `CRON_INTERVALS[interval]` reads the prototype chain: "constructor",
+    // "toString", "__proto__" and friends all return truthy values, so the
+    // whitelist everyone assumed was guarding command construction did not
+    // hold. Sending {"interval":"constructor"} produced a cron line beginning
+    // "function Object() { [native code] }". It died on a crontab parse error
+    // rather than executing — but a validation gate one line away from command
+    // construction has to actually validate.
+    if (
+      typeof interval !== "string" ||
+      !Object.prototype.hasOwnProperty.call(CRON_INTERVALS, interval)
+    ) {
       return NextResponse.json(
         {
           error: `Invalid interval. Must be one of: ${Object.keys(CRON_INTERVALS).join(", ")}`,
@@ -324,15 +402,48 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const cronLine = `${cronSchedule} ${UPDATE_SCRIPT} >> ${LOG_PATH} 2>&1`;
 
     try {
-      // Read existing crontab, remove old warlibrary entries, add new one
+      // Read the existing crontab.
+      //
+      // This used to swallow every failure as "no existing crontab", which
+      // meant a 5s timeout, EAGAIN, a busy cron daemon or a permissions error
+      // all produced an empty string — and the code below then installed a
+      // crontab containing ONLY the warlibrary line, silently wiping every
+      // other job on the box with no backup. `crontab -l` exits 1 with "no
+      // crontab for <user>" when there genuinely is none; anything else is a
+      // real error and must abort.
       let existing = "";
       try {
         existing = execSync("crontab -l", {
           timeout: 5_000,
           encoding: "utf-8",
         });
-      } catch {
-        // No existing crontab
+      } catch (err) {
+        const e = err as { status?: number; stderr?: string | Buffer; message?: string };
+        const stderr = String(e.stderr ?? e.message ?? "");
+        const isGenuinelyEmpty = e.status === 1 && /no crontab for/i.test(stderr);
+        if (!isGenuinelyEmpty) {
+          console.error("[dashboard] crontab -l failed, refusing to rewrite:", stderr);
+          return NextResponse.json(
+            {
+              error:
+                "Could not read the existing crontab, so it was not modified. Rewriting it now would risk destroying unrelated jobs.",
+            },
+            { status: 500 },
+          );
+        }
+      }
+
+      // Back up whatever is there before replacing it.
+      if (existing.trim()) {
+        try {
+          const backupPath = join(
+            DATA_DIR,
+            `crontab.backup-${new Date().toISOString().replace(/[:.]/g, "-")}.txt`
+          );
+          writeFileSync(backupPath, existing, "utf-8");
+        } catch (err) {
+          console.error("[dashboard] Could not write crontab backup:", err);
+        }
       }
 
       const filtered = existing
@@ -378,43 +489,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       body.body?.slice(0, 300) || "New conflict events reported.";
 
     try {
-      // Call the internal notifications endpoint
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BASE_URL ||
-        process.env.VERCEL_URL ||
-        "http://localhost:3000";
-      const url = `${baseUrl}/api/notifications`;
-
-      const secret = process.env.ADMIN_SECRET;
-      if (!secret) {
-        return NextResponse.json(
-          { error: "ADMIN_SECRET not configured" },
-          { status: 500 },
-        );
-      }
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-token": secret,
-        },
-        body: JSON.stringify({ title, body: notifBody }),
+      // Published in-process. This previously POSTed to its own server with
+      // the plaintext ADMIN_SECRET in a header, at a URL derived from
+      // NEXT_PUBLIC_BASE_URL — a build-time, client-visible variable — in order
+      // to reach a function running in this same process. The self-request also
+      // re-entered the single Node process while this handler awaited it.
+      const { notification, push } = await publishNotification({
+        title,
+        body: notifBody,
       });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        return NextResponse.json(
-          { error: "Notification API error", details: result },
-          { status: res.status },
-        );
-      }
 
       return NextResponse.json({
         ok: true,
-        message: "Notification sent.",
-        notification: result.data,
+        message: `Notification sent to ${push.sent} subscriber(s).`,
+        notification,
+        push,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

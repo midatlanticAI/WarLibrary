@@ -1,5 +1,5 @@
 diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
-index a8d11d2..91e35b0 100644
+index a8d11d2..ba40f42 100644
 --- a/.github/workflows/ci.yml
 +++ b/.github/workflows/ci.yml
 @@ -43,6 +43,11 @@ jobs:
@@ -14,7 +14,27 @@ index a8d11d2..91e35b0 100644
    test:
      name: Unit Tests
      runs-on: ubuntu-latest
-@@ -140,6 +145,8 @@ jobs:
+@@ -109,6 +114,11 @@ jobs:
+         env:
+           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
+           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
++          # Without this, 5 of the 8 admin e2e tests call test.skip() and the
++          # job still reports green — the login flow, the tabs and every
++          # control go unverified on each PR. The app only compares this value
++          # against itself, so a throwaway string exercises the real paths.
++          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET || 'ci-only-admin-secret' }}
+ 
+       - name: Run E2E tests
+         run: |
+@@ -118,6 +128,7 @@ jobs:
+         env:
+           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
+           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
++          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET || 'ci-only-admin-secret' }}
+ 
+       - name: Upload Playwright report
+         if: failure()
+@@ -140,6 +151,8 @@ jobs:
  
        - run: npm ci
  
