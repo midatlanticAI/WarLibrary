@@ -26,7 +26,11 @@ test.describe("Admin Dashboard", () => {
   test("invalid secret shows error", async ({ page }) => {
     await page.goto("/admin");
     await page.fill("input[type='password']", "wrong-secret");
-    await page.click("button", { hasText: "Login" } as { hasText: string });
+    // `page.click(selector, { hasText })` is not a real Playwright option — the
+    // cast that used to be here silenced the type error and Playwright silently
+    // ignored the filter, clicking whichever button came first in the DOM. It
+    // only passed because Login happened to be first.
+    await page.getByRole("button", { name: "Login" }).click();
     await expect(page.locator("text=Invalid secret")).toBeVisible({ timeout: 5_000 });
   });
 

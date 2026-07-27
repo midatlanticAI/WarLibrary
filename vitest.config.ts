@@ -5,11 +5,14 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   test: {
-    // Default to node environment; component tests opt-in to jsdom via comment
+    // Node by default. Component suites opt into a DOM with a
+    // `// @vitest-environment happy-dom` docblock at the top of the file.
+    //
+    // There used to be an `environmentMatchGlobs` block here mapping *.test.tsx
+    // to jsdom. It was removed in Vitest 4 and silently ignored, so it never
+    // took effect — the .tsx suites have always run on happy-dom via their
+    // docblocks, and the config was describing a setup that did not exist.
     environment: "node",
-    environmentMatchGlobs: [
-      ["src/**/*.test.tsx", "jsdom"],
-    ],
     setupFiles: ["./src/__tests__/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
     globals: true,

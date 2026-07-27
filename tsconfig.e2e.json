@@ -1,0 +1,10 @@
+{
+  "//": "The main tsconfig excludes e2e/, so Playwright specs were never typechecked. That is how an invalid Playwright option reached master: it was cast to silence the editor and nothing else ever looked at it. CI runs this config alongside the app typecheck.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["e2e/**/*.ts", "playwright.config.ts", "vitest.config.ts"],
+  "exclude": ["node_modules"]
+}
