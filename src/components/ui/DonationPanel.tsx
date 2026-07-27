@@ -330,6 +330,19 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
               {t("donate.humanCostIntro")}
             </p>
 
+            {/*
+              The figures below are a dated snapshot, not live data — unlike the
+              event map, nothing here updates automatically. On a page badged
+              LIVE, present-tense humanitarian numbers read as current unless
+              something says otherwise, so this says otherwise.
+            */}
+            <p
+              role="note"
+              className="mt-3 rounded border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-200"
+            >
+              {t("donate.snapshotNotice")}
+            </p>
+
             {/* 6-card stat grid */}
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {[

@@ -72,14 +72,14 @@ External Services:
 JSON files (src/data/)
   ├── events.json          (48 seed events)
   ├── events_expanded.json (64 expanded events)
-  └── events_latest.json   (3,700+ pipeline-appended events, growing)
+  └── events_latest.json   (pipeline-appended, ~23k — GITIGNORED, server-only)
         │
         ▼
   /api/events route
   (merges, deduplicates, sorts chronologically)
         │
         ▼
-  useEvents.ts hook → 3,800+ ConflictEvent objects
+  useEvents.ts hook → ConflictEvent objects (polls conditionally via ETag)
   (shared across all components)
 
 Pipeline sources:
@@ -161,15 +161,36 @@ Notification polling (useNotifications.ts):
 ```
 vitest.config.ts
   ├── Default environment: node
-  ├── .tsx files: happy-dom (via environmentMatchGlobs)
+  ├── .tsx suites opt into happy-dom via a // @vitest-environment docblock
   └── @ alias mapped to src/
 
-Test Suites (176 tests):
-  ├── api-chat.test.ts        (83 tests) — guardrails, rate limiting, spend tracking
-  ├── components.test.tsx     (30 tests) — AskPanel, EventPanel, useEvents hook
-  ├── admin-dashboard.test.ts (47 tests) — auth, cron validation, pipeline history, cache
-  └── data-integrity.test.ts  (16 tests) — event data structure, PWA manifest
+Unit suites (6 files, 274 tests):
+  ├── api-chat.test.ts        — guardrails, rate limiting, spend tracking
+  ├── components.test.tsx     — AskPanel, EventPanel, useEvents hook
+  ├── admin-dashboard.test.ts — auth, cron validation, pipeline history, cache
+  ├── data-integrity.test.ts  — event data structure, PWA manifest
+  ├── i18n.test.tsx           — key parity across 4 locales, dir/lang, plurals
+  └── pipeline.test.ts        — geocoding, dedup spatial guard, date validation,
+                                 extraction schema, advisor pairing
+
+E2E specs (5 files, 55 tests): app, admin, timeline, data-freshness, i18n
 ```
+
+Two caveats a reader should know:
+
+- **`api-chat.test.ts` and `admin-dashboard.test.ts` test re-implemented copies
+  of the route logic**, not the routes themselves — both files say so at the
+  top. A regression in the real handler will not fail them. Extracting those
+  pure functions into `src/lib/` so the tests import production code is
+  outstanding work.
+- **The data-integrity suite only sees 112 events in CI**, because
+  `events_latest.json` is gitignored. Its assertions are correct and do catch
+  real defects — they simply never ran against the data that has them. Run it
+  against a production snapshot to exercise it properly.
+
+Typechecking is split: `npm run typecheck` covers the app, `npm run
+typecheck:e2e` covers Playwright specs and configs, which the app tsconfig
+excludes. Both run in CI.
 
 ## Security Architecture
 
@@ -179,7 +200,7 @@ Test Suites (176 tests):
 3. **Transport**: Caddy auto-SSL, HSTS with preload
 4. **Application**: CSP, X-Frame-Options DENY, no server fingerprinting
 5. **API**: Rate limiting (per-IP), input sanitization, output validation
-6. **AI**: Jailbreak detection (15 regex patterns), topic relevance check (130+ keywords), output guardrails, daily spend cap (2M tokens)
+6. **AI**: Jailbreak detection (15 regex patterns), topic relevance check (130+ keywords), output guardrails, daily spend cap (`MAX_DAILY_TOKENS`, process-local — resets on restart)
 7. **Admin**: httpOnly secure cookie, timing-safe comparison, separate from rate limits
 8. **Secrets**: .env.local only (chmod 600), no NEXT_PUBLIC_ prefix, gitignored
 
@@ -210,18 +231,46 @@ Subsequent requests:
 |-----------|------|-------|
 | DigitalOcean droplet | $18/mo | 2GB/2vCPU |
 | Mapbox | Free tier | 50K map loads/mo |
-| Claude Haiku 4.5 | ~$0.001/question | $0.25/$1.25 per M tokens |
+| Claude Haiku 4.5 | $1 / $5 per MTok | Chat + extraction executor |
+| Claude Opus 4.8 | $5 / $25 per MTok | Extraction advisor. Billed separately — advisor tokens appear in `usage.iterations[]`, not in top-level `usage` |
 | Domain (midatlantic.ai) | ~$15/yr | GoDaddy |
 | SSL | Free | Let's Encrypt via Caddy |
-| **Estimated monthly** | **~$20-25/mo** | At moderate traffic |
 
-## Future Roadmap
-1. Live data pipeline (ACLED/GDELT via OpenClaw agents)
-2. PostgreSQL/PostGIS backend (Docker Compose)
-3. Claude Agent SDK for complex multi-step analysis
-4. Prompt caching (90% cost reduction on repeated context)
-5. GitHub Actions CI/CD (run tests on PR, auto-deploy on merge)
-6. Multi-language support (Arabic, Farsi, Hebrew, French)
-7. Marker clustering at low zoom levels
-8. Sentry error tracking
-9. DigitalOcean automated snapshots
+Deliberately no monthly total. The previous one was computed at $0.25/$1.25 per
+MTok — roughly a quarter of Haiku 4.5's actual rate — and predated the advisor
+entirely. Measure real runs from `pipeline-stats.json`, which now records
+executor and advisor tokens separately.
+
+## Prompt caching, and why it is not enabled
+
+Haiku 4.5's minimum cacheable prefix is **4,096 tokens**. The pipeline's stable
+instruction block is roughly 1,200–1,500, so a `cache_control` breakpoint there
+would silently never cache — no error, no savings, no signal. Caching the
+extraction prompt requires either deliberately growing the static preamble past
+4K or moving the executor to a model with a lower minimum. The advisor tool has
+its own separate `caching` option, worth enabling only for conversations
+expecting three or more advisor calls; this pipeline caps at two.
+
+## Roadmap
+
+**Shipped since this document was first written** — these were previously listed
+as future work:
+
+- GitHub Actions CI (lint, typecheck, e2e typecheck, unit tests, build, gated security audit)
+- Multi-language support — English, Spanish, Arabic, Hebrew (note: Farsi and French were planned, and are not what shipped)
+- Marker clustering at low zoom (Mapbox-native, replacing per-event DOM markers)
+
+**Outstanding:**
+
+1. Backfill `source_url` for the 131 events that name outlets but carry no link (112 seed + ~19 early multi-outlet entries). Every event is attributed; these are just not one-click checkable
+2. Normalise `country` to ISO codes — until then no country count is meaningful
+3. Resolve the 5 events with unrepairable dates (annotated `needs_review`)
+3. Extract chat/admin guardrail functions to `src/lib/` so tests import production code instead of copies
+4. Run the data-integrity suite against live data on a schedule, not just against the 112 seed events
+5. Persist the chat spend cap and rate-limit state (both reset on PM2 restart)
+6. Trust-boundary fix for per-IP rate limiting (currently reads the attacker-controlled leftmost `X-Forwarded-For`)
+7. Sync the event feed to the timeline range — map and feed currently show different datasets
+8. Live data pipeline (ACLED/GDELT)
+9. PostgreSQL/PostGIS backend
+10. Sentry error tracking
+11. DigitalOcean automated snapshots
