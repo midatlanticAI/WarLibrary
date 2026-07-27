@@ -13,6 +13,32 @@ type TranslationMap = typeof en;
 const translations: Record<Locale, TranslationMap> = { en, es, ar, he };
 
 const STORAGE_KEY = "warlibrary_lang";
+/**
+ * The locale is mirrored into a cookie as well as localStorage so the server
+ * can read it during SSR and emit the correct `lang`/`dir` on <html>. Without
+ * it, every visit renders English/LTR first and then flips after hydration —
+ * which for an Arabic or Hebrew reader means a full mirror-flip of the page on
+ * every single page load.
+ */
+export const LOCALE_COOKIE = "wl_lang";
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+export function isLocale(value: string | undefined | null): value is Locale {
+  return typeof value === "string" && (LOCALES as string[]).includes(value);
+}
+
+/** Best matching supported locale for a list of browser language tags. */
+export function matchBrowserLocale(languages: readonly string[]): Locale | null {
+  for (const tag of languages) {
+    const base = tag.toLowerCase().split("-")[0];
+    if (isLocale(base)) return base;
+  }
+  return null;
+}
+
+export function localeDir(locale: Locale): "ltr" | "rtl" {
+  return locale === "ar" || locale === "he" ? "rtl" : "ltr";
+}
 
 interface I18nContextType {
   locale: Locale;
@@ -30,27 +56,45 @@ const I18nContext = createContext<I18nContextType>({
   isRTL: false,
 });
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+export function I18nProvider({
+  children,
+  initialLocale = "en",
+}: {
+  children: ReactNode;
+  /** Locale resolved on the server from the cookie, so the first paint is correct. */
+  initialLocale?: Locale;
+}) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
-  // Load saved language preference
+  // Resolve the reader's language preference.
+  //
+  // Order: an explicit saved choice always wins; otherwise fall back to the
+  // browser's own languages. Previously there was no browser detection at all,
+  // so a first-time visitor from Iran, Israel or Latin America got English
+  // until they found the dropdown.
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
-    if (saved && LOCALES.includes(saved)) {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (isLocale(saved)) {
       setLocaleState(saved);
+      return;
     }
-  }, []);
+    const detected = matchBrowserLocale(navigator.languages ?? [navigator.language]);
+    if (detected && detected !== initialLocale) {
+      setLocaleState(detected);
+    }
+  }, [initialLocale]);
 
   // Apply RTL dir and lang to document
   useEffect(() => {
-    const dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
-    document.documentElement.dir = dir;
+    document.documentElement.dir = localeDir(locale);
     document.documentElement.lang = locale;
   }, [locale]);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
     localStorage.setItem(STORAGE_KEY, l);
+    // Mirror to a cookie so the next SSR render starts in the right language.
+    document.cookie = `${LOCALE_COOKIE}=${l}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
   }, []);
 
   // Nested key lookup: t("app.title") -> translations[locale].app.title
@@ -84,8 +128,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return result;
   }, [locale]);
 
-  const dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
-  const isRTL = locale === "ar";
+  const dir = localeDir(locale);
+  // Derived from dir so the two can never disagree. This previously read
+  // `locale === "ar"`, which reported Hebrew as left-to-right while `dir` said
+  // otherwise.
+  const isRTL = dir === "rtl";
 
   return (
     <I18nContext.Provider value={{ locale, setLocale, t, dir, isRTL }}>

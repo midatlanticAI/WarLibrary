@@ -78,7 +78,11 @@ export default function ContentWarning({
     }
 
     if (newFatalities > 0) {
-      bullets.push(`${newFatalities.toLocaleString()} additional fatalities reported`);
+      // These bullets are composed in English from pipeline data, so the digits
+      // are pinned to English too — a bare toLocaleString() would follow the
+      // browser's default locale and could mix, say, Arabic-Indic numerals into
+      // an English sentence.
+      bullets.push(`${newFatalities.toLocaleString("en")} additional fatalities reported`);
     }
 
     // Most significant single event
@@ -158,12 +162,12 @@ function StatsBar({
   countries: number;
   daysOfConflict: number;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   return (
     <div className="grid grid-cols-3 gap-3 rounded-lg bg-zinc-900/80 p-3">
       <div className="text-center">
         <div className="text-lg font-bold text-red-400">
-          {totalKilled.toLocaleString()}+
+          {totalKilled.toLocaleString(locale)}+
         </div>
         <div className="text-xs text-zinc-500">{t("landing.killed")}</div>
       </div>
@@ -273,7 +277,7 @@ function ReturnVisit({
   onContinue: () => void;
   onToggleSkip: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const lastDate = new Date(lastVisit);
   const timeAgo = formatTimeAgo(t, lastDate);
 
@@ -294,7 +298,7 @@ function ReturnVisit({
       <div>
         <h2 className="text-lg font-bold text-zinc-200">{t("landing.sinceLastVisit")}</h2>
         <p className="text-xs text-zinc-500">
-          {t("landing.lastChecked")} {lastDate.toLocaleDateString("en-US", {
+          {t("landing.lastChecked")} {lastDate.toLocaleDateString(locale, {
             month: "short",
             day: "numeric",
             hour: "numeric",
@@ -314,7 +318,9 @@ function ReturnVisit({
               className="flex items-start gap-2 text-sm text-zinc-300"
             >
               <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-red-500" />
-              <span>{bullet}</span>
+              {/* English pipeline text — isolated so bidi reordering inside an
+                  RTL document can't scramble mixed number/word runs. */}
+              <span lang="en" dir="ltr">{bullet}</span>
             </li>
           ))}
         </ul>

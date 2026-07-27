@@ -23,9 +23,15 @@
     "events": "eventos",
     "updated": "Actualizado"
   },
+  "footer": {
+    "sourcesLabel": "Fuentes:",
+    "updated": "Actualizado: {{time}}"
+  },
   "ticker": {
     "breaking": "Urgente",
-    "dismiss": "Cerrar notificación de última hora"
+    "dismiss": "Cerrar notificación de última hora",
+    "pause": "Pausar titulares en movimiento",
+    "resume": "Reanudar titulares en movimiento"
   },
   "stats": {
     "day": "DÍA",
@@ -124,7 +130,42 @@
     "filtered": "(filtrado)",
     "fatalityReported": "víctima mortal reportada",
     "fatalitiesReported": "víctimas mortales reportadas",
-    "shareEvent": "Compartir evento"
+    "shareEvent": "Compartir evento",
+    "regionLabel": "Mapa de eventos del conflicto",
+    "srSummary": "Mapa visual de {{events}}, agrupados en conglomerados.",
+    "srKeyboard": "Los puntos del mapa no se pueden alcanzar con el teclado: usa el listado de eventos para recorrer los mismos eventos con el teclado.",
+    "eventsLabel": {
+      "zero": "eventos",
+      "one": "evento",
+      "two": "eventos",
+      "few": "eventos",
+      "many": "eventos",
+      "other": "eventos"
+    },
+    "eventCount": {
+      "zero": "{{n}} eventos",
+      "one": "{{n}} evento",
+      "two": "{{n}} eventos",
+      "few": "{{n}} eventos",
+      "many": "{{n}} eventos",
+      "other": "{{n}} eventos"
+    },
+    "shown": "{{n}} mostrados",
+    "fatalityCount": {
+      "zero": "{{n}} víctimas mortales reportadas",
+      "one": "{{n}} víctima mortal reportada",
+      "two": "{{n}} víctimas mortales reportadas",
+      "few": "{{n}} víctimas mortales reportadas",
+      "many": "{{n}} víctimas mortales reportadas",
+      "other": "{{n}} víctimas mortales reportadas"
+    },
+    "sourceLabel": "Fuente: {{name}}",
+    "pileTitle": "{{events}}, un solo lugar",
+    "pileBody": "Estos eventos comparten una única coordenada de reserva porque los informes originales no indicaron en qué punto del país ocurrieron. No pueden separarse en el mapa.",
+    "pileHint": "Usa el listado de eventos para leerlos uno por uno.",
+    "unavailableTitle": "Mapa no disponible",
+    "unavailableBody": "No hay ningún token de acceso de Mapbox configurado en este despliegue, así que el mapa interactivo no puede cargarse. Todos los {{events}} siguen siendo legibles en el listado de eventos y se pueden consultar con Preguntar.",
+    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN no está configurado"
   },
   "ask": {
     "warLibraryAi": "War Library IA",
@@ -197,6 +238,13 @@
     "countries": "Países",
     "days": "Días"
   },
+  "pwa": {
+    "installTitle": "Instalar War Library",
+    "installBody": "Acceso instantáneo desde tu pantalla de inicio. Funciona sin conexión.",
+    "install": "Instalar",
+    "notNow": "Ahora no",
+    "dismiss": "Descartar"
+  },
   "eventTypes": {
     "airstrike": "Ataque aéreo",
     "missile_attack": "Ataque con misiles",
@@ -265,7 +313,58 @@
     "catNews": "Organizaciones de noticias internacionales",
     "catRegional": "Fuentes regionales y especializadas",
     "catMilitary": "Fuentes militares y oficiales",
-    "catThinkTank": "Centros de análisis e investigación"
+    "catThinkTank": "Centros de análisis e investigación",
+    "freq": {
+      "continuous": "Continua",
+      "weekly": "Semanal",
+      "annualPlusUpdates": "Anual + actualizaciones",
+      "every15Min": "Cada 15 minutos",
+      "eventDriven": "Según los hechos",
+      "daily": "Diaria",
+      "annual": "Anual"
+    },
+    "type": {
+      "academicPeerReviewed": "Académica / Revisada por pares",
+      "academic": "Académica",
+      "automated": "Automatizada / Codificada por máquina",
+      "journalism": "Periodismo",
+      "wireService": "Agencia de noticias",
+      "regionalJournalism": "Periodismo regional",
+      "investigativeJournalism": "Periodismo de investigación",
+      "defenseJournalism": "Periodismo de defensa",
+      "militaryJournalism": "Periodismo militar",
+      "official": "Oficial / Gubernamental",
+      "internationalOrg": "Organización internacional",
+      "researchInstitute": "Instituto de investigación",
+      "stateAffiliated": "Medio afiliado al Estado",
+      "thinkTank": "Centro de análisis",
+      "ngo": "ONG"
+    },
+    "desc": {
+      "acled": "Armed Conflict Location & Event Data Project. Eventos de violencia política verificados cada semana.",
+      "ucdp": "Uppsala Conflict Data Program. El conjunto de datos académico sobre conflictos más antiguo en activo (desde 1946).",
+      "gdelt": "Global Database of Events, Language, and Tone. Monitorea noticias de todo el mundo en más de 100 idiomas.",
+      "alJazeera": "Cadena internacional de noticias con sede en Catar y una amplia red de corresponsales en Oriente Medio.",
+      "cnn": "Cadena internacional de noticias con sede en EE. UU. y una redacción dedicada a Oriente Medio.",
+      "bbc": "Radiodifusora pública británica con servicio en árabe y corresponsales regionales.",
+      "reuters": "Agencia de noticias global. Fuente principal para eventos de última hora del conflicto.",
+      "npr": "Radio pública estadounidense con corresponsales internacionales propios.",
+      "pbs": "Televisión pública estadounidense con la cobertura internacional de NewsHour.",
+      "timesOfIsrael": "Medio israelí en inglés con cobertura del conflicto en tiempo real.",
+      "washingtonPost": "Diario estadounidense con equipos dedicados a seguridad nacional y Oriente Medio.",
+      "navalNews": "Cobertura especializada en defensa naval y marítima.",
+      "starsAndStripes": "Fuente independiente de noticias sobre el ejército estadounidense.",
+      "gulfNews": "Diario en inglés con sede en los EAU que recoge la perspectiva de los países del Golfo.",
+      "theNational": "Periódico en inglés con sede en Abu Dabi.",
+      "centcom": "Comando Central de EE. UU. Declaraciones oficiales sobre las operaciones militares estadounidenses en Oriente Medio.",
+      "unifil": "Fuerza Provisional de las Naciones Unidas en el Líbano. Vigila el sur del Líbano.",
+      "sipri": "Instituto Internacional de Investigación para la Paz de Estocolmo. Datos sobre transferencias de armas y gasto militar.",
+      "farsNews": "Agencia de noticias semioficial iraní. Se usa para recoger la perspectiva y las afirmaciones del gobierno iraní.",
+      "fdd": "Foundation for Defense of Democracies. Análisis de ataques y capacidades militares.",
+      "csis": "Center for Strategic and International Studies. Seguimiento de los programas de misiles y nuclear.",
+      "criticalThreats": "Proyecto del AEI que sigue los desarrollos militares de Irán y de Oriente Medio.",
+      "crisisGroup": "Análisis y prevención de conflictos de forma independiente."
+    }
   },
   "donate": {
     "title": "Ayuda humanitaria",
@@ -328,7 +427,8 @@
     "hungerRisk": "Personas adicionales en riesgo de hambre",
     "fertilizerDisrupted": "Fertilizante mundial a través de Ormuz",
     "peopleReached": "Personas alcanzadas por el PMA",
-    "mealsServed": "Comidas calientes servidas desde el 2 de marzo"
+    "mealsServed": "Comidas calientes servidas desde el 2 de marzo",
+    "snapshotNotice": "Estas cifras humanitarias son una instantánea de mediados de marzo de 2026 y no se actualizan automáticamente. Eran exactas según lo informado en las fechas citadas junto a cada cifra, y el balance real casi con certeza ha cambiado desde entonces. El mapa de eventos es en vivo; esta sección no lo es."
   },
   "language": {
     "en": "English",

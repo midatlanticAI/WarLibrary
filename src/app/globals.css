@@ -193,7 +193,12 @@ button, nav {
   font-family: var(--font-noto-arabic), "Noto Sans Arabic", "Tajawal", var(--font-sans), Arial, sans-serif;
 }
 
-/* Hebrew font stack */
+/* Hebrew font stack.
+   Unlike the Arabic stack above there is no --font-noto-hebrew webfont loaded
+   anywhere in the app, so "Noto Sans Hebrew" only resolves for readers who
+   already have it installed locally; everyone else silently falls through to
+   the sans fallbacks. Kept as a local-font hint — adding the webfont belongs in
+   the root layout, not here. */
 [lang="he"] body {
   font-family: "Noto Sans Hebrew", var(--font-sans), Arial, sans-serif;
 }

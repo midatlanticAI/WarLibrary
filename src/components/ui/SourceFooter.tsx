@@ -1,5 +1,9 @@
 "use client";
 
+import { useI18n } from "@/i18n";
+
+// Outlet names are proper nouns — they read the same in every locale, so the
+// list itself is data rather than copy.
 const SOURCES = [
   "ACLED",
   "GDELT",
@@ -30,11 +34,13 @@ export default function SourceFooter({
   onSourcesClick,
   onAboutClick,
 }: SourceFooterProps) {
+  const { t } = useI18n();
+
   return (
     <footer className="flex items-center justify-between border-t border-zinc-800 bg-[#0e0e0e] px-4 py-1.5">
       <div className="min-w-0 flex-1 overflow-hidden">
         <span className="text-[10px] text-zinc-600">
-          Sources:{" "}
+          {t("footer.sourcesLabel")}{" "}
           <span className="text-zinc-500">
             {SOURCES.join(" · ")}
           </span>
@@ -43,20 +49,22 @@ export default function SourceFooter({
       <div className="flex flex-shrink-0 items-center gap-3">
         {lastUpdated && (
           <span className="text-[10px] text-zinc-600">
-            Updated: {lastUpdated}
+            {/* Interpolated rather than concatenated — the label does not
+                always precede the timestamp outside English. */}
+            {t("footer.updated", { time: lastUpdated })}
           </span>
         )}
         <button
           onClick={onSourcesClick}
           className="text-[10px] text-zinc-500 hover:text-zinc-300"
         >
-          Data Sources
+          {t("sources.title")}
         </button>
         <button
           onClick={onAboutClick}
           className="text-[10px] text-zinc-500 hover:text-zinc-300"
         >
-          About
+          {t("nav.about")}
         </button>
       </div>
     </footer>

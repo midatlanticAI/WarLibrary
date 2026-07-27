@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono, Noto_Sans_Arabic } from "next/font/google";
 import JsonLd from "@/components/seo/JsonLd";
+import { LOCALE_COOKIE, isLocale, localeDir, type Locale } from "@/i18n";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,8 +23,14 @@ const notoArabic = Noto_Sans_Arabic({
 
 const siteUrl = "https://warlibrary.midatlantic.ai";
 const siteTitle = "War Library — Live Conflict Tracker";
+// Deliberately free of event and country counts. Both change continuously, a
+// hardcoded figure here cannot track them, and earlier versions of this string,
+// the README and the repository description each published a different number —
+// none of which matched the dataset. On a site whose premise is accuracy, a
+// stale number in the first thing a search engine reads is not a small thing.
+// Live counts are rendered from the data itself, in the app.
 const siteDescription =
-  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). 4,600+ verified conflict events mapped across 60+ countries — airstrikes, missile attacks, drone strikes, and strategic developments. Every event is source-attributed from Al Jazeera, BBC, Reuters, CNN, and AP with confidence scoring. Includes AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
+  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). Tens of thousands of source-attributed conflict events — airstrikes, missile attacks, drone strikes, and strategic developments — each carrying its source, confidence and verification status. Read it in English, Spanish, Arabic or Hebrew. Includes an AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
 export const metadata: Metadata = {
   title: {
     default: siteTitle,
@@ -85,13 +93,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Resolve the reader's language on the server so the very first paint has the
+  // correct direction. Previously this was hardcoded to en/ltr, so every visit
+  // by an Arabic or Hebrew reader rendered left-to-right and then mirrored the
+  // entire layout once the client picked up their saved preference.
+  const cookieStore = await cookies();
+  const savedLocale = cookieStore.get(LOCALE_COOKIE)?.value;
+  const locale: Locale = isLocale(savedLocale) ? savedLocale : "en";
+
   return (
-    <html lang="en" dir="ltr" className="dark" suppressHydrationWarning>
+    <html lang={locale} dir={localeDir(locale)} className="dark" suppressHydrationWarning>
       <head>
         <link
           href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css"

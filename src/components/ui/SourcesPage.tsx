@@ -2,73 +2,85 @@
 
 import { useI18n } from "@/i18n";
 
-const SOURCE_GROUPS = [
+/**
+ * A source entry holds keys, not copy. Only `name` is literal — outlet names
+ * are proper nouns and stay as printed on the masthead in every locale; the
+ * description, cadence and type are prose and go through t().
+ */
+interface SourceEntry {
+  name: string;
+  descKey: string;
+  freqKey: string;
+  typeKey: string;
+}
+
+interface SourceGroup {
+  categoryKey: string;
+  sources: SourceEntry[];
+}
+
+const SOURCE_GROUPS: SourceGroup[] = [
   {
-    categoryKey: "sources.catAcademic" as const,
-    category: "Verified Conflict Data",
+    categoryKey: "sources.catAcademic",
     sources: [
       {
         name: "ACLED",
-        description: "Armed Conflict Location & Event Data Project. Weekly verified political violence events.",
-        frequency: "Weekly",
-        type: "Academic / Peer-reviewed",
+        descKey: "sources.desc.acled",
+        freqKey: "sources.freq.weekly",
+        typeKey: "sources.type.academicPeerReviewed",
       },
       {
         name: "UCDP",
-        description: "Uppsala Conflict Data Program. Longest-running academic conflict dataset (since 1946).",
-        frequency: "Annual + updates",
-        type: "Academic",
+        descKey: "sources.desc.ucdp",
+        freqKey: "sources.freq.annualPlusUpdates",
+        typeKey: "sources.type.academic",
       },
       {
         name: "GDELT",
-        description: "Global Database of Events, Language, and Tone. Monitors world news in 100+ languages.",
-        frequency: "Every 15 minutes",
-        type: "Automated / Machine-coded",
+        descKey: "sources.desc.gdelt",
+        freqKey: "sources.freq.every15Min",
+        typeKey: "sources.type.automated",
       },
     ],
   },
   {
-    categoryKey: "sources.catNews" as const,
-    category: "International News Organizations",
+    categoryKey: "sources.catNews",
     sources: [
-      { name: "Al Jazeera", description: "Qatar-based international news network with extensive Middle East bureau.", frequency: "Continuous", type: "Journalism" },
-      { name: "CNN", description: "US-based international news with dedicated Middle East desk.", frequency: "Continuous", type: "Journalism" },
-      { name: "BBC", description: "British public broadcaster with Arabic-language service and regional correspondents.", frequency: "Continuous", type: "Journalism" },
-      { name: "Reuters", description: "Global wire service. Primary source for breaking conflict events.", frequency: "Continuous", type: "Wire service" },
-      { name: "NPR", description: "US public radio with dedicated international correspondents.", frequency: "Continuous", type: "Journalism" },
-      { name: "PBS", description: "US public broadcasting with NewsHour international coverage.", frequency: "Continuous", type: "Journalism" },
+      { name: "Al Jazeera", descKey: "sources.desc.alJazeera", freqKey: "sources.freq.continuous", typeKey: "sources.type.journalism" },
+      { name: "CNN", descKey: "sources.desc.cnn", freqKey: "sources.freq.continuous", typeKey: "sources.type.journalism" },
+      { name: "BBC", descKey: "sources.desc.bbc", freqKey: "sources.freq.continuous", typeKey: "sources.type.journalism" },
+      { name: "Reuters", descKey: "sources.desc.reuters", freqKey: "sources.freq.continuous", typeKey: "sources.type.wireService" },
+      { name: "NPR", descKey: "sources.desc.npr", freqKey: "sources.freq.continuous", typeKey: "sources.type.journalism" },
+      { name: "PBS", descKey: "sources.desc.pbs", freqKey: "sources.freq.continuous", typeKey: "sources.type.journalism" },
     ],
   },
   {
-    categoryKey: "sources.catRegional" as const,
-    category: "Regional & Specialist Sources",
+    categoryKey: "sources.catRegional",
     sources: [
-      { name: "Times of Israel", description: "Israeli English-language news with real-time conflict reporting.", frequency: "Continuous", type: "Regional journalism" },
-      { name: "Washington Post", description: "US newspaper with dedicated national security and Middle East teams.", frequency: "Continuous", type: "Investigative journalism" },
-      { name: "Naval News", description: "Specialist naval and maritime defense reporting.", frequency: "Event-driven", type: "Defense journalism" },
-      { name: "Stars and Stripes", description: "Independent US military news source.", frequency: "Continuous", type: "Military journalism" },
-      { name: "Gulf News", description: "UAE-based English-language daily covering Gulf state perspectives.", frequency: "Continuous", type: "Regional journalism" },
-      { name: "The National", description: "Abu Dhabi-based English-language newspaper.", frequency: "Continuous", type: "Regional journalism" },
+      { name: "Times of Israel", descKey: "sources.desc.timesOfIsrael", freqKey: "sources.freq.continuous", typeKey: "sources.type.regionalJournalism" },
+      { name: "Washington Post", descKey: "sources.desc.washingtonPost", freqKey: "sources.freq.continuous", typeKey: "sources.type.investigativeJournalism" },
+      { name: "Naval News", descKey: "sources.desc.navalNews", freqKey: "sources.freq.eventDriven", typeKey: "sources.type.defenseJournalism" },
+      { name: "Stars and Stripes", descKey: "sources.desc.starsAndStripes", freqKey: "sources.freq.continuous", typeKey: "sources.type.militaryJournalism" },
+      { name: "Gulf News", descKey: "sources.desc.gulfNews", freqKey: "sources.freq.continuous", typeKey: "sources.type.regionalJournalism" },
+      { name: "The National", descKey: "sources.desc.theNational", freqKey: "sources.freq.continuous", typeKey: "sources.type.regionalJournalism" },
     ],
   },
   {
-    categoryKey: "sources.catMilitary" as const,
-    category: "Military & Official Sources",
+    categoryKey: "sources.catMilitary",
     sources: [
-      { name: "CENTCOM", description: "US Central Command. Official statements on US military operations in the Middle East.", frequency: "Event-driven", type: "Official / Government" },
-      { name: "UNIFIL", description: "United Nations Interim Force in Lebanon. Monitors southern Lebanon.", frequency: "Daily", type: "International organization" },
-      { name: "SIPRI", description: "Stockholm International Peace Research Institute. Arms transfers and military expenditure data.", frequency: "Annual", type: "Research institute" },
-      { name: "Fars News Agency", description: "Iranian semi-official news agency. Used for Iranian government perspective and claims.", frequency: "Continuous", type: "State-affiliated media" },
+      { name: "CENTCOM", descKey: "sources.desc.centcom", freqKey: "sources.freq.eventDriven", typeKey: "sources.type.official" },
+      { name: "UNIFIL", descKey: "sources.desc.unifil", freqKey: "sources.freq.daily", typeKey: "sources.type.internationalOrg" },
+      { name: "SIPRI", descKey: "sources.desc.sipri", freqKey: "sources.freq.annual", typeKey: "sources.type.researchInstitute" },
+      { name: "Fars News Agency", descKey: "sources.desc.farsNews", freqKey: "sources.freq.continuous", typeKey: "sources.type.stateAffiliated" },
     ],
   },
   {
-    categoryKey: "sources.catThinkTank" as const,
-    category: "Analysis & Think Tanks",
+    categoryKey: "sources.catThinkTank",
     sources: [
-      { name: "FDD", description: "Foundation for Defense of Democracies. Analysis of strikes and military capabilities.", frequency: "Event-driven", type: "Think tank" },
-      { name: "CSIS", description: "Center for Strategic and International Studies. Missile and nuclear program tracking.", frequency: "Event-driven", type: "Think tank" },
-      { name: "Critical Threats", description: "AEI project tracking Iran and Middle East military developments.", frequency: "Daily", type: "Think tank" },
-      { name: "International Crisis Group", description: "Independent conflict analysis and prevention.", frequency: "Event-driven", type: "NGO" },
+      { name: "FDD", descKey: "sources.desc.fdd", freqKey: "sources.freq.eventDriven", typeKey: "sources.type.thinkTank" },
+      { name: "CSIS", descKey: "sources.desc.csis", freqKey: "sources.freq.eventDriven", typeKey: "sources.type.thinkTank" },
+      { name: "Critical Threats", descKey: "sources.desc.criticalThreats", freqKey: "sources.freq.daily", typeKey: "sources.type.thinkTank" },
+      { name: "International Crisis Group", descKey: "sources.desc.crisisGroup", freqKey: "sources.freq.eventDriven", typeKey: "sources.type.ngo" },
     ],
   },
 ];
@@ -122,7 +134,7 @@ export default function SourcesPage({ onBack }: SourcesPageProps) {
 
           {/* Source groups */}
           {SOURCE_GROUPS.map((group) => (
-            <div key={group.category}>
+            <div key={group.categoryKey}>
               <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
                 {t(group.categoryKey)}
               </h2>
@@ -137,14 +149,14 @@ export default function SourcesPage({ onBack }: SourcesPageProps) {
                         {source.name}
                       </span>
                       <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500">
-                        {source.frequency}
+                        {t(source.freqKey)}
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-zinc-500">
-                      {source.description}
+                      {t(source.descKey)}
                     </p>
                     <span className="mt-1 inline-block text-[10px] text-zinc-600">
-                      {source.type}
+                      {t(source.typeKey)}
                     </span>
                   </div>
                 ))}

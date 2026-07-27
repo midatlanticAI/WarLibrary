@@ -31,15 +31,27 @@ function getLangBtn(page: import("@playwright/test").Page) {
   return page.locator("button[aria-haspopup='listbox']");
 }
 
+/**
+ * Language names are endonyms — each language written in itself — in every
+ * locale, including English. A picker that says "Arabic" is only usable by
+ * someone who already reads English, which defeats its purpose.
+ */
+const ENDONYM = {
+  en: "English",
+  es: "Español",
+  ar: "العربية",
+  he: "עברית",
+} as const;
+
 /** Open the language dropdown and select a locale */
 async function switchLanguage(
   page: import("@playwright/test").Page,
-  localeName: string
+  locale: keyof typeof ENDONYM
 ) {
   const langBtn = getLangBtn(page);
   await langBtn.click();
   // Click the target language option
-  await page.getByRole("option", { name: localeName }).click();
+  await page.getByRole("option", { name: ENDONYM[locale] }).click();
   // Wait for re-render
   await page.waitForTimeout(500);
 }
@@ -64,11 +76,25 @@ test.describe("Language selector", () => {
     const langBtn = getLangBtn(page);
     await langBtn.click();
 
-    // In English locale, language names display in English
-    await expect(page.getByRole("option", { name: "English" })).toBeVisible();
-    await expect(page.getByRole("option", { name: "Spanish" })).toBeVisible();
-    await expect(page.getByRole("option", { name: "Arabic" })).toBeVisible();
-    await expect(page.getByRole("option", { name: "Hebrew" })).toBeVisible();
+    // Endonyms in every locale, English included — the reader who most needs
+    // the picker is the one who cannot read the current UI.
+    await expect(page.getByRole("option", { name: ENDONYM.en })).toBeVisible();
+    await expect(page.getByRole("option", { name: ENDONYM.es })).toBeVisible();
+    await expect(page.getByRole("option", { name: ENDONYM.ar })).toBeVisible();
+    await expect(page.getByRole("option", { name: ENDONYM.he })).toBeVisible();
+  });
+
+  test("language names stay endonyms after switching locale", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await enterApp(page);
+    await switchLanguage(page, "ar");
+
+    await getLangBtn(page).click();
+    for (const name of Object.values(ENDONYM)) {
+      await expect(page.getByRole("option", { name })).toBeVisible();
+    }
   });
 });
 
@@ -79,7 +105,7 @@ test.describe("Spanish locale", () => {
   test("switching to Spanish translates navigation", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Spanish");
+    await switchLanguage(page, "es");
 
     // Nav tabs should be in Spanish — use .first() since desktop+mobile both render
     await expect(page.getByRole("button", { name: "Resumen" }).first()).toBeVisible();
@@ -96,7 +122,7 @@ test.describe("Spanish locale", () => {
   test("Spanish locale shows translated header text", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Spanish");
+    await switchLanguage(page, "es");
 
     // The "Tracking" text becomes "Rastreando"
     await expect(page.getByText("Rastreando")).toBeVisible();
@@ -105,7 +131,7 @@ test.describe("Spanish locale", () => {
   test("Spanish locale persists across page reload", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Spanish");
+    await switchLanguage(page, "es");
 
     // Reload page
     await page.reload();
@@ -118,7 +144,7 @@ test.describe("Spanish locale", () => {
   test("Ask AI tab shows Spanish placeholder", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Spanish");
+    await switchLanguage(page, "es");
 
     // Navigate to Ask tab
     await page.getByRole("button", { name: "Preguntar IA" }).click();
@@ -132,7 +158,7 @@ test.describe("Spanish locale", () => {
   test("Spanish suggested questions are in Spanish", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Spanish");
+    await switchLanguage(page, "es");
     await page.getByRole("button", { name: "Preguntar IA" }).click();
 
     // One of the Spanish suggested questions
@@ -151,7 +177,7 @@ test.describe("Arabic locale", () => {
   test("switching to Arabic sets RTL direction", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Arabic");
+    await switchLanguage(page, "ar");
 
     const dir = await page.getAttribute("html", "dir");
     expect(dir).toBe("rtl");
@@ -160,7 +186,7 @@ test.describe("Arabic locale", () => {
   test("switching to Arabic sets lang attribute", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Arabic");
+    await switchLanguage(page, "ar");
 
     const lang = await page.getAttribute("html", "lang");
     expect(lang).toBe("ar");
@@ -169,7 +195,7 @@ test.describe("Arabic locale", () => {
   test("Arabic locale shows Arabic navigation text", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Arabic");
+    await switchLanguage(page, "ar");
 
     // "تتبع" = Tracking in Arabic
     await expect(page.getByText("تتبع")).toBeVisible();
@@ -178,7 +204,7 @@ test.describe("Arabic locale", () => {
   test("Arabic Ask tab shows Arabic UI", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Arabic");
+    await switchLanguage(page, "ar");
     await page
       .getByRole("button", { name: "اسأل الذكاء الاصطناعي" })
       .click();
@@ -191,13 +217,13 @@ test.describe("Arabic locale", () => {
   test("switching back to English resets LTR", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Arabic");
+    await switchLanguage(page, "ar");
 
     const dirRtl = await page.getAttribute("html", "dir");
     expect(dirRtl).toBe("rtl");
 
     // After switching to Arabic, the option names are in Arabic — "English" stays "English" in ar.json
-    await switchLanguage(page, "English");
+    await switchLanguage(page, "en");
 
     const dirLtr = await page.getAttribute("html", "dir");
     expect(dirLtr).toBe("ltr");
@@ -211,7 +237,7 @@ test.describe("Hebrew locale", () => {
   test("switching to Hebrew sets RTL direction", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Hebrew");
+    await switchLanguage(page, "he");
 
     const dir = await page.getAttribute("html", "dir");
     expect(dir).toBe("rtl");
@@ -220,7 +246,7 @@ test.describe("Hebrew locale", () => {
   test("switching to Hebrew sets lang=he", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Hebrew");
+    await switchLanguage(page, "he");
 
     const lang = await page.getAttribute("html", "lang");
     expect(lang).toBe("he");
@@ -229,7 +255,7 @@ test.describe("Hebrew locale", () => {
   test("Hebrew locale shows Hebrew tracking text", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Hebrew");
+    await switchLanguage(page, "he");
 
     await expect(page.getByText("מעקב")).toBeVisible();
   });
@@ -237,7 +263,7 @@ test.describe("Hebrew locale", () => {
   test("Hebrew Ask tab shows Hebrew UI", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Hebrew");
+    await switchLanguage(page, "he");
     await page.getByRole("button", { name: "שאל AI" }).click();
 
     await expect(
@@ -253,7 +279,7 @@ test.describe("Stats bar translations", () => {
   test("stats bar labels change with Spanish locale", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Spanish");
+    await switchLanguage(page, "es");
 
     // Situation Overview becomes "Resumen de la situación" on desktop
     // On mobile, stat labels are translated
@@ -274,7 +300,7 @@ test.describe("Language persistence", () => {
   }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Spanish");
+    await switchLanguage(page, "es");
 
     // Go to Ask tab — use .first() since desktop+mobile both render
     await page.getByRole("button", { name: "Preguntar IA" }).first().click();
@@ -292,7 +318,7 @@ test.describe("Language persistence", () => {
   test("localStorage stores correct locale key", async ({ page }) => {
     await page.goto("/");
     await enterApp(page);
-    await switchLanguage(page, "Arabic");
+    await switchLanguage(page, "ar");
 
     const stored = await page.evaluate(() =>
       localStorage.getItem("warlibrary_lang")
@@ -343,5 +369,51 @@ test.describe("i18n accessibility attributes", () => {
     await page.goto("/");
     const dir = await page.getAttribute("html", "dir");
     expect(dir).toBe("ltr");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 9. Server-rendered locale — no first-paint flash
+// ---------------------------------------------------------------------------
+test.describe("Server-rendered locale", () => {
+  test("switching language writes the locale cookie the server reads", async ({
+    page,
+    context,
+  }) => {
+    await page.goto("/");
+    await enterApp(page);
+    await switchLanguage(page, "ar");
+
+    const cookie = (await context.cookies()).find((c) => c.name === "wl_lang");
+    expect(cookie?.value).toBe("ar");
+  });
+
+  test("a returning RTL reader gets dir=rtl in the very first response", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    // Seed the cookie the way a previous visit would have, then request the
+    // page fresh. Reading dir off the raw HTML — before any script runs —
+    // proves the server emitted it, rather than the client flipping it after
+    // hydration. Without this, every visit by an Arabic or Hebrew reader
+    // rendered left-to-right and then mirrored the whole layout.
+    await context.addCookies([
+      { name: "wl_lang", value: "ar", url: baseURL ?? "http://localhost:3000" },
+    ]);
+
+    const response = await page.goto("/");
+    const html = (await response?.text()) ?? "";
+
+    expect(html).toMatch(/<html[^>]*\blang="ar"/);
+    expect(html).toMatch(/<html[^>]*\bdir="rtl"/);
+  });
+
+  test("no cookie still server-renders English LTR", async ({ page }) => {
+    const response = await page.goto("/");
+    const html = (await response?.text()) ?? "";
+
+    expect(html).toMatch(/<html[^>]*\blang="en"/);
+    expect(html).toMatch(/<html[^>]*\bdir="ltr"/);
   });
 });
