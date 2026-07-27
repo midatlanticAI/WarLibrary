@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Geist, Geist_Mono, Noto_Sans_Arabic } from "next/font/google";
 import JsonLd from "@/components/seo/JsonLd";
-import { LOCALE_COOKIE, isLocale, localeDir, type Locale } from "@/i18n";
+// Imported from @/i18n/locale, NOT @/i18n — the latter is a "use client"
+// module, and a server component calling into it throws at runtime
+// ("Attempted to call isLocale() from the server"). That failure typechecks
+// and builds cleanly, so only an end-to-end request surfaces it.
+import { LOCALE_COOKIE, isLocale, localeDir, type Locale } from "@/i18n/locale";
 import "./globals.css";
 
 const geistSans = Geist({

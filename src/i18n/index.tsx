@@ -6,39 +6,32 @@ import es from "./es.json";
 import ar from "./ar.json";
 import he from "./he.json";
 
-export type Locale = "en" | "es" | "ar" | "he";
-export const LOCALES: Locale[] = ["en", "es", "ar", "he"];
+// Locale primitives live in ./locale so server components can use them. This
+// module is "use client"; anything a server component imports must not come
+// from here. Re-exported for the many client call sites that import from "@/i18n".
+import {
+  LOCALE_COOKIE,
+  LOCALES,
+  isLocale,
+  localeDir,
+  matchBrowserLocale,
+  type Locale,
+} from "./locale";
+
+export {
+  LOCALE_COOKIE,
+  LOCALES,
+  isLocale,
+  localeDir,
+  matchBrowserLocale,
+  type Locale,
+};
 
 type TranslationMap = typeof en;
 const translations: Record<Locale, TranslationMap> = { en, es, ar, he };
 
 const STORAGE_KEY = "warlibrary_lang";
-/**
- * The locale is mirrored into a cookie as well as localStorage so the server
- * can read it during SSR and emit the correct `lang`/`dir` on <html>. Without
- * it, every visit renders English/LTR first and then flips after hydration —
- * which for an Arabic or Hebrew reader means a full mirror-flip of the page on
- * every single page load.
- */
-export const LOCALE_COOKIE = "wl_lang";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
-
-export function isLocale(value: string | undefined | null): value is Locale {
-  return typeof value === "string" && (LOCALES as string[]).includes(value);
-}
-
-/** Best matching supported locale for a list of browser language tags. */
-export function matchBrowserLocale(languages: readonly string[]): Locale | null {
-  for (const tag of languages) {
-    const base = tag.toLowerCase().split("-")[0];
-    if (isLocale(base)) return base;
-  }
-  return null;
-}
-
-export function localeDir(locale: Locale): "ltr" | "rtl" {
-  return locale === "ar" || locale === "he" ? "rtl" : "ltr";
-}
 
 interface I18nContextType {
   locale: Locale;
