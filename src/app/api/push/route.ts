@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
 
 // DELETE — remove a push subscription
 export async function DELETE(req: NextRequest) {
-  let body: { endpoint?: string };
+  let body: { endpoint?: string; auth?: string };
   try {
     body = await req.json();
   } catch {
@@ -91,10 +91,31 @@ export async function DELETE(req: NextRequest) {
   }
 
   const subs = readSubs();
-  const filtered = subs.filter((s) => s.endpoint !== body.endpoint);
-  writeSubs(filtered);
+  const target = subs.find((s) => s.endpoint === body.endpoint);
 
-  return NextResponse.json({ success: true, removed: subs.length - filtered.length });
+  // Nothing to do — and deliberately the same response as a successful
+  // removal, so this cannot be used to probe whether a given endpoint is
+  // subscribed.
+  if (!target) {
+    return NextResponse.json({ success: true, removed: 0 });
+  }
+
+  // Prove ownership before removing.
+  //
+  // This used to delete by endpoint alone, so anyone who learned or guessed an
+  // endpoint could silently unsubscribe that reader from breaking-news alerts.
+  // The `auth` secret is part of the subscription the browser generated and is
+  // known only to that client, so echoing it back demonstrates ownership.
+  if (!body.auth || body.auth !== target.keys.auth) {
+    return NextResponse.json(
+      { error: "Subscription auth key required to unsubscribe." },
+      { status: 403 }
+    );
+  }
+
+  writeSubs(subs.filter((s) => s.endpoint !== body.endpoint));
+
+  return NextResponse.json({ success: true, removed: 1 });
 }
 
 // GET — subscriber count

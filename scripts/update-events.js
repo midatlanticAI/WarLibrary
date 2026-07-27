@@ -96,6 +96,27 @@ const MODEL = "claude-haiku-4-5-20251001";
 // advice has to be auditable.
 const ADVISOR_MODEL = "claude-opus-4-8";
 const ADVISOR_BETA = "advisor-tool-2026-03-01";
+/**
+ * Kill switch. Set ADVISOR_ENABLED=false to run extraction on Haiku alone.
+ *
+ * Worth being honest about what is and is not proven here. The accuracy wins
+ * this pipeline actually banked are deterministic: structured outputs (which
+ * removed a salvage path that silently dropped events), source_url validation
+ * against the fetched set, the 50km spatial dedup guard, and date validation.
+ * Those hold on every run whether or not a model cooperates.
+ *
+ * The advisor is the speculative part. It is bounded and demand-driven — the
+ * executor decides when to call it, capped at ADVISOR_MAX_USES — but its value
+ * on THIS workload is unmeasured, and advisor tokens bill at roughly 5x the
+ * executor's rate. It also cannot see the existing dataset (it reasons over the
+ * transcript only, with no tools), so it can help judge whether articles in one
+ * batch describe the same incident, but not whether an event is already stored.
+ *
+ * pipeline-stats.json records advisor_calls, advisor_input_tokens,
+ * advisor_output_tokens and the advice text, so a day of runs answers "is this
+ * earning its cost" with data rather than opinion. Turn it off if it isn't.
+ */
+const ADVISOR_ENABLED = process.env.ADVISOR_ENABLED !== "false";
 // Anthropic's recommended starting cap: ~7x less advisor output than uncapped
 // with near-zero truncation. Minimum accepted is 1024.
 const ADVISOR_MAX_TOKENS = 2048;
@@ -638,7 +659,12 @@ async function fetchOutletRSS() {
       name: "New York Times",
     },
     {
-      url: "http://feeds.washingtonpost.com/rss/world",
+      // HTTPS, not plaintext HTTP. Everything this pipeline ingests becomes a
+      // published, source-attributed event, so an on-path attacker able to
+      // rewrite a feed response could inject fabricated articles straight into
+      // the dataset. The whole premise of the project is source fidelity;
+      // fetching sources over a channel anyone can tamper with undercuts it.
+      url: "https://feeds.washingtonpost.com/rss/world",
       name: "Washington Post",
     },
     {
@@ -646,6 +672,20 @@ async function fetchOutletRSS() {
       name: "NPR",
     },
     {
+      // KNOWN INTEGRITY GAP — plaintext HTTP, and not by choice.
+      // rss.cnn.com does not serve TLS on any path (verified: connection
+      // refused on https for both edition_meast.rss and cnn_world.rss, and
+      // www.cnn.com/rss/... 404s). CNN offers no HTTPS feed.
+      //
+      // This means an on-path attacker between the droplet and CNN could
+      // rewrite the response and inject fabricated articles. The pipeline's
+      // other defences narrow but do not close this: an injected event still
+      // has to cite a URL that was fetched this run, and `source` is forced
+      // from our own fetch record — so the attacker would have to serve the
+      // fabrication at a real CNN URL, which an on-path attacker can do.
+      //
+      // Left enabled because dropping a major outlet skews coverage, but this
+      // is a genuine trade and should be revisited if CNN ever ships TLS.
       url: "http://rss.cnn.com/rss/edition_meast.rss",
       name: "CNN",
     },
@@ -1742,15 +1782,17 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
       // exactly the kind the advisor exists for. Opus 4.8 is the most capable
       // advisor that returns PLAINTEXT advice; Opus 5 and Fable 5 return an
       // encrypted blob we could not log, and this dataset has to be auditable.
-      tools: [
-        {
-          type: "advisor_20260301",
-          name: "advisor",
-          model: ADVISOR_MODEL,
-          max_tokens: ADVISOR_MAX_TOKENS,
-          max_uses: ADVISOR_MAX_USES,
-        },
-      ],
+      tools: ADVISOR_ENABLED
+        ? [
+            {
+              type: "advisor_20260301",
+              name: "advisor",
+              model: ADVISOR_MODEL,
+              max_tokens: ADVISOR_MAX_TOKENS,
+              max_uses: ADVISOR_MAX_USES,
+            },
+          ]
+        : [],
       messages: [{ role: "user", content: userContent }],
     });
   } catch (err) {

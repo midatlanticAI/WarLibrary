@@ -82,7 +82,7 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'ci-placeholder-not-a-real-key' }}
 
       - name: Upload build artifact
         if: github.ref == 'refs/heads/master'
@@ -113,7 +113,7 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'ci-placeholder-not-a-real-key' }}
           # Without this, 5 of the 8 admin e2e tests call test.skip() and the
           # job still reports green — the login flow, the tabs and every
           # control go unverified on each PR. The app only compares this value
@@ -127,7 +127,7 @@ jobs:
           npx playwright test
         env:
           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'ci-placeholder-not-a-real-key' }}
           ADMIN_SECRET: ${{ secrets.ADMIN_SECRET || 'ci-only-admin-secret' }}
 
       - name: Upload Playwright report
