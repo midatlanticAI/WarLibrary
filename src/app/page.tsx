@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { ConflictEvent } from "@/types";
 import { useEvents } from "@/hooks/useEvents";
@@ -33,8 +33,39 @@ const CONFLICT_START = "2026-02-28";
 type Tab = "map" | "ask" | "donate" | "sources" | "about";
 type MobileTab = "map" | "feed" | "ask" | "donate" | "sources" | "about";
 
+/** A single parsed ticker headline plus its (validated) source link. */
+type Headline = { text: string; url: string | null };
+
+/** Tailwind's `md` breakpoint — the width at which the event panel is docked. */
+const MD_BREAKPOINT = "(min-width: 768px)";
+
+/** Ties the ticker landmark to its visible (and translated) "Breaking" badge. */
+const TICKER_LABEL_ID = "ticker-label";
+
 function toTab(t: MobileTab): Tab {
   return t === "feed" ? "map" : t;
+}
+
+/**
+ * SSR-safe `window.matchMedia` subscription.
+ *
+ * Starts `false` on the server and on the very first client render so markup
+ * matches, then settles on the real value in an effect. Used for the reduced
+ * motion preference and for knowing whether the event panel is docked.
+ */
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mql = window.matchMedia(query);
+    setMatches(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [query]);
+
+  return matches;
 }
 
 export default function Home() {
@@ -55,7 +86,13 @@ function HomeContent() {
   const [showApp, setShowApp] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("map");
   const [mobileTab, setMobileTab] = useState<MobileTab>("map");
-  const [panelOpen, setPanelOpen] = useState(false);
+  // Explicit pause state for the breaking-news ticker (WCAG 2.2.2). Hover and
+  // focus-within pause it too, but neither exists on a touch device.
+  const [tickerPaused, setTickerPaused] = useState(false);
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  // The event panel is permanently docked from `md` up; below that it is only
+  // presented when the reader is on the Feed tab.
+  const isPanelDocked = useMediaQuery(MD_BREAKPOINT);
   const [dateRange, setDateRange] = useState(() => {
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 86400000);
@@ -95,6 +132,43 @@ function HomeContent() {
     }).catch(() => {});
   }, [activeTab, showApp]);
 
+  // Breaking-news headlines, parsed once per notification body.
+  //
+  // The pipeline ships the body as a markdown-ish list ("- [Headline] |||url"),
+  // and every entry runs a regex pass plus a `new URL()` construction. Doing
+  // that inline made it re-run on *every* render of this page — including the
+  // per-keystroke state changes coming out of the search field and the timeline
+  // slider — for a value that only ever changes when a new notification lands.
+  const notifBody = notification?.body ?? null;
+  const headlines = useMemo<Headline[]>(() => {
+    if (!notifBody) return [];
+    return notifBody
+      .split("- [")
+      .filter(Boolean)
+      .map((item) => {
+        // Extract source URL if appended with ||| delimiter
+        const pipeIdx = item.indexOf("|||");
+        let url: string | null = pipeIdx !== -1 ? item.slice(pipeIdx + 3).trim() : null;
+        // Clean URL: strip trailing brackets, parens, whitespace, punctuation
+        if (url) {
+          url = url.replace(/[\]\)\s,;:!?>'"]+$/, "");
+          url = url.replace(/^["'<(\[]+/, "");
+          if (url.startsWith("www.")) url = "https://" + url;
+          // Reject obviously broken URLs (too short, no dots, pure base64 fragments)
+          try {
+            const parsed = new URL(url);
+            if (!parsed.hostname.includes(".")) url = null;
+          } catch { url = null; }
+        }
+        const text = (pipeIdx !== -1 ? item.slice(0, pipeIdx) : item)
+          .replace(/^\[/, "")
+          .replace(/\]/, " —")
+          .trim();
+        return { text, url };
+      })
+      .filter((item) => item.text.length > 5);
+  }, [notifBody]);
+
   function navigate(tab: Tab) {
     setActiveTab(tab);
     setMobileTab(tab === "map" ? "map" : tab);
@@ -120,36 +194,7 @@ function HomeContent() {
     );
   }
 
-  // Notification banner — scrolling ticker with clickable headlines
-  const headlines: { text: string; url: string | null }[] = notification
-    ? notification.body
-        .split("- [")
-        .filter(Boolean)
-        .map((item) => {
-          // Extract source URL if appended with ||| delimiter
-          const pipeIdx = item.indexOf("|||");
-          let url: string | null = pipeIdx !== -1 ? item.slice(pipeIdx + 3).trim() : null;
-          // Clean URL: strip trailing brackets, parens, whitespace, punctuation
-          if (url) {
-            url = url.replace(/[\]\)\s,;:!?>'"]+$/, "");
-            url = url.replace(/^["'<(\[]+/, "");
-            if (url.startsWith("www.")) url = "https://" + url;
-            // Reject obviously broken URLs (too short, no dots, pure base64 fragments)
-            try {
-              const parsed = new URL(url);
-              if (!parsed.hostname.includes(".")) url = null;
-            } catch { url = null; }
-          }
-          const text = (pipeIdx !== -1 ? item.slice(0, pipeIdx) : item)
-            .replace(/^\[/, "")
-            .replace(/\]/, " —")
-            .trim();
-          return { text, url };
-        })
-        .filter((item) => item.text.length > 5)
-    : [];
-
-  const renderHeadline = (item: { text: string; url: string | null }, i: number, isDup = false) => {
+  const renderHeadline = (item: Headline, i: number, isDup = false) => {
     const key = isDup ? `dup-${i}` : i;
     const props = {
       className: "inline-block whitespace-nowrap px-8 hover:underline focus:underline focus:outline-none",
@@ -167,23 +212,55 @@ function HomeContent() {
     return <span key={key} className="inline-block whitespace-nowrap px-8">{item.text}</span>;
   };
 
+  // The ticker is a labelled landmark, not a live region: it used to carry
+  // `aria-live="polite"` on the animated track, which makes a screen reader
+  // re-announce headlines as they scroll past. The visible "Breaking" badge
+  // supplies the accessible name, so it is translated with the rest of the UI
+  // instead of being a hardcoded English `aria-label`.
   const notifBanner = notification && headlines.length > 0 ? (
     <div
-      className="left-0 right-0 z-40 flex items-center bg-amber-600/90 text-sm text-white backdrop-blur-sm max-sm:absolute max-sm:top-12 sm:relative"
-      role="marquee"
-      aria-label="Breaking news"
-      aria-live="polite"
+      className="relative z-40 flex shrink-0 items-center bg-amber-600/90 text-sm text-white backdrop-blur-sm"
+      role="region"
+      aria-labelledby={TICKER_LABEL_ID}
     >
-      <span className="shrink-0 bg-red-700 px-3 py-2 text-xs font-bold uppercase tracking-wider" aria-hidden="true">
+      <span
+        id={TICKER_LABEL_ID}
+        className="shrink-0 bg-red-700 px-3 py-2 text-xs font-bold uppercase tracking-wider"
+      >
         {t("ticker.breaking")}
       </span>
       <div className="flex-1 min-w-0 overflow-hidden py-2">
-        <div className="ticker-track hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
+        {/*
+          Hover/focus-within pausing is kept for pointer and keyboard users;
+          the inline play-state is only set while explicitly paused so it does
+          not fight those rules the rest of the time.
+        */}
+        <div
+          className="ticker-track hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]"
+          style={tickerPaused ? { animationPlayState: "paused" } : undefined}
+        >
           {headlines.map((item, i) => renderHeadline(item, i))}
           {headlines.map((item, i) => renderHeadline(item, i, true))}
         </div>
       </div>
+      {/*
+        WCAG 2.2.2 — moving content needs a pause mechanism, and hover does not
+        exist on touch. When the reader prefers reduced motion globals.css has
+        already stopped the animation outright, so the control is redundant.
+      */}
+      {!prefersReducedMotion && (
+        <button
+          type="button"
+          onClick={() => setTickerPaused((paused) => !paused)}
+          aria-pressed={tickerPaused}
+          className="shrink-0 px-3 py-2 text-xs hover:bg-white/20 focus:bg-white/20 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
+          aria-label={tickerPaused ? t("ticker.resume") : t("ticker.pause")}
+        >
+          <span aria-hidden="true">{tickerPaused ? "▶" : "❚❚"}</span>
+        </button>
+      )}
       <button
+        type="button"
         onClick={dismissNotif}
         className="shrink-0 px-3 py-2 text-xs hover:bg-white/20 focus:bg-white/20 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label={t("ticker.dismiss")}
@@ -197,7 +274,15 @@ function HomeContent() {
   if (!showApp) {
     return (
       <>
-        {notifBanner}
+        {/*
+          ContentWarning is a `fixed inset-0 z-50` opaque overlay, so an
+          in-flow banner renders *underneath* it and the reader sees nothing.
+          On this one screen the ticker is pinned above the overlay instead —
+          it has to be visible on every screen, landing page included.
+        */}
+        {notifBanner && (
+          <div className="fixed inset-x-0 top-0 z-[60]">{notifBanner}</div>
+        )}
         <ContentWarning events={events} onDismiss={() => setShowApp(true)} />
       </>
     );
@@ -312,8 +397,16 @@ function HomeContent() {
               setSelectedEvent(e);
               if (e) setMobileTab("map");
             }}
-            isOpen={true}
-            onToggle={() => setPanelOpen(!panelOpen)}
+            /*
+              The panel is presented whenever it is docked (md and up) or the
+              reader is on the mobile Feed tab — anywhere else its container is
+              `display: none`, and reporting it as open only makes the panel
+              measure a zero-height viewport. `onToggle` collapses it back to
+              the map / reopens the feed; EventPanel owns no toggle control of
+              its own, so this is the parent honouring the props contract.
+            */
+            isOpen={isPanelDocked || showMobileFeed}
+            onToggle={() => setMobileTab(showMobileFeed ? "map" : "feed")}
             onBack={() => setMobileTab("map")}
           />
         </div>
