@@ -60,7 +60,11 @@ loadEnv(ENV_FILE);
 // Validate API key
 // ---------------------------------------------------------------------------
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-if (!ANTHROPIC_API_KEY) {
+// Only fatal when actually running the pipeline. This used to exit at module
+// load, which meant importing the file to test its pure helpers killed the test
+// runner — locally it passed only because a key happened to be in the
+// environment, and it failed in CI where none is set.
+if (!ANTHROPIC_API_KEY && require.main === module) {
   console.error(
     "ERROR: ANTHROPIC_API_KEY not found. Ensure it is set in .env.local or the environment."
   );
