@@ -43,6 +43,11 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
 
+      # The app tsconfig excludes e2e/, so Playwright specs went unchecked and
+      # an invalid Playwright option shipped to master behind a cast.
+      - name: TypeScript (e2e specs)
+        run: npm run typecheck:e2e
+
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -109,6 +114,11 @@ jobs:
         env:
           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
+          # Without this, 5 of the 8 admin e2e tests call test.skip() and the
+          # job still reports green — the login flow, the tabs and every
+          # control go unverified on each PR. The app only compares this value
+          # against itself, so a throwaway string exercises the real paths.
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET || 'ci-only-admin-secret' }}
 
       - name: Run E2E tests
         run: |
@@ -118,6 +128,7 @@ jobs:
         env:
           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET || 'ci-only-admin-secret' }}
 
       - name: Upload Playwright report
         if: failure()
@@ -140,6 +151,8 @@ jobs:
 
       - run: npm ci
 
+      # Now a real gate. Production dependencies are at 0 vulnerabilities, so
+      # this passes today and will fail the build the moment that regresses —
+      # which is the only state in which the check is worth running.
       - name: npm audit (production)
         run: npm audit --omit=dev --audit-level=high
-        continue-on-error: true
