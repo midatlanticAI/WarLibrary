@@ -6,13 +6,32 @@ import es from "./es.json";
 import ar from "./ar.json";
 import he from "./he.json";
 
-export type Locale = "en" | "es" | "ar" | "he";
-export const LOCALES: Locale[] = ["en", "es", "ar", "he"];
+// Locale primitives live in ./locale so server components can use them. This
+// module is "use client"; anything a server component imports must not come
+// from here. Re-exported for the many client call sites that import from "@/i18n".
+import {
+  LOCALE_COOKIE,
+  LOCALES,
+  isLocale,
+  localeDir,
+  matchBrowserLocale,
+  type Locale,
+} from "./locale";
+
+export {
+  LOCALE_COOKIE,
+  LOCALES,
+  isLocale,
+  localeDir,
+  matchBrowserLocale,
+  type Locale,
+};
 
 type TranslationMap = typeof en;
 const translations: Record<Locale, TranslationMap> = { en, es, ar, he };
 
 const STORAGE_KEY = "warlibrary_lang";
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 interface I18nContextType {
   locale: Locale;
@@ -30,27 +49,45 @@ const I18nContext = createContext<I18nContextType>({
   isRTL: false,
 });
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+export function I18nProvider({
+  children,
+  initialLocale = "en",
+}: {
+  children: ReactNode;
+  /** Locale resolved on the server from the cookie, so the first paint is correct. */
+  initialLocale?: Locale;
+}) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
-  // Load saved language preference
+  // Resolve the reader's language preference.
+  //
+  // Order: an explicit saved choice always wins; otherwise fall back to the
+  // browser's own languages. Previously there was no browser detection at all,
+  // so a first-time visitor from Iran, Israel or Latin America got English
+  // until they found the dropdown.
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
-    if (saved && LOCALES.includes(saved)) {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (isLocale(saved)) {
       setLocaleState(saved);
+      return;
     }
-  }, []);
+    const detected = matchBrowserLocale(navigator.languages ?? [navigator.language]);
+    if (detected && detected !== initialLocale) {
+      setLocaleState(detected);
+    }
+  }, [initialLocale]);
 
   // Apply RTL dir and lang to document
   useEffect(() => {
-    const dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
-    document.documentElement.dir = dir;
+    document.documentElement.dir = localeDir(locale);
     document.documentElement.lang = locale;
   }, [locale]);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
     localStorage.setItem(STORAGE_KEY, l);
+    // Mirror to a cookie so the next SSR render starts in the right language.
+    document.cookie = `${LOCALE_COOKIE}=${l}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
   }, []);
 
   // Nested key lookup: t("app.title") -> translations[locale].app.title
@@ -84,8 +121,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return result;
   }, [locale]);
 
-  const dir = (locale === "ar" || locale === "he") ? "rtl" : "ltr";
-  const isRTL = locale === "ar";
+  const dir = localeDir(locale);
+  // Derived from dir so the two can never disagree. This previously read
+  // `locale === "ar"`, which reported Hebrew as left-to-right while `dir` said
+  // otherwise.
+  const isRTL = dir === "rtl";
 
   return (
     <I18nContext.Provider value={{ locale, setLocale, t, dir, isRTL }}>

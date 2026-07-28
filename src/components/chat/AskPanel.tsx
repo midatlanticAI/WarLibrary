@@ -147,12 +147,14 @@ export default function AskPanel({ events, onBack }: AskPanelProps) {
             onClick={onBack}
             className="flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-200"
           >
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            {/* "Back" points toward the start of the reading direction, so
+                the glyph has to mirror in Arabic/Hebrew. */}
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="rtl:rotate-180">
               <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 011.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
             </svg>
             {t("eventPanel.backToMap")}
           </button>
-          <span className="ml-auto text-xs text-zinc-500">{t("ask.warLibraryAi")}</span>
+          <span className="ms-auto text-xs text-zinc-500">{t("ask.warLibraryAi")}</span>
         </div>
       )}
       {/* Messages area */}
@@ -192,7 +194,7 @@ export default function AskPanel({ events, onBack }: AskPanelProps) {
                         key={q}
                         onClick={() => handleAsk(q)}
                         disabled={loading}
-                        className="rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-2.5 text-left text-xs text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-800/50 disabled:opacity-50"
+                        className="rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-2.5 text-start text-xs text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-800/50 disabled:opacity-50"
                       >
                         {q}
                       </button>
@@ -214,7 +216,7 @@ export default function AskPanel({ events, onBack }: AskPanelProps) {
                 {msg.role === "user" ? (
                   /* User message */
                   <div className="flex justify-end">
-                    <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-zinc-700 px-3.5 py-2.5 text-sm text-zinc-100">
+                    <div className="max-w-[85%] rounded-2xl rounded-ee-sm bg-zinc-700 px-3.5 py-2.5 text-sm text-zinc-100">
                       {msg.content}
                     </div>
                   </div>
@@ -256,7 +258,7 @@ export default function AskPanel({ events, onBack }: AskPanelProps) {
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                 </div>
-                <div className="rounded-2xl rounded-bl-sm bg-zinc-900/50 px-4 py-3">
+                <div className="rounded-2xl rounded-es-sm bg-zinc-900/50 px-4 py-3">
                   <div className="flex gap-1">
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:0ms]" />
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:150ms]" />
@@ -409,7 +411,7 @@ function FormattedAnswer({ text }: { text: string }) {
         i++;
       }
       elements.push(
-        <ul key={i} className="my-1 space-y-0.5 pl-3">
+        <ul key={i} className="my-1 space-y-0.5 ps-3">
           {items.map((item, j) => (
             <li key={j} className="flex items-start gap-1.5 text-sm">
               <span className="mt-2 h-1 w-1 flex-shrink-0 rounded-full bg-zinc-600" />
@@ -429,7 +431,7 @@ function FormattedAnswer({ text }: { text: string }) {
         i++;
       }
       elements.push(
-        <ol key={i} className="my-1 space-y-0.5 pl-3">
+        <ol key={i} className="my-1 space-y-0.5 ps-3">
           {items.map((item, j) => (
             <li key={j} className="flex items-start gap-1.5 text-sm">
               <span className="mt-0.5 flex-shrink-0 text-xs text-zinc-500">{j + 1}.</span>
@@ -500,7 +502,7 @@ function MarkdownTable({ lines }: { lines: string[] }) {
 
   return (
     <div className="my-2 overflow-x-auto rounded-lg border border-zinc-800/50">
-      <table className="w-full text-left text-xs">
+      <table className="w-full text-start text-xs">
         <thead>
           <tr className="border-b border-zinc-800 bg-zinc-900/50">
             {header.map((cell, i) => (
@@ -541,7 +543,9 @@ function generateLocalAnswer(
     .slice(0, 5);
 
   if (q.includes("casualt") || q.includes("kill") || q.includes("dead") || q.includes("death")) {
-    return `Based on tracked events, at least **${totalKilled.toLocaleString()} fatalities** have been reported across ${countries.length} countries.\n\n*Note: actual figures are likely higher due to fog of war and incomplete reporting.*`;
+    // This offline fallback answer is composed in English, so its digits are
+    // pinned to English rather than left to the browser's default locale.
+    return `Based on tracked events, at least **${totalKilled.toLocaleString("en")} fatalities** have been reported across ${countries.length} countries.\n\n*Note: actual figures are likely higher due to fog of war and incomplete reporting.*`;
   }
 
   if (q.includes("country") || q.includes("countries") || q.includes("involved")) {

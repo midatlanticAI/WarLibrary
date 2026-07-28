@@ -380,11 +380,28 @@ describe("Language selector in Header", () => {
     const langBtn = screen.getByLabelText(/language/i);
     fireEvent.click(langBtn);
 
-    // In English locale, language names are in English
+    // Language names are endonyms — each language is written in itself — in
+    // EVERY locale, including English. A picker that says "Arabic" is only
+    // usable by someone who already reads English, which defeats its purpose:
+    // the reader who most needs it is the one who cannot read the current UI.
     expect(screen.getByText("English")).toBeInTheDocument();
-    expect(screen.getByText("Spanish")).toBeInTheDocument();
-    expect(screen.getByText("Arabic")).toBeInTheDocument();
-    expect(screen.getByText("Hebrew")).toBeInTheDocument();
+    expect(screen.getByText("Español")).toBeInTheDocument();
+    expect(screen.getByText("العربية")).toBeInTheDocument();
+    expect(screen.getByText("עברית")).toBeInTheDocument();
+  });
+
+  it("uses the same endonyms in every locale", () => {
+    // Guards against a future translation pass "helpfully" localising these
+    // back into exonyms.
+    const expected = { en: "English", es: "Español", ar: "العربية", he: "עברית" };
+    for (const locale of LOCALES) {
+      const bundle = { en, es, ar, he }[locale] as unknown as {
+        language: Record<string, string>;
+      };
+      for (const [code, name] of Object.entries(expected)) {
+        expect(bundle.language[code]).toBe(name);
+      }
+    }
   });
 });
 

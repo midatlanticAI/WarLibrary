@@ -115,7 +115,7 @@ function TabButton({
       {icon}
       <span className="text-[10px]">{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="absolute right-1/4 top-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white">
+        <span className="absolute end-1/4 top-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white">
           {badge > 99 ? "99+" : badge}
         </span>
       )}

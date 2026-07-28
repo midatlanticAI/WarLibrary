@@ -610,9 +610,45 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err: unknown) {
+    // Log the detail server-side; never return it.
+    //
+    // This used to return `err.message` verbatim, which for an upstream
+    // failure is the entire Anthropic error payload — error type, quota
+    // message, and a request_id — handed to whoever asked. It also reported
+    // every upstream problem as a 500, so a misconfigured API key on our side
+    // looked like a bug in the caller's request.
     console.error("Chat API error:", err);
-    const errMsg = err instanceof Error ? err.message : "Internal error";
-    return NextResponse.json({ error: errMsg }, { status: 500 });
+
+    // Anthropic SDK errors carry a numeric `status`.
+    const upstreamStatus =
+      typeof err === "object" && err !== null && "status" in err
+        ? Number((err as { status: unknown }).status)
+        : undefined;
+
+    if (upstreamStatus === 401 || upstreamStatus === 403) {
+      // Our credentials, not the caller's request.
+      return NextResponse.json(
+        { error: "AI service is not available right now." },
+        { status: 503 }
+      );
+    }
+    if (upstreamStatus === 429) {
+      return NextResponse.json(
+        { error: "AI service is busy. Please try again shortly." },
+        { status: 429 }
+      );
+    }
+    if (upstreamStatus && upstreamStatus >= 500) {
+      return NextResponse.json(
+        { error: "AI service is temporarily unavailable." },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Something went wrong handling that question." },
+      { status: 500 }
+    );
   } finally {
     activeRequests--;
   }

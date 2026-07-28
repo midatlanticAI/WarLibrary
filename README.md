@@ -11,8 +11,8 @@ A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on I
 ## What It Does
 
 - **Interactive conflict map** — Mapbox-powered map with event markers, country filtering, and a timeline slider to scrub through events by date
-- **3,800+ verified events** across 28+ countries, sourced from Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Reuters, and 20+ other outlets
-- **Automated news pipeline** — Ingests articles from RSS feeds and NewsData.io every 30 minutes, extracts structured events via Claude Haiku 4.5 with source attribution and confidence scoring
+- **~23,000 events on the live instance**, sourced from Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Reuters, and 20+ other outlets. This repository ships **112 seed events**; the rest live only on the server, in a gitignored file the pipeline appends to. See [Data](#data) for what that means for counts.
+- **Automated news pipeline** — Ingests articles from RSS feeds and NewsData.io every 30 minutes and extracts structured events with Claude Haiku 4.5, using [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs) so the response shape is guaranteed rather than parsed hopefully. A higher-capability [advisor model](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) is consulted mid-extraction on the judgement calls — whether a casualty figure is a per-event count or a cumulative total, whether several articles describe one incident
 - **AI-powered Q&A** — Ask questions about the conflict and get sourced, guardrailed answers
 - **Admin dashboard** — Pipeline monitoring, source health, analytics, controls (installable as separate mobile app)
 - **Notification system** — In-app banners and browser push notifications for breaking events
@@ -24,13 +24,14 @@ A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on I
 
 | Layer | Tech |
 |-------|------|
-| Framework | Next.js 16.1.6 / React 19 / TypeScript (strict) |
+| Framework | Next.js 16.2 / React 19 / TypeScript (strict) |
 | Styling | Tailwind CSS 4 |
-| Map | Mapbox GL JS via react-map-gl v8 |
-| AI | Claude Haiku 4.5 via @anthropic-ai/sdk |
+| Map | Mapbox GL JS via react-map-gl v8, with native clustering |
+| AI | Claude Haiku 4.5 (extraction + chat) with a Claude Opus 4.8 advisor, via @anthropic-ai/sdk |
 | News Ingestion | NewsData.io API, Google News RSS, outlet RSS feeds |
 | Article Extraction | Mozilla Readability + jsdom |
-| Testing | Vitest + Testing Library (176 tests); Playwright E2E |
+| Languages | English, Spanish, Arabic, Hebrew (RTL) |
+| Testing | Vitest (6 suites, 274 tests); Playwright E2E (5 specs, 55 tests) |
 | Hosting | DigitalOcean + PM2 |
 
 ## Getting Started
@@ -61,9 +62,19 @@ The app runs at `http://localhost:3000`.
 ### Running Tests
 
 ```bash
-npm test              # Unit tests (Vitest — 176 tests across 4 suites)
-npx playwright test   # E2E tests (Playwright)
+npm test              # Unit tests (Vitest — 6 suites)
+npm run typecheck     # App TypeScript
+npm run typecheck:e2e # Playwright specs (the app tsconfig excludes e2e/)
+npm run lint
+npx playwright test   # E2E tests (Playwright — 5 specs)
 ```
+
+Two of the data-integrity tests fail against a production snapshot, by design:
+five events carry dates that cannot be mechanically repaired (three unparseable,
+including a day-zero `2026-04-00`; two dated months in the future). They are
+annotated with `needs_review` rather than deleted, pending a human decision. The
+suite passes on a fresh clone, because the file those events live in is
+gitignored — which is exactly the blind spot that let them accumulate.
 
 ### Running the Pipeline
 
@@ -107,14 +118,16 @@ The automated pipeline runs every 30 minutes and:
 
 1. Fetches articles from NewsData.io API (25+), Google News RSS (3 queries), and 6 outlet RSS feeds (Al Jazeera, BBC, NYT, Guardian, France 24, DW)
 2. Resolves Google News redirect URLs and extracts full article text via Mozilla Readability
-3. Sends top 20 articles to Claude Haiku 4.5 for structured event extraction
-4. Validates events: schema checks, date range (post-Feb 28 only), fatality sanity (rejects cumulative totals, caps at 500)
-5. Deduplicates against existing events via description similarity and spatio-temporal proximity
+3. Sends top 20 articles to Claude Haiku 4.5 for structured event extraction, with a Claude Opus 4.8 advisor available for ambiguous batches
+4. Validates events: schema checks, date range (post-Feb 28, nothing unparseable, nothing in the future), coordinate sanity, fatality sanity (rejects cumulative totals, quarantines implausible counts)
+5. Deduplicates against existing events via description similarity plus a 50 km spatial guard, so two strikes in different cities on the same day stay separate
 6. Appends new events to `events_latest.json` and sends in-app notification
 
-**Source tiers**: Tier 1 sources (Reuters, AP, BBC, Al Jazeera, CNN, NYT) get confidence boosted. Tier 3 (unknown outlets) get penalized.
+**Source tiers**: Tier 1 sources (Reuters, AP, BBC, Al Jazeera, CNN, NYT) get confidence boosted. Tier 3 (unknown outlets) get penalized. The `source` field is taken from our own fetch record rather than the model's output, so an extracted event cannot claim a reputable outlet it did not come from.
 
-**Cost**: ~$7/month for pipeline at 48 runs/day using Haiku.
+**Prompt injection**: article bodies are untrusted web text. Extraction rules live in the `system` parameter, never concatenated with article content, and every extracted event must cite a URL this run actually fetched — an event referencing anything else is discarded.
+
+**Cost**: Haiku 4.5 is $1/$5 per million input/output tokens; the Opus 4.8 advisor is $5/$25 and is billed separately from top-level usage (it appears in `usage.iterations[]`, which the pipeline sums into its own stats). Budget by measuring your own runs rather than trusting a figure here.
 
 ## Humanitarian Data
 
@@ -129,12 +142,43 @@ The Humanitarian Aid page provides comprehensive, source-attributed data on the 
 
 All figures include source organization and reporting date. Where government and independent figures conflict, both are presented with attribution.
 
+## Data
+
+**What ships in this repository vs. what runs live.** `events.json` and
+`events_expanded.json` hold **112 seed events** and are tracked in git.
+`events_latest.json` — everything the pipeline has produced since — is
+gitignored and exists only on the server. A fresh clone therefore has 112
+events, not ~23,000. Counts quoted anywhere should say which of the two they
+mean; this README's headline figure refers to the live instance.
+
+**Counting countries is not currently meaningful.** `country` is free text
+written by the extraction model, and the live dataset contains 198 distinct
+values — roughly 125 that look like single country names and ~73 that are
+aggregates or lists (`"Multiple"`, `"Global"`, `"International Waters"`,
+`"Iran, Pakistan, Oman, Russia"`, and both `"Kuwait/Bahrain"` and
+`"Bahrain/Kuwait"` as separate entries). Until that field is normalised to ISO
+codes, any "N countries" claim is an artifact of string counting. Earlier
+versions of this README, the site metadata, and the repository description each
+published a different number for exactly this reason.
+
 ## Data Integrity
 
 - Per-event fatalities only — cumulative death toll reports are tagged as `strategic_development` with `fatalities=0` to prevent double-counting
-- No pre-war events (before 2026-02-28)
-- Every event has `confidence` (0-1), `verification_status` (confirmed/reported/claimed/disputed/unconfirmed), and `source_url`
-- Single-event fatalities capped at 500 (no verified single strike exceeds this)
+- No pre-war events (before 2026-02-28), no unparseable dates, and nothing dated more than 48 hours in the future
+- Coordinates must be real and in range; `0,0` is rejected as a missing-value sentinel rather than plotted in the Gulf of Guinea
+- Events placed only by country fall back to a country centroid and are marked `location_precision: "country"` with `approximate_location: true`, so the map can show them as approximate instead of pretending to a precision the source never had
+- **Every event names its source. 99.4% also carry a direct link.**
+  - Pipeline-extracted events carry a `source_url` to the specific article, plus `confidence` (0-1) and `verification_status` (confirmed / reported / claimed / disputed / unconfirmed). The schema validator rejects any extracted event without a URL, and that URL must be one the run actually fetched — so an event cannot cite an article the pipeline never read.
+  - **131 events carry named outlets but no URL**: the 112 seed events that predate the pipeline, plus 19 early multi-outlet entries whose `source` lists several publications (`"Al Jazeera, RTE, Manila Times, Euronews"`). They are attributed and checkable, but less directly than a linked event — a reader has to search the outlet rather than click through. Backfilling links for those is tracked as outstanding work.
+  - Measured across the live dataset: **100% have a named source**, 99.4% a direct URL, 99.7% a verification status. Those URLs span **954 distinct domains** and 22,145 distinct articles.
+  - `src/__tests__/data-integrity.test.ts` asserts that no event has zero attribution, and that any `source_url` present is a real http(s) link.
+- Single-event fatality counts at or above 500 are quarantined rather than zeroed: the claimed figure is preserved in `claimed_fatalities`, `fatalities` is set to 0, and the event is marked `disputed` with `needs_review`. Silently zeroing lost the evidence in both directions — a real mass-casualty event became a zero, and a hallucinated one stayed in the dataset looking ordinary
+
+**Auditing and repair.** `scripts/audit-data.js` reports on the dataset and, with
+`--fix`, applies non-destructive repairs (re-geocoding, precision labelling,
+country normalisation). It never deletes. `scripts/dedupe-events.js` finds
+near-duplicate clusters and, with `--apply`, moves them to a quarantine file that
+`--restore` reverses. Both default to report-only.
 
 ## AI Chat
 
@@ -144,7 +188,7 @@ The Ask AI feature uses a 3-tier cost model:
 2. **Cached** — (planned)
 3. **Live Claude** — Haiku 4.5 (~$0.001/question), rate limited to 10/hr per IP
 
-All responses are guardrailed: jailbreak detection, off-topic rejection, weapon content blocking, output validation, daily 2M token spend cap.
+All responses are guardrailed: jailbreak detection, off-topic rejection, weapon content blocking, output validation, and a daily token spend cap (`MAX_DAILY_TOKENS` in `src/app/api/chat/route.ts` — check the constant rather than trusting a number here; it is process-local and resets on restart).
 
 ## Analytics
 

@@ -8,7 +8,7 @@ the world. 100% of monetization proceeds go to humanitarian aid.
 **Live at:** https://warlibrary.midatlantic.ai
 
 ## Tech Stack
-- **Frontend**: Next.js 16.1.6 / React 19 / TypeScript (strict) / Tailwind CSS 4
+- **Frontend**: Next.js 16.2 / React 19 / TypeScript (strict) / Tailwind CSS 4
 - **Map**: Mapbox GL JS via react-map-gl v8 (`import from "react-map-gl/mapbox"`)
 - **AI Chat**: Claude Haiku 4.5 via @anthropic-ai/sdk (Next.js API route)
 - **Pipeline**: Node.js script extracting events from news via Claude Haiku 4.5
@@ -69,7 +69,7 @@ src/
 ├── data/
 │   ├── events.json           # Base seed events (48)
 │   ├── events_expanded.json  # Expanded events (64)
-│   ├── events_latest.json    # Pipeline-appended events (3,700+, growing)
+│   ├── events_latest.json    # Pipeline-appended events (gitignored, server-only, ~23k)
 │   ├── notification.json     # Latest notification (persisted to disk)
 │   ├── analytics.json        # Page view + AI question analytics (persisted unique visitors)
 │   ├── pipeline-stats.json   # Current pipeline run stats
@@ -130,18 +130,58 @@ public/
     └── favicon-16.png, favicon-32.png
 ```
 
-### Data: 3,800+ verified events across 28+ countries
+### Data: 112 seed events in-repo; ~23,000 on the live instance
+
+**Always distinguish the two.** `events.json` + `events_expanded.json` (112
+events) are tracked in git. `events_latest.json` is gitignored and exists only on
+the droplet. A fresh clone, and therefore CI, sees 112 events — which is why the
+data-integrity suite passed for months while unvalidated records accumulated in
+production. Do not quote a single event count without saying which set it means.
+
+**Do not quote a country count.** `country` is free text from the extraction
+model: ~198 distinct values, of which roughly 73 are aggregates or lists
+(`"Multiple"`, `"Global"`, `"Iran, Pakistan, Oman, Russia"`, and both
+`"Kuwait/Bahrain"` and `"Bahrain/Kuwait"`). Normalising it to ISO codes is
+outstanding work; until then any "N countries" figure is string-counting.
 Sources: Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Washington Post,
 Reuters, NPR, Times of Israel, Axios, PBS, Naval News, UN News, and more.
 
-Per-event fatalities: ~568 (individual event attributions only — cumulative tolls tracked separately as strategic_development events with fatalities=0)
+Per-event fatalities are summed from individual event attributions only —
+cumulative tolls are tracked separately as `strategic_development` with
+`fatalities=0`. Read the current figure from the data, don't hardcode it.
 
 ### Event Pipeline
 - Runs every 30 minutes via cron
 - Pulls from 3 source types: NewsData.io API (25+ articles), Google News RSS (3 queries), Outlet RSS (6 feeds)
-- Token-optimized: 20 articles max, 800 chars body per article, 8192 max output tokens
-- Estimated cost: ~$0.003-0.005 per run, ~$7/month at 48 runs/day
-- Source tiers: Tier 1 (Reuters, AP, BBC, etc.) get confidence boost; Tier 3 penalized
+- 20 articles max, 800 chars body per article, `EXTRACTION_MAX_TOKENS` output cap
+- Source tiers: Tier 1 (Reuters, AP, BBC, etc.) get confidence boost; Tier 3 penalized. `source` is taken from our fetch record, never from model output
+
+**Executor + advisor.** Extraction runs Haiku 4.5 as executor with a Claude Opus
+4.8 **advisor** (`advisor_20260301`, beta `advisor-tool-2026-03-01`, via
+`client.beta.messages.create`). The advisor is consulted mid-generation on
+judgement calls — is this figure cumulative or per-event, are these three
+articles one incident, is this article's text trying to instruct us.
+
+> **Do not "upgrade" the advisor to Opus 5 or Fable 5.** Those return
+> `advisor_redacted_result`, an encrypted blob the client cannot read. Opus 4.8
+> returns plaintext `advisor_result`, which is persisted alongside the events it
+> shaped. This dataset publishes provenance; unreadable advice would break that.
+> `src/__tests__/pipeline.test.ts` asserts this and will fail if it changes.
+
+**Structured outputs.** The response is constrained by `EVENT_SCHEMA` via
+`output_config.format`. Truncation is now a hard failure — the previous
+salvage-a-truncated-array path silently dropped every event past the cut point
+and reported success. Schema rules: no `minimum`/`maximum`/`minLength`,
+`additionalProperties: false` on every object, enums carry the validation.
+
+**Untrusted input.** Article bodies are arbitrary web text. Extraction rules live
+in the `system` parameter and are never concatenated with article content, and
+every extracted event must cite a URL fetched in that same run.
+
+**Cost.** Haiku 4.5 is $1/$5 per MTok; the Opus 4.8 advisor is $5/$25. Advisor
+tokens do **not** appear in top-level `usage` — they are in `usage.iterations[]`
+with `type: "advisor_message"`, and the pipeline sums them into its own stats.
+Measure your own runs rather than trusting a figure written here.
 
 ### AI Chat System (3-tier cost model)
 1. **Tier 1 — Precomputed** (12 suggested questions): Zero cost, instant
@@ -169,7 +209,7 @@ Per-event fatalities: ~568 (individual event attributions only — cumulative to
 - Admin auth: httpOnly cookie + X-Admin-Token header, SHA-256 timing-safe comparison
 - Input guardrails: jailbreak detection, off-topic rejection, weapon content blocked
 - Output guardrails: catches if Claude goes off-rails
-- Daily spend cap: 2M tokens/day hard limit
+- Daily spend cap: see `MAX_DAILY_TOKENS` in `src/app/api/chat/route.ts`. Note it is process-local and resets on every PM2 restart, so it is not a true daily cap
 - UFW firewall: only ports 22, 80, 443 open
 - fail2ban for SSH brute force protection
 

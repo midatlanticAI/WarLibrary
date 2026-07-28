@@ -51,4 +51,5 @@ src/data/pipeline-stats.json
 src/data/analytics.json
 src/data/notification.json
 src/data/dedup-log.json
+src/data/quarantine-duplicates.json
 src/data/*.backup-*.json

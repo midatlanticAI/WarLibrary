@@ -2,19 +2,25 @@ import { createHash, timingSafeEqual } from "crypto";
 import { NextRequest } from "next/server";
 
 function safeEqual(a: string, b: string): boolean {
+  // Two empty strings hex-decode to two zero-length buffers, and
+  // timingSafeEqual considers those equal. isAdmin() guards against an unset
+  // ADMIN_SECRET before reaching here, but getExpectedHash is exported and the
+  // next caller that skips that guard would otherwise authenticate everyone.
+  if (!a || !b) return false;
   try {
     const bufA = Buffer.from(a, "hex");
     const bufB = Buffer.from(b, "hex");
-    if (bufA.length !== bufB.length) return false;
+    if (bufA.length === 0 || bufA.length !== bufB.length) return false;
     return timingSafeEqual(bufA, bufB);
   } catch {
     return false;
   }
 }
 
-export function getExpectedHash(): string {
+/** The expected cookie value, or null when ADMIN_SECRET is not configured. */
+export function getExpectedHash(): string | null {
   const secret = process.env.ADMIN_SECRET;
-  if (!secret) return "";
+  if (!secret) return null;
   return createHash("sha256").update(secret).digest("hex");
 }
 
@@ -25,10 +31,8 @@ export function getExpectedHash(): string {
  * 2. X-Admin-Token header (for API/curl usage)
  */
 export function isAdmin(req: NextRequest): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-
   const expected = getExpectedHash();
+  if (!expected) return false;
 
   // Method 1: httpOnly cookie
   const cookie = req.cookies.get("wl_admin")?.value;

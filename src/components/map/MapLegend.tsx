@@ -87,7 +87,7 @@ export default function MapLegend({
                   <button
                     key={type}
                     onClick={() => onToggleType(type)}
-                    className={`flex min-h-[44px] w-full items-center gap-2 rounded px-1.5 py-1.5 text-left transition-opacity sm:min-h-0 ${
+                    className={`flex min-h-[44px] w-full items-center gap-2 rounded px-1.5 py-1.5 text-start transition-opacity sm:min-h-0 ${
                       hidden ? "opacity-30" : "opacity-100"
                     } hover:bg-zinc-800/50 focus:outline-none focus:ring-1 focus:ring-zinc-600`}
                     aria-pressed={!hidden}
@@ -119,7 +119,7 @@ export default function MapLegend({
                   <button
                     key={country}
                     onClick={() => onToggleCountry(country)}
-                    className={`flex min-h-[44px] w-full items-center gap-2 rounded px-1.5 py-1.5 text-left transition-opacity sm:min-h-0 ${
+                    className={`flex min-h-[44px] w-full items-center gap-2 rounded px-1.5 py-1.5 text-start transition-opacity sm:min-h-0 ${
                       hidden ? "opacity-30" : "opacity-100"
                     } hover:bg-zinc-800/50 focus:outline-none focus:ring-1 focus:ring-zinc-600`}
                     aria-pressed={!hidden}

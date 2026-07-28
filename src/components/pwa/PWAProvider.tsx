@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useI18n } from "@/i18n";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -8,6 +9,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function PWAProvider() {
+  const { t } = useI18n();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -70,30 +72,30 @@ export default function PWAProvider() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-zinc-200">
-              Install War Library
+              {t("pwa.installTitle")}
             </p>
             <p className="mt-0.5 text-xs text-zinc-500">
-              Get instant access from your home screen. Works offline.
+              {t("pwa.installBody")}
             </p>
             <div className="mt-3 flex gap-2">
               <button
                 onClick={handleInstall}
                 className="rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-900 transition-colors hover:bg-white"
               >
-                Install
+                {t("pwa.install")}
               </button>
               <button
                 onClick={handleDismissInstall}
                 className="rounded-lg px-3 py-1.5 text-xs text-zinc-500 transition-colors hover:text-zinc-300"
               >
-                Not now
+                {t("pwa.notNow")}
               </button>
             </div>
           </div>
           <button
             onClick={handleDismissInstall}
             className="text-zinc-600 hover:text-zinc-400"
-            aria-label="Dismiss"
+            aria-label={t("pwa.dismiss")}
           >
             <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />

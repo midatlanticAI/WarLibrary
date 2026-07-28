@@ -816,11 +816,33 @@ function Dashboard() {
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
 
+  // `authed === null` renders an infinite spinner, so this request must always
+  // settle. Without a deadline a connection that opens and then stalls — a
+  // captive portal, a dropped mobile handoff — leaves the admin page spinning
+  // with no error and no way forward but a manual reload. Same failure the
+  // event feed had before useEvents grew a timeout.
   useEffect(() => {
-    fetch("/api/admin", { credentials: "include" })
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    let unmounted = false;
+
+    fetch("/api/admin", { credentials: "include", signal: controller.signal })
       .then((r) => r.json())
-      .then((j) => setAuthed(j.admin === true))
-      .catch(() => setAuthed(false));
+      .then((j) => {
+        if (!unmounted) setAuthed(j.admin === true);
+      })
+      // The unmount cleanup aborts too, and that rejection lands here — so
+      // check the flag before deciding the visitor failed authentication.
+      .catch(() => {
+        if (!unmounted) setAuthed(false);
+      })
+      .finally(() => clearTimeout(timer));
+
+    return () => {
+      unmounted = true;
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, []);
 
   if (authed === null) {

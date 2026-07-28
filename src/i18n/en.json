@@ -23,9 +23,15 @@
     "events": "events",
     "updated": "Updated"
   },
+  "footer": {
+    "sourcesLabel": "Sources:",
+    "updated": "Updated: {{time}}"
+  },
   "ticker": {
     "breaking": "Breaking",
-    "dismiss": "Dismiss breaking news notification"
+    "dismiss": "Dismiss breaking news notification",
+    "pause": "Pause scrolling headlines",
+    "resume": "Resume scrolling headlines"
   },
   "stats": {
     "day": "DAY",
@@ -124,7 +130,42 @@
     "filtered": "(filtered)",
     "fatalityReported": "fatality reported",
     "fatalitiesReported": "fatalities reported",
-    "shareEvent": "Share event"
+    "shareEvent": "Share event",
+    "regionLabel": "Conflict event map",
+    "srSummary": "Visual map of {{events}}, grouped into clusters.",
+    "srKeyboard": "Map points cannot be reached with a keyboard — use the event feed for a keyboard-navigable list of the same events.",
+    "eventsLabel": {
+      "zero": "events",
+      "one": "event",
+      "two": "events",
+      "few": "events",
+      "many": "events",
+      "other": "events"
+    },
+    "eventCount": {
+      "zero": "{{n}} events",
+      "one": "{{n}} event",
+      "two": "{{n}} events",
+      "few": "{{n}} events",
+      "many": "{{n}} events",
+      "other": "{{n}} events"
+    },
+    "shown": "{{n}} shown",
+    "fatalityCount": {
+      "zero": "{{n}} fatalities reported",
+      "one": "{{n}} fatality reported",
+      "two": "{{n}} fatalities reported",
+      "few": "{{n}} fatalities reported",
+      "many": "{{n}} fatalities reported",
+      "other": "{{n}} fatalities reported"
+    },
+    "sourceLabel": "Source: {{name}}",
+    "pileTitle": "{{events}}, one location",
+    "pileBody": "These events share a single fallback coordinate because the original reports did not say where in the country they happened. They cannot be separated on the map.",
+    "pileHint": "Use the event feed to read them individually.",
+    "unavailableTitle": "Map unavailable",
+    "unavailableBody": "No Mapbox access token is configured for this deployment, so the interactive map can't load. All {{events}} are still readable in the event feed and searchable via Ask.",
+    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN is not set"
   },
   "ask": {
     "warLibraryAi": "War Library AI",
@@ -197,6 +238,13 @@
     "countries": "Countries",
     "days": "Days"
   },
+  "pwa": {
+    "installTitle": "Install War Library",
+    "installBody": "Get instant access from your home screen. Works offline.",
+    "install": "Install",
+    "notNow": "Not now",
+    "dismiss": "Dismiss"
+  },
   "eventTypes": {
     "airstrike": "Airstrike",
     "missile_attack": "Missile Attack",
@@ -265,7 +313,58 @@
     "catNews": "International News Organizations",
     "catRegional": "Regional & Specialist Sources",
     "catMilitary": "Military & Official Sources",
-    "catThinkTank": "Think Tanks & Analysis"
+    "catThinkTank": "Think Tanks & Analysis",
+    "freq": {
+      "continuous": "Continuous",
+      "weekly": "Weekly",
+      "annualPlusUpdates": "Annual + updates",
+      "every15Min": "Every 15 minutes",
+      "eventDriven": "Event-driven",
+      "daily": "Daily",
+      "annual": "Annual"
+    },
+    "type": {
+      "academicPeerReviewed": "Academic / Peer-reviewed",
+      "academic": "Academic",
+      "automated": "Automated / Machine-coded",
+      "journalism": "Journalism",
+      "wireService": "Wire service",
+      "regionalJournalism": "Regional journalism",
+      "investigativeJournalism": "Investigative journalism",
+      "defenseJournalism": "Defense journalism",
+      "militaryJournalism": "Military journalism",
+      "official": "Official / Government",
+      "internationalOrg": "International organization",
+      "researchInstitute": "Research institute",
+      "stateAffiliated": "State-affiliated media",
+      "thinkTank": "Think tank",
+      "ngo": "NGO"
+    },
+    "desc": {
+      "acled": "Armed Conflict Location & Event Data Project. Weekly verified political violence events.",
+      "ucdp": "Uppsala Conflict Data Program. Longest-running academic conflict dataset (since 1946).",
+      "gdelt": "Global Database of Events, Language, and Tone. Monitors world news in 100+ languages.",
+      "alJazeera": "Qatar-based international news network with extensive Middle East bureau.",
+      "cnn": "US-based international news with dedicated Middle East desk.",
+      "bbc": "British public broadcaster with Arabic-language service and regional correspondents.",
+      "reuters": "Global wire service. Primary source for breaking conflict events.",
+      "npr": "US public radio with dedicated international correspondents.",
+      "pbs": "US public broadcasting with NewsHour international coverage.",
+      "timesOfIsrael": "Israeli English-language news with real-time conflict reporting.",
+      "washingtonPost": "US newspaper with dedicated national security and Middle East teams.",
+      "navalNews": "Specialist naval and maritime defense reporting.",
+      "starsAndStripes": "Independent US military news source.",
+      "gulfNews": "UAE-based English-language daily covering Gulf state perspectives.",
+      "theNational": "Abu Dhabi-based English-language newspaper.",
+      "centcom": "US Central Command. Official statements on US military operations in the Middle East.",
+      "unifil": "United Nations Interim Force in Lebanon. Monitors southern Lebanon.",
+      "sipri": "Stockholm International Peace Research Institute. Arms transfers and military expenditure data.",
+      "farsNews": "Iranian semi-official news agency. Used for Iranian government perspective and claims.",
+      "fdd": "Foundation for Defense of Democracies. Analysis of strikes and military capabilities.",
+      "csis": "Center for Strategic and International Studies. Missile and nuclear program tracking.",
+      "criticalThreats": "AEI project tracking Iran and Middle East military developments.",
+      "crisisGroup": "Independent conflict analysis and prevention."
+    }
   },
   "donate": {
     "title": "Humanitarian Aid",
@@ -328,13 +427,14 @@
     "hungerRisk": "Additional people at risk of hunger",
     "fertilizerDisrupted": "World fertilizer through Hormuz",
     "peopleReached": "People reached by WFP",
-    "mealsServed": "Hot meals served since March 2"
+    "mealsServed": "Hot meals served since March 2",
+    "snapshotNotice": "These humanitarian figures are a snapshot from mid-March 2026 and are not updated automatically. They were accurate as reported on the dates cited beside each figure, and the real toll has almost certainly changed since. The event map is live; this section is not."
   },
   "language": {
     "en": "English",
-    "es": "Spanish",
-    "ar": "Arabic",
-    "he": "Hebrew",
+    "es": "Español",
+    "ar": "العربية",
+    "he": "עברית",
     "label": "Language"
   }
 }

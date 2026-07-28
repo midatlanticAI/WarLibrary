@@ -14,7 +14,7 @@ interface OverviewBannerProps {
 }
 
 export default function OverviewBanner({ events }: OverviewBannerProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [collapsed, setCollapsed] = useState(true);
   const [activeModal, setActiveModal] = useState<StatKey | null>(null);
 
@@ -83,7 +83,7 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
       <div className="hidden sm:block">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex w-full items-center justify-between px-4 py-2 text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-600"
+          className="flex w-full items-center justify-between px-4 py-2 text-start focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-600"
           aria-expanded={!collapsed}
           aria-label="Toggle situation overview"
         >
@@ -94,7 +94,7 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
             {collapsed && (
               <span className="text-xs text-zinc-500">
                 {t("stats.day")} {stats.daysOfConflict} ·{" "}
-                <span className="text-red-400">{stats.totalKilled.toLocaleString()}+</span> {t("stats.killed").toLowerCase()} ·{" "}
+                <span className="text-red-400">{stats.totalKilled.toLocaleString(locale)}+</span> {t("stats.killed").toLowerCase()} ·{" "}
                 {stats.totalEvents} {t("stats.events").toLowerCase()} · {stats.countries} {t("stats.countriesText")}
               </span>
             )}
@@ -116,7 +116,7 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
               {stats.battles > 0 ? `, ${stats.battles} ${t("stats.groundEngagements")}` : ""}
               {stats.strategicDevs > 0 ? `, ${stats.strategicDevs} ${t("stats.strategicDevelopments")}` : ""}.{" "}
               {stats.totalKilled > 0
-                ? `${stats.totalKilled.toLocaleString()}+ ${t("stats.fatalitiesReported")}`
+                ? `${stats.totalKilled.toLocaleString(locale)}+ ${t("stats.fatalitiesReported")}`
                 : t("stats.casualtiesBeing")}{" "}
               {stats.recentEvents.length > 0
                 ? `${stats.recentEvents.length} event${stats.recentEvents.length !== 1 ? "s" : ""} ${t("stats.eventsInLast24h")}`
@@ -145,10 +145,13 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
                     <span className="capitalize text-zinc-300">
                       {stats.latestEvent.event_type.replace(/_/g, " ")}
                     </span>{" "}
-                    — {stats.latestEvent.region}, {stats.latestEvent.country}
+                    {/* Place names and descriptions arrive from an
+                        English-language pipeline; isolate them as LTR English
+                        so bidi reordering can't scramble mixed runs. */}
+                    — <span lang="en" dir="ltr">{stats.latestEvent.region}, {stats.latestEvent.country}</span>
                   </div>
                   <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500">
-                    {stats.latestEvent.description}
+                    <span lang="en" dir="ltr">{stats.latestEvent.description}</span>
                   </p>
                   <span className="mt-0.5 text-[10px] text-zinc-500">
                     {t("stats.source")}: {stats.latestEvent.source}
@@ -287,7 +290,7 @@ function BreakdownModal({ statKey, events, stats, onClose }: BreakdownModalProps
 
 /* ── Killed Breakdown ── */
 function KilledBreakdown({ events, stats }: { events: ConflictEvent[]; stats: StatsData }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const byCountry = useMemo(() => {
     const map: Record<string, number> = {};
     for (const e of events) {
@@ -305,11 +308,11 @@ function KilledBreakdown({ events, stats }: { events: ConflictEvent[]; stats: St
   return (
     <>
       <div className="rounded-lg bg-zinc-900/60 p-3 text-center">
-        <div className="text-2xl font-bold text-red-400">{stats.totalKilled.toLocaleString()}+</div>
+        <div className="text-2xl font-bold text-red-400">{stats.totalKilled.toLocaleString(locale)}+</div>
         <div className="text-xs text-zinc-500">{t("modal.totalReportedFatalities")}</div>
         <div className="mt-1 text-[10px] text-zinc-500">
-          {stats.summedFatalities.toLocaleString()} {t("modal.individuallyAttributed")}
-          {stats.reportedTotal > stats.summedFatalities && ` · ${stats.reportedTotal.toLocaleString()} ${t("modal.inAggregateReports")}`}
+          {stats.summedFatalities.toLocaleString(locale)} {t("modal.individuallyAttributed")}
+          {stats.reportedTotal > stats.summedFatalities && ` · ${stats.reportedTotal.toLocaleString(locale)} ${t("modal.inAggregateReports")}`}
         </div>
       </div>
 
@@ -318,7 +321,7 @@ function KilledBreakdown({ events, stats }: { events: ConflictEvent[]; stats: St
         {byCountry.map(([country, count]) => (
           <div key={country} className="flex items-center justify-between rounded bg-zinc-900/40 px-3 py-2">
             <span className="text-sm text-zinc-300">{country}</span>
-            <span className="text-sm font-semibold text-red-400">{count.toLocaleString()}</span>
+            <span className="text-sm font-semibold text-red-400">{count.toLocaleString(locale)}</span>
           </div>
         ))}
       </div>
@@ -326,7 +329,7 @@ function KilledBreakdown({ events, stats }: { events: ConflictEvent[]; stats: St
       {totalCivilian > 0 && (
         <div className="rounded-lg border border-amber-900/30 bg-amber-950/10 p-3">
           <div className="text-xs font-semibold text-amber-400">{t("modal.civilianFatalities")}</div>
-          <div className="text-lg font-bold text-amber-300">{totalCivilian.toLocaleString()}</div>
+          <div className="text-lg font-bold text-amber-300">{totalCivilian.toLocaleString(locale)}</div>
           <div className="text-[10px] text-zinc-500">{t("modal.fromEvents")}</div>
         </div>
       )}
@@ -363,7 +366,7 @@ function EventsBreakdown({ events }: { events: ConflictEvent[] }) {
               <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ backgroundColor: EVENT_COLORS[type] || "#666" }} />
               <span className="flex-1 text-sm text-zinc-300">{t(`eventTypes.${type}`) !== `eventTypes.${type}` ? t(`eventTypes.${type}`) : type.replace(/_/g, " ")}</span>
               <span className="text-xs text-zinc-500">{pct}%</span>
-              <span className="min-w-[40px] text-right text-sm font-semibold text-zinc-200">{count}</span>
+              <span className="min-w-[40px] text-end text-sm font-semibold text-zinc-200">{count}</span>
             </div>
           );
         })}
@@ -422,7 +425,7 @@ function CountriesBreakdown({ events }: { events: ConflictEvent[] }) {
 
 /* ── Military Breakdown (Airstrikes / Missiles / Drones) ── */
 function MilitaryBreakdown({ events, type }: { events: ConflictEvent[]; type: string }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const filtered = useMemo(
     () => events.filter((e) => e.event_type === type).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     [events, type]
@@ -449,10 +452,10 @@ function MilitaryBreakdown({ events, type }: { events: ConflictEvent[]; type: st
         {filtered.slice(0, 15).map((e) => (
           <div key={e.id} className="rounded bg-zinc-900/40 px-3 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-zinc-400">{e.region}, {e.country}</span>
-              <span className="text-xs text-zinc-500">{new Date(e.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+              <span className="text-xs text-zinc-400" lang="en" dir="ltr">{e.region}, {e.country}</span>
+              <span className="text-xs text-zinc-500">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
             </div>
-            <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300">{e.description}</p>
+            <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300" lang="en" dir="ltr">{e.description}</p>
             <div className="mt-0.5 flex items-center gap-2 text-[10px] text-zinc-500">
               {e.fatalities !== null && e.fatalities > 0 && <span className="text-red-400">{e.fatalities} {t("modal.killedLabel")}</span>}
               <span>{t("stats.source")}: {e.source}</span>
@@ -469,7 +472,7 @@ function MilitaryBreakdown({ events, type }: { events: ConflictEvent[]; type: st
 
 /* ── Civilian Breakdown ── */
 function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]; civilianEvents: ConflictEvent[] }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const totalCivKilled = civilianEvents.reduce((s, e) => s + (e.fatalities || 0), 0);
 
   const IMPACT_KEYS: Record<string, string> = {
@@ -530,12 +533,12 @@ function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]
           .map((e) => (
           <div key={e.id} className="rounded bg-zinc-900/40 px-3 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-zinc-400">{e.region}, {e.country}</span>
-              <span className="text-xs text-zinc-500">{new Date(e.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+              <span className="text-xs text-zinc-400" lang="en" dir="ltr">{e.region}, {e.country}</span>
+              <span className="text-xs text-zinc-500">{new Date(e.date).toLocaleDateString(locale, { month: "short", day: "numeric" })}</span>
             </div>
-            <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300">{e.description}</p>
+            <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300" lang="en" dir="ltr">{e.description}</p>
             {e.civilian_impact && (
-              <p className="mt-0.5 text-[10px] text-amber-400">{e.civilian_impact}</p>
+              <p className="mt-0.5 text-[10px] text-amber-400" lang="en" dir="ltr">{e.civilian_impact}</p>
             )}
             <span className="text-[10px] text-zinc-500">{t("stats.source")}: {e.source}</span>
           </div>
@@ -551,7 +554,7 @@ function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]
 
 /* ── 24H Breakdown ── */
 function RecentBreakdown({ recentEvents }: { recentEvents: ConflictEvent[] }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const sorted = useMemo(
     () => [...recentEvents].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     [recentEvents]
@@ -599,12 +602,12 @@ function RecentBreakdown({ recentEvents }: { recentEvents: ConflictEvent[] }) {
               <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: EVENT_COLORS[e.event_type] || "#666" }} />
               <span className="flex-1 text-xs capitalize text-zinc-400">{e.event_type.replace(/_/g, " ")}</span>
               <span className="text-xs text-zinc-500">
-                {new Date(e.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                {new Date(e.date).toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })}
               </span>
             </div>
-            <p className="mt-0.5 line-clamp-2 pl-4 text-xs text-zinc-300">{e.description}</p>
-            <div className="mt-0.5 flex items-center gap-2 pl-4 text-[10px] text-zinc-500">
-              <span>{e.region}, {e.country}</span>
+            <p className="mt-0.5 line-clamp-2 ps-4 text-xs text-zinc-300" lang="en" dir="ltr">{e.description}</p>
+            <div className="mt-0.5 flex items-center gap-2 ps-4 text-[10px] text-zinc-500">
+              <span lang="en" dir="ltr">{e.region}, {e.country}</span>
               {e.fatalities !== null && e.fatalities > 0 && <span className="text-red-400">{e.fatalities} {t("modal.killedLabel")}</span>}
               <span>{t("stats.source")}: {e.source}</span>
             </div>
@@ -635,7 +638,7 @@ function MobileStat({
   return (
     <Tag
       onClick={onClick}
-      className={`flex min-h-[44px] flex-col items-center justify-center overflow-hidden border-b border-r border-zinc-800/50 px-0.5 py-1.5 last:border-r-0 [&:nth-child(4)]:border-r-0 ${
+      className={`flex min-h-[44px] flex-col items-center justify-center overflow-hidden border-b border-e border-zinc-800/50 px-0.5 py-1.5 last:border-e-0 [&:nth-child(4)]:border-e-0 ${
         onClick ? "cursor-pointer active:bg-zinc-800/50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-zinc-600" : ""
       }`}
       {...(onClick ? { "aria-label": `${label}: ${value}. Tap for details` } : {})}

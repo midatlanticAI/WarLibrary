@@ -1,4 +1,4 @@
-name: CI
+﻿name: CI
 
 on:
   push:
@@ -10,14 +10,27 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Least privilege for GITHUB_TOKEN. Nothing here writes to the repo — it checks
+# out, installs, tests and uploads artifacts — so read is enough. Without this
+# block the token inherits the repository default, which on older repos is
+# read/write on every scope, handed to third-party actions on every PR.
+permissions:
+  contents: read
+
+# Third-party actions are pinned to commit SHAs rather than the `v4` alias.
+# A major-version tag is mutable: whoever controls the upstream repo can
+# repoint it at new code, which then runs with this workflow's token and
+# secrets on the next push. The trailing comment records the human-readable
+# version so `npx pin-github-action` or Dependabot can still bump them.
+
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -31,9 +44,9 @@ jobs:
     name: Type Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -43,13 +56,18 @@ jobs:
       - name: TypeScript
         run: npx tsc --noEmit
 
+      # The app tsconfig excludes e2e/, so Playwright specs went unchecked and
+      # an invalid Playwright option shipped to master behind a cast.
+      - name: TypeScript (e2e specs)
+        run: npm run typecheck:e2e
+
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -64,9 +82,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, typecheck, test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -77,11 +95,11 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'ci-placeholder-not-a-real-key' }}
 
       - name: Upload build artifact
         if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: nextjs-build
           path: .next/
@@ -92,9 +110,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -108,7 +126,12 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'ci-placeholder-not-a-real-key' }}
+          # Without this, 5 of the 8 admin e2e tests call test.skip() and the
+          # job still reports green â€” the login flow, the tabs and every
+          # control go unverified on each PR. The app only compares this value
+          # against itself, so a throwaway string exercises the real paths.
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET || 'ci-only-admin-secret' }}
 
       - name: Run E2E tests
         run: |
@@ -117,11 +140,12 @@ jobs:
           npx playwright test
         env:
           NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.dummy_token_for_ci' }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-dummy-key-for-ci' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'ci-placeholder-not-a-real-key' }}
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET || 'ci-only-admin-secret' }}
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-report
           path: test-results/
@@ -131,15 +155,17 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
 
       - run: npm ci
 
+      # Now a real gate. Production dependencies are at 0 vulnerabilities, so
+      # this passes today and will fail the build the moment that regresses â€”
+      # which is the only state in which the check is worth running.
       - name: npm audit (production)
         run: npm audit --omit=dev --audit-level=high
-        continue-on-error: true

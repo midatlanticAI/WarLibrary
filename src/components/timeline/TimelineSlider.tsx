@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import type { ConflictEvent } from "@/types";
-import { useI18n } from "@/i18n";
+import { useI18n, type Locale } from "@/i18n";
 
 interface TimelineSliderProps {
   events: ConflictEvent[];
@@ -23,7 +23,7 @@ export default function TimelineSlider({
   dateRange,
   onChange,
 }: TimelineSliderProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   // Determine the scale based on the selected range
   const scale = useMemo((): BucketScale => {
     const start = new Date(dateRange.start).getTime();
@@ -43,12 +43,12 @@ export default function TimelineSlider({
     const max = new Date(timestamps[timestamps.length - 1]).toISOString();
 
     // Build buckets for the FULL range (for the slider)
-    const allB = buildBuckets(events, min, max, "daily");
+    const allB = buildBuckets(events, min, max, "daily", locale);
     // Build buckets for the SELECTED range (for display)
-    const displayB = buildBuckets(events, dateRange.start, dateRange.end, scale);
+    const displayB = buildBuckets(events, dateRange.start, dateRange.end, scale, locale);
 
     return { minDate: min, maxDate: max, buckets: displayB, allBuckets: allB };
-  }, [events, dateRange, scale]);
+  }, [events, dateRange, scale, locale]);
 
   const maxCount = Math.max(...buckets.map((b) => b.count), 1);
 
@@ -79,7 +79,7 @@ export default function TimelineSlider({
   if (buckets.length === 0) return null;
 
   // Compute tick labels for the x-axis
-  const tickLabels = getTickLabels(buckets, scale);
+  const tickLabels = getTickLabels(buckets, scale, locale);
 
   const quickFilters = [
     { label: t("timeline.all"), start: minDate, end: maxDate },
@@ -117,9 +117,9 @@ export default function TimelineSlider({
       {/* Desktop: full timeline with histogram, slider, and filters */}
       <div className="hidden sm:flex sm:flex-col sm:gap-1.5 sm:p-3">
         <div className="flex items-center justify-between text-xs text-zinc-400">
-          <span>{formatDateFull(dateRange.start)}</span>
+          <span>{formatDateFull(dateRange.start, locale)}</span>
           <span className="font-semibold text-zinc-200">{t("timeline.timeline")}</span>
-          <span>{formatDateFull(dateRange.end)}</span>
+          <span>{formatDateFull(dateRange.end, locale)}</span>
         </div>
 
         {/* Scale indicator */}
@@ -211,11 +211,14 @@ export default function TimelineSlider({
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+// The label formatters below are plain module helpers, so the active locale is
+// threaded through as an argument rather than read from the i18n hook.
 function buildBuckets(
   events: ConflictEvent[],
   rangeStart: string,
   rangeEnd: string,
-  scale: BucketScale
+  scale: BucketScale,
+  locale: Locale
 ): Bucket[] {
   const startTs = new Date(rangeStart).getTime();
   const endTs = new Date(rangeEnd).getTime();
@@ -235,7 +238,7 @@ function buildBuckets(
   while (current <= endTs) {
     const bucketEnd = current + intervalMs;
     const key = new Date(current).toISOString();
-    const label = formatBucketLabel(current, scale);
+    const label = formatBucketLabel(current, scale, locale);
     const count = events.filter((e) => {
       const t = new Date(e.date).getTime();
       return t >= current && t < bucketEnd;
@@ -259,19 +262,23 @@ function alignToInterval(ts: number, scale: BucketScale): number {
   return d.getTime();
 }
 
-function formatBucketLabel(ts: number, scale: BucketScale): string {
+function formatBucketLabel(ts: number, scale: BucketScale, locale: Locale): string {
   const d = new Date(ts);
   if (scale === "30min") {
-    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+    return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
   }
   if (scale === "6h") {
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
-      " " + d.toLocaleTimeString("en-US", { hour: "numeric", hour12: true });
+    return d.toLocaleDateString(locale, { month: "short", day: "numeric" }) +
+      " " + d.toLocaleTimeString(locale, { hour: "numeric" });
   }
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return d.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
-function getTickLabels(buckets: Bucket[], scale: BucketScale): { label: string; position: number }[] {
+function getTickLabels(
+  buckets: Bucket[],
+  scale: BucketScale,
+  locale: Locale
+): { label: string; position: number }[] {
   if (buckets.length === 0) return [];
 
   // Show ~5-7 evenly spaced labels
@@ -285,12 +292,12 @@ function getTickLabels(buckets: Bucket[], scale: BucketScale): { label: string; 
     let label: string;
 
     if (scale === "30min") {
-      label = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+      label = d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
     } else if (scale === "6h") {
-      label = d.toLocaleDateString("en-US", { weekday: "short" }) +
-        " " + d.toLocaleTimeString("en-US", { hour: "numeric", hour12: true });
+      label = d.toLocaleDateString(locale, { weekday: "short" }) +
+        " " + d.toLocaleTimeString(locale, { hour: "numeric" });
     } else {
-      label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      label = d.toLocaleDateString(locale, { month: "short", day: "numeric" });
     }
 
     ticks.push({ label, position });
@@ -299,10 +306,10 @@ function getTickLabels(buckets: Bucket[], scale: BucketScale): { label: string; 
   return ticks;
 }
 
-function formatDateFull(iso: string): string {
+function formatDateFull(iso: string, locale: Locale): string {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
 }
 
 function isRangeMatch(
