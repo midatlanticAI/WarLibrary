@@ -1329,6 +1329,36 @@ function isSpatioTemporalDuplicate(candidate, existingEvents) {
 /**
  * Validate that an event object has the required schema fields.
  */
+/**
+ * True only if `value` is an ISO date whose calendar components survive a
+ * round-trip through Date.
+ *
+ * Checking the shape and then asking whether Date.parse returned NaN is not
+ * enough, because Date does not reject an impossible day — it rolls it over.
+ * "2026-02-30" parses cleanly to March 2nd and "2026-06-31" to July 1st, so a
+ * model that hallucinated a day that does not exist got a real, plausible,
+ * *wrong* date recorded against a real article. One such event is already in
+ * the dataset, dated a day after the month it belongs to. Reading the
+ * components back off the parsed Date catches every rollover, including the
+ * zero-month and zero-day cases the previous string check handled by hand.
+ */
+function isStrictCalendarDate(value) {
+  if (typeof value !== "string") return false;
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ]|$)/.exec(value);
+  if (!m) return false;
+  if (Number.isNaN(new Date(value).getTime())) return false;
+  const [, year, month, day] = m.map(Number);
+  // Validate the calendar date on its own rather than re-reading the full
+  // parsed value: a string with a time but no timezone is parsed as local, so
+  // its UTC day can legitimately differ from the day that was written.
+  const probe = new Date(Date.UTC(year, month - 1, day));
+  return (
+    probe.getUTCFullYear() === year &&
+    probe.getUTCMonth() + 1 === month &&
+    probe.getUTCDate() === day
+  );
+}
+
 function isValidEvent(event) {
   const requiredFields = [
     "date",
@@ -1343,13 +1373,7 @@ function isValidEvent(event) {
     if (event[field] === undefined || event[field] === null || event[field] === "")
       return false;
   }
-  // Date must look like a date string AND actually be one. The shape check
-  // alone accepts "2026-04-00" and "2026-13-01", which parse to Invalid Date.
-  if (!/^\d{4}-\d{2}-\d{2}/.test(event.date)) return false;
-  if (Number.isNaN(new Date(event.date).getTime())) return false;
-  // Reject a zero month or day outright — some runtimes are lenient about these.
-  const [, month, day] = event.date.slice(0, 10).split("-");
-  if (month === "00" || day === "00") return false;
+  if (!isStrictCalendarDate(event.date)) return false;
   // Range checks live here, not only in main()'s validation loop. Two events
   // dated 2026-10-01 reached production, and a validator that answers "valid"
   // for a date months in the future is only safe as long as every caller
@@ -2377,6 +2401,7 @@ module.exports = {
   geocodeFallback,
   haversineKm,
   isSpatiallyCompatible,
+  isStrictCalendarDate,
   isValidEvent,
   findDuplicateMatch,
   normalizeCountry,

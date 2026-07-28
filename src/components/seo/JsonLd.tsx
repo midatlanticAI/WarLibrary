@@ -1,3 +1,22 @@
+﻿/**
+ * Serialise structured data for a `<script type="application/ld+json">` body.
+ *
+ * `JSON.stringify` escapes what JSON needs escaped, but an HTML parser stops a
+ * script block at the first literal `</script` regardless of JSON quoting â€” so
+ * a string containing that sequence ends the script early and everything after
+ * it is parsed as markup. Escaping `<` as `<` is still valid JSON, decodes
+ * to the same string, and leaves the parser nothing to latch onto.
+ *
+ * Every object below is currently author-written constants, so nothing can
+ * carry that sequence today. This exists so that stays true when someone
+ * eventually interpolates an event description or a source name â€” which is the
+ * obvious next change to this file, and the point at which unescaped output
+ * becomes stored XSS sourced from a news article.
+ */
+export function ldJson(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 export default function JsonLd() {
   const siteUrl = "https://warlibrary.midatlantic.ai";
 
@@ -100,19 +119,19 @@ export default function JsonLd() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }}
+        dangerouslySetInnerHTML={{ __html: ldJson(organization) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(website) }}
+        dangerouslySetInnerHTML={{ __html: ldJson(website) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(dataset) }}
+        dangerouslySetInnerHTML={{ __html: ldJson(dataset) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(newsMedia) }}
+        dangerouslySetInnerHTML={{ __html: ldJson(newsMedia) }}
       />
     </>
   );

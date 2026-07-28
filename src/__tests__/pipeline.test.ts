@@ -259,6 +259,21 @@ describe("isValidEvent", () => {
     expect(pipeline.isValidEvent(makeEvent({ date: "2026-4-1" }))).toBe(false);
   });
 
+  // These are the dangerous ones. Date does not reject a day that cannot
+  // exist — it rolls forward past it — so "2026-06-31" parses cleanly to
+  // July 1st and a NaN check waves it through. The dataset already carries one
+  // such event, recorded against a real article on a day it did not happen.
+  it("rejects days that do not exist rather than letting Date roll them over", () => {
+    expect(pipeline.isValidEvent(makeEvent({ date: "2026-06-31T00:00:00Z" }))).toBe(false);
+    expect(pipeline.isValidEvent(makeEvent({ date: "2026-04-31T00:00:00Z" }))).toBe(false);
+    expect(pipeline.isValidEvent(makeEvent({ date: "2026-02-30T00:00:00Z" }))).toBe(false);
+  });
+
+  it("still accepts the last real day of a short month", () => {
+    expect(pipeline.isValidEvent(makeEvent({ date: "2026-04-30T00:00:00Z" }))).toBe(true);
+    expect(pipeline.isValidEvent(makeEvent({ date: "2026-06-30T00:00:00Z" }))).toBe(true);
+  });
+
   it("rejects null-island coordinates", () => {
     expect(pipeline.isValidEvent(makeEvent({ latitude: 0, longitude: 0 }))).toBe(false);
   });

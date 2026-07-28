@@ -59,7 +59,21 @@ line("=".repeat(74));
 // ---------------------------------------------------------------------------
 line("\n[1] DATE VALIDATION");
 
-const KNOWN_BAD_DATES = ["2026-04-00", "2026-02-00", "2026-03-00", "2026-10-01"];
+// Every one of these is a real string that reached the stored dataset, plus the
+// rollover cases in the second row. Those are the dangerous ones: Date does not
+// reject an impossible day, it silently advances past it, so "2026-06-31"
+// became a clean, plausible July 1st on a real article rather than failing
+// loudly. One such event is in the data today.
+const KNOWN_BAD_DATES = [
+  "2026-04-00",
+  "2026-02-00",
+  "2026-03-00",
+  "2026-10-01",
+  "2026-06-31",
+  "2026-02-30",
+  "2026-13-01",
+  "2026-04-31",
+];
 
 // Build a valid-shaped event around an arbitrary date so isValidEvent is
 // judging the date alone.
@@ -89,21 +103,36 @@ check(
 );
 
 // False-rejection rate on real dates.
+//
+// "Plausible" has to mean a date that genuinely exists, not one Date.parse was
+// willing to swallow. Using Date.parse here would reproduce the exact bug this
+// section tests for: it calls 2026-06-31 plausible, then reports the validator
+// as wrong for rejecting it. A stored date that fails a strict calendar check
+// is a data finding, not a code failure — the validator is doing its job.
 const realDates = [...new Set(live.map((e) => e.date))];
+const storedBadDates = realDates.filter((d) => !pipeline.isStrictCalendarDate(d));
 const wronglyRejected = realDates.filter((d) => {
+  if (!pipeline.isStrictCalendarDate(d)) return false;
   const t = new Date(d).getTime();
-  const plausible =
-    !Number.isNaN(t) &&
-    t >= new Date("2026-02-28T00:00:00Z").getTime() &&
-    t <= Date.now() + 48 * 3600 * 1000;
-  return plausible && !pipeline.isValidEvent(eventWithDate(d));
+  const inRange =
+    t >= new Date("2026-02-28T00:00:00Z").getTime() && t <= Date.now() + 48 * 3600 * 1000;
+  return inRange && !pipeline.isValidEvent(eventWithDate(d));
 });
 check(
-  "does not reject any plausible real date",
+  "does not reject any real date that actually exists on a calendar",
   wronglyRejected.length === 0,
   `${realDates.length} distinct real dates tested, ${wronglyRejected.length} wrongly rejected` +
     (wronglyRejected.length ? ` — e.g. ${wronglyRejected.slice(0, 3).join(", ")}` : "")
 );
+
+if (storedBadDates.length) {
+  const affected = live.filter((e) => storedBadDates.includes(e.date));
+  line(
+    `        NOTE: ${affected.length} stored event(s) carry a date that does not exist: ` +
+      `${storedBadDates.join(", ")}`
+  );
+  line("        These predate the validator fix. Repair is a data decision, not a code one.");
+}
 
 // ---------------------------------------------------------------------------
 // 2. Coordinate validation

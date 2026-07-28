@@ -1,0 +1,28 @@
+version: 2
+
+# Pinning the CI actions to commit SHAs closes a supply-chain hole but opens a
+# maintenance one: a pinned SHA never picks up upstream security fixes, and
+# nothing complains. Dependabot is what makes the pin sustainable — it opens a
+# PR when a pinned action moves, rewriting both the SHA and the trailing
+# version comment.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: deps
+    # Runtime dependencies get individual PRs so a risky bump is reviewed on
+    # its own. Dev tooling is grouped — a dozen separate @types PRs a week is
+    # how people learn to merge Dependabot without reading it.
+    groups:
+      dev-dependencies:
+        dependency-type: development
+    open-pull-requests-limit: 5
