@@ -36,7 +36,7 @@
     "mapbox-gl": "^3.19.1",
     "next": "^16.2.12",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react-dom": "19.2.8",
     "react-map-gl": "^8.1.0",
     "recharts": "^3.8.0",
     "web-push": "^3.6.7"
