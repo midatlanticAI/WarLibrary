@@ -241,15 +241,22 @@ MTok — roughly a quarter of Haiku 4.5's actual rate — and predated the advis
 entirely. Measure real runs from `pipeline-stats.json`, which now records
 executor and advisor tokens separately.
 
-## Prompt caching, and why it is not enabled
+## Prompt caching, and why it is not enabled (yet)
 
-Haiku 4.5's minimum cacheable prefix is **4,096 tokens**. The pipeline's stable
+Haiku 4.5's minimum cacheable prefix was **4,096 tokens**. The pipeline's stable
 instruction block is roughly 1,200–1,500, so a `cache_control` breakpoint there
-would silently never cache — no error, no savings, no signal. Caching the
-extraction prompt requires either deliberately growing the static preamble past
-4K or moving the executor to a model with a lower minimum. The advisor tool has
-its own separate `caching` option, worth enabling only for conversations
-expecting three or more advisor calls; this pipeline caps at two.
+would silently never cache — no error, no savings, no signal. That was the
+reason caching was left off.
+
+**Haiku 5.5 lowers the minimum to 512 tokens**, so the extraction prompt is now
+cacheable as-is. Note the tokenizer change: the same text is ~30% more tokens on
+5.5, so the ~1,200–1,500 figure is ~1,600–2,000 now, well above the floor. The
+run is only every 30 minutes, so a 5-minute entry would not survive between
+runs — caching only pays if the 20-article batch is split into several calls
+within one run, or with the 1-hour TTL at 2x write cost. Measure before
+enabling; at $0.10/MTok input the uncached cost is already small. The advisor
+tool has its own separate `caching` option, worth enabling only for
+conversations expecting three or more advisor calls; this pipeline caps at two.
 
 ## Roadmap
 
