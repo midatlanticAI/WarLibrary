@@ -8,15 +8,32 @@ type VisitState = "first-visit" | "return-visit" | "dismissed";
 
 interface ContentWarningProps {
   events: ConflictEvent[];
+  /**
+   * Whole-dataset aggregates from `/api/events?summary=1`. The landing screen
+   * no longer waits for the event list to print its numbers; the summary is a
+   * few KB and arrives first. `events` may still be empty or partial here.
+   */
+  summary?: { total: number; total_fatalities: number; countries: number } | null;
+  /**
+   * Whether the whole history is on the client. The return-visit briefing
+   * is computed from `events`, so it only auto-forwards once that is true;
+   * otherwise a reader whose last visit predates the recent window would be
+   * told nothing happened while thousands of newer events were still loading.
+   */
+  complete?: boolean;
   onDismiss: () => void;
 }
 
 const LAST_VISIT_KEY = "warlibrary_last_visit";
 const SKIP_BRIEFING_KEY = "warlibrary_skip_briefing";
+/** Set once per tab session: About/Sources/Support are routes now, and coming back must not replay the overlay. */
+const ENTERED_KEY = "warlibrary_entered";
 const CONFLICT_START = "2026-02-28";
 
 export default function ContentWarning({
   events,
+  summary = null,
+  complete = true,
   onDismiss,
 }: ContentWarningProps) {
   const { t } = useI18n();
@@ -24,6 +41,18 @@ export default function ContentWarning({
   const [lastVisit, setLastVisit] = useState<string | null>(null);
 
   useEffect(() => {
+    let entered = false;
+    try {
+      entered = sessionStorage.getItem(ENTERED_KEY) === "true";
+    } catch {}
+    if (entered) {
+      // Same tab, already entered once: straight through, and leave the
+      // last-visit stamp alone so the next real visit still gets a briefing.
+      setVisitState("dismissed");
+      onDismiss();
+      return;
+    }
+
     const stored = localStorage.getItem(LAST_VISIT_KEY);
     const skipBriefing = localStorage.getItem(SKIP_BRIEFING_KEY) === "true";
 
@@ -96,16 +125,20 @@ export default function ContentWarning({
     return bullets.slice(0, 5);
   }, [newEvents]);
 
-  // Auto-forward if no new events on return visit
+  // Auto-forward if no new events on return visit — once the full history is
+  // here, so "nothing new" is a statement about the data, not the download.
   useEffect(() => {
-    if (visitState === "return-visit" && newEvents.length === 0) {
+    if (visitState === "return-visit" && complete && newEvents.length === 0) {
       const timer = setTimeout(handleDismiss, 2000);
       return () => clearTimeout(timer);
     }
-  }, [visitState, newEvents.length]);
+  }, [visitState, complete, newEvents.length]);
 
   function handleDismiss() {
     localStorage.setItem(LAST_VISIT_KEY, new Date().toISOString());
+    try {
+      sessionStorage.setItem(ENTERED_KEY, "true");
+    } catch {}
     setVisitState("dismissed");
     onDismiss();
   }
@@ -116,8 +149,11 @@ export default function ContentWarning({
   }
 
   const safeEvents = events ?? [];
-  const totalKilled = safeEvents.reduce((sum, e) => sum + (e.fatalities || 0), 0);
-  const countries = new Set(safeEvents.map((e) => e.country)).size;
+  const loadedKilled = safeEvents.reduce((sum, e) => sum + (e.fatalities || 0), 0);
+  const loadedCountries = new Set(safeEvents.map((e) => e.country)).size;
+  const totalKilled = Math.max(loadedKilled, summary?.total_fatalities ?? 0);
+  const countries = Math.max(loadedCountries, summary?.countries ?? 0);
+  const eventCount = Math.max(safeEvents.length, summary?.total ?? 0);
   const startDate = new Date(CONFLICT_START);
   const daysOfConflict = Math.ceil(
     (Date.now() - startDate.getTime()) / 86400000
@@ -133,7 +169,7 @@ export default function ContentWarning({
             totalKilled={totalKilled}
             countries={countries}
             daysOfConflict={daysOfConflict}
-            eventCount={events.length}
+            eventCount={eventCount}
             onEnter={handleDismiss}
           />
         ) : (

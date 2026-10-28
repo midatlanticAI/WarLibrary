@@ -65,9 +65,8 @@ export const metadata: Metadata = {
   category: "News",
   classification: "Conflict Tracking / Open Source Intelligence",
   metadataBase: new URL(siteUrl),
-  alternates: {
-    canonical: "/",
-  },
+  // No site-wide canonical: it used to be "/" here, which told search engines
+  // every page on the site was a copy of the homepage. Each route sets its own.
   openGraph: {
     title: siteTitle,
     description: siteDescription,

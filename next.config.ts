@@ -13,6 +13,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      // Short, guessable URLs for the two in-app tabs and the old tab name.
+      { source: "/ask", destination: "/?tab=ask", permanent: true },
+      { source: "/donate", destination: "/support", permanent: true },
+      { source: "/feed", destination: "/?tab=feed", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {
@@ -26,6 +34,19 @@ const nextConfig: NextConfig = {
           { key: "Service-Worker-Allowed", value: "/" },
         ],
       },
+      // Every page renders per request because the root layout reads the
+      // locale cookie, and Next stamps dynamic pages `Cache-Control: private,
+      // no-store`. Cloudflare honours CDN-Cache-Control independently, so the
+      // public, locale-free pages are cached at the edge for a while anyway.
+      // The pipeline writes every 30 minutes; these windows match that.
+      ...["/event/:id", "/country", "/country/:slug", "/event/:id/opengraph-image", "/country/:slug/opengraph-image"].map((source) => ({
+        source,
+        headers: [{ key: "CDN-Cache-Control", value: "public, max-age=1800, stale-while-revalidate=3600" }],
+      })),
+      ...["/sitemap.xml", "/sitemaps/:name", "/feed.xml", "/llms.txt"].map((source) => ({
+        source,
+        headers: [{ key: "CDN-Cache-Control", value: "public, max-age=1800, stale-while-revalidate=3600" }],
+      })),
     ];
   },
 };

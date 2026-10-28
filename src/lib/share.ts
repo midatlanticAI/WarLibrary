@@ -23,7 +23,12 @@ export function formatEventShareText(
       : "";
   const source = event.source ? ` (${event.source})` : "";
 
-  return `${type.toUpperCase()}: ${location}${fatalities}\n${event.description}${source}\n${date}\n\n${SITE_URL}`;
+  return `${type.toUpperCase()}: ${location}${fatalities}\n${event.description}${source}\n${date}\n\n${eventUrl(event)}`;
+}
+
+/** The event's permalink — a real page, not the homepage. */
+export function eventUrl(event: Pick<ConflictEvent, "id">): string {
+  return `${SITE_URL}/event/${event.id}`;
 }
 
 export async function shareEvent(
@@ -36,7 +41,7 @@ export async function shareEvent(
     await navigator.share({
       title: `War Library — ${event.event_type.replace(/_/g, " ")}`,
       text,
-      url: SITE_URL,
+      url: eventUrl(event),
     });
   } else {
     await navigator.clipboard.writeText(text);

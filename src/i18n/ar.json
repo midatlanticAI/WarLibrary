@@ -4,7 +4,9 @@
     "live": "مباشر",
     "tracking": "تتبع",
     "loading": "جاري تحميل الأحداث...",
-    "updating": "جاري التحديث..."
+    "updating": "جاري التحديث...",
+    "loadingHistory": "جارٍ تحميل السجل الكامل…",
+    "historyFailed": "السجل الكامل غير متاح؛ يُعرض آخر 30 يومًا. تجري إعادة المحاولة…"
   },
   "nav": {
     "overview": "نظرة عامة",
@@ -165,7 +167,9 @@
     "pileHint": "استخدم قائمة الأحداث لقراءتها واحداً تلو الآخر.",
     "unavailableTitle": "الخريطة غير متاحة",
     "unavailableBody": "لم يُضبط أي رمز وصول لـ Mapbox في هذا النشر، لذا تتعذّر تهيئة الخريطة التفاعلية. لا تزال {{events}} قابلة للقراءة في قائمة الأحداث وللبحث عبر «اسأل».",
-    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN غير مضبوط"
+    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN غير مضبوط",
+    "showingCountry": "يُعرض فقط",
+    "clearCountry": "عرض كل الدول"
   },
   "ask": {
     "warLibraryAi": "الذكاء الاصطناعي لمكتبة الحرب",

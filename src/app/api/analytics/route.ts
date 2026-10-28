@@ -5,6 +5,7 @@ import {
   store,
   flushToDisk,
   trackAiQuestion,
+  emptyViews,
   VALID_PAGES,
   type PageName,
   type DailyEntry,
@@ -102,8 +103,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
   rateLimitMap.set(rateLimitKey, Date.now());
 
-  // Increment counters
-  store.totalViews++;
+  // Increment counters. The landing overlay is its own series: every visit
+  // now posts "landing" and then its first tab, and folding both into the
+  // total would double the historical view count with no change in traffic.
+  if (page !== "landing") store.totalViews++;
   store.pageViews[page]++;
 
   // Daily stats
@@ -111,7 +114,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!day) {
     day = {
       date: today,
-      views: { map: 0, feed: 0, ask: 0, donate: 0, sources: 0, about: 0 },
+      views: emptyViews(),
       visitors: new Set(),
       restoredUniqueCount: 0,
     };
@@ -153,7 +156,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   return NextResponse.json({
     data: {
       totalViews: store.totalViews,
-      todayViews: todayStats ? Object.values(todayStats.views).reduce((a, b) => a + b, 0) : 0,
+      todayViews: todayStats
+        ? Object.entries(todayStats.views).reduce((sum, [name, n]) => (name === "landing" ? sum : sum + n), 0)
+        : 0,
+      todayLanding: todayStats?.views.landing ?? 0,
       todayUnique: todayStats ? Math.max(todayStats.restoredUniqueCount, todayStats.visitors.size) : 0,
       aiQuestions: store.aiQuestions,
       botViews: store.botViews,

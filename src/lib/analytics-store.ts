@@ -7,10 +7,29 @@ import path from "path";
 // route can increment aiQuestions directly (no fire-and-forget HTTP call).
 // ---------------------------------------------------------------------------
 
-const VALID_PAGES = ["map", "feed", "ask", "donate", "sources", "about"] as const;
+// "landing" is the overlay every visitor sees before entering the app; it was
+// never counted, so the store under-reported visitors by roughly 25x against
+// the access log. "event" and "country" are the server-rendered pages.
+const VALID_PAGES = [
+  "landing",
+  "map",
+  "feed",
+  "ask",
+  "donate",
+  "sources",
+  "about",
+  "event",
+  "country",
+] as const;
 type PageName = (typeof VALID_PAGES)[number];
 export { VALID_PAGES };
 export type { PageName };
+
+export function emptyViews(): Record<PageName, number> {
+  const views = {} as Record<PageName, number>;
+  for (const page of VALID_PAGES) views[page] = 0;
+  return views;
+}
 
 const ANALYTICS_PATH = path.join(process.cwd(), "src", "data", "analytics.json");
 export { ANALYTICS_PATH };
@@ -48,7 +67,7 @@ export const store = {
   totalViews: 0,
   aiQuestions: 0,
   botViews: 0,
-  pageViews: { map: 0, feed: 0, ask: 0, donate: 0, sources: 0, about: 0 } as Record<PageName, number>,
+  pageViews: emptyViews(),
   dailyStats: new Map<string, MemoryDay>(),
   viewsSinceFlush: 0,
   lastFlush: Date.now(),
@@ -71,7 +90,9 @@ function loadFromDisk(): void {
       for (const day of data.daily) {
         store.dailyStats.set(day.date, {
           date: day.date,
-          views: { ...day.views },
+          // Days persisted before a page name existed lack its key; a bare
+          // spread would leave it undefined and the first `++` would make NaN.
+          views: { ...emptyViews(), ...day.views },
           visitors: new Set(day.visitorHashes || []),
           restoredUniqueCount: day.uniqueVisitors || 0,
         });

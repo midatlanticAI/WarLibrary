@@ -4,7 +4,9 @@
     "live": "Live",
     "tracking": "Tracking",
     "loading": "Loading events...",
-    "updating": "Updating..."
+    "updating": "Updating...",
+    "loadingHistory": "Loading full history…",
+    "historyFailed": "Full history unavailable; showing the last 30 days. Retrying…"
   },
   "nav": {
     "overview": "Overview",
@@ -165,7 +167,9 @@
     "pileHint": "Use the event feed to read them individually.",
     "unavailableTitle": "Map unavailable",
     "unavailableBody": "No Mapbox access token is configured for this deployment, so the interactive map can't load. All {{events}} are still readable in the event feed and searchable via Ask.",
-    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN is not set"
+    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN is not set",
+    "showingCountry": "Showing only",
+    "clearCountry": "Show all countries"
   },
   "ask": {
     "warLibraryAi": "War Library AI",

@@ -1,0 +1,36 @@
+# War Library
+
+> Open-source, real-time tracker of conflict events, starting with the 2026 US-Israel war on Iran (Operation Epic Fury). Every event is extracted from a named news report and carries its source link, a confidence score, a verification status and a location precision. Run by Mid-Atlantic AI LLC. Code: https://github.com/midatlanticAI/WarLibrary
+
+## What the data is
+
+- Events: dated, geocoded records with an event type (airstrike, missile_attack, drone_attack, battle, explosion, violence_against_civilians, strategic_development, protest), a description, actors, fatalities as reported, country and region.
+- Kinetic events (strikes, attacks, battles, violence against civilians) are the headline count and the map default. Strategic developments (statements, deployments, sanctions, diplomacy) are kept as a separate stream.
+- Verification: confirmed (multiple outlets), reported (one outlet), claimed (a party to the conflict), disputed, unconfirmed.
+- Location precision: exact, city, region, country (centroid). Country-centroid events are approximate placements.
+- Fatalities are per-event figures as each source reported them and are not de-duplicated across reports of the same incident.
+- Updated every 30 minutes by an automated pipeline; the pipeline's current stats are at /api/health.
+
+## Pages
+
+- Map and feed: https://warlibrary.midatlantic.ai/
+- Countries, ranked by activity: https://warlibrary.midatlantic.ai/country
+- One country: https://warlibrary.midatlantic.ai/country/{slug} (for example /country/iran, /country/yemen)
+- One event: https://warlibrary.midatlantic.ai/event/{id}
+- Sources and verification method: https://warlibrary.midatlantic.ai/sources
+- About: https://warlibrary.midatlantic.ai/about
+- RSS of latest verified kinetic events: https://warlibrary.midatlantic.ai/feed.xml
+- Sitemap index: https://warlibrary.midatlantic.ai/sitemap.xml
+
+## API (JSON, no key, MIT-licensed data)
+
+- Everything: https://warlibrary.midatlantic.ai/api/events (large; about 30 MB uncompressed; supports ETag / If-None-Match)
+- Aggregates only: https://warlibrary.midatlantic.ai/api/events?summary=1
+- Date window: https://warlibrary.midatlantic.ai/api/events?from=YYYY-MM-DD&to=YYYY-MM-DD
+- Paging: &limit=N&offset=M ; narrative fields dropped: &fields=lite
+- One event with nearby events: https://warlibrary.midatlantic.ai/api/events/{id}
+- Pipeline health and last-run stats: https://warlibrary.midatlantic.ai/api/health
+
+## Citing
+
+Cite the event page URL and the source it links to. Treat figures as "as reported" and check the verification status and location precision before relying on a number or a coordinate.

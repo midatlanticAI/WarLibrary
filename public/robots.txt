@@ -1,31 +1,14 @@
+# One group for every crawler. Per-bot groups used to exist for the AI
+# crawlers; under RFC 9309 a bot that matches a specific group reads only
+# that group, and those groups carried no Disallow lines, so they quietly
+# lifted the admin and analytics exclusions for exactly those bots. Nothing
+# here forbids AI crawlers: /api/events, /api/health and /llms.txt are open.
 User-agent: *
 Allow: /
 Disallow: /api/admin
 Disallow: /api/stats
+Disallow: /api/analytics
+Disallow: /api/push
 Disallow: /admin
-
-# Allow AI crawlers to access public API for dataset indexing
-User-agent: GPTBot
-Allow: /api/events
-Allow: /api/health
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /api/events
-Allow: /api/health
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /api/events
-Allow: /api/health
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /api/events
-Allow: /api/health
-Allow: /
-
-User-agent: Googlebot
-Allow: /
 
 Sitemap: https://warlibrary.midatlantic.ai/sitemap.xml

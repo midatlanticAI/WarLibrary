@@ -11,9 +11,20 @@ type StatKey = "killed" | "events" | "countries" | "airstrikes" | "missiles" | "
 
 interface OverviewBannerProps {
   events: ConflictEvent[];
+  /**
+   * Whole-dataset aggregates from `/api/events?summary=1`. While the client is
+   * still streaming in the full history, `events` holds only the recent window
+   * and these keep the headline numbers honest.
+   */
+  summary?: {
+    total: number;
+    total_fatalities: number;
+    countries: number;
+    by_type: Record<string, number>;
+  } | null;
 }
 
-export default function OverviewBanner({ events }: OverviewBannerProps) {
+export default function OverviewBanner({ events, summary = null }: OverviewBannerProps) {
   const { t, locale } = useI18n();
   const [collapsed, setCollapsed] = useState(true);
   const [activeModal, setActiveModal] = useState<StatKey | null>(null);
@@ -55,12 +66,24 @@ export default function OverviewBanner({ events }: OverviewBannerProps) {
       (e) => e.event_type === "violence_against_civilians" || (e.civilian_impact && e.civilian_impact.length > 0)
     );
 
+    // Prefer the server's whole-dataset figures when they are larger than what
+    // is loaded so far: the client may still be holding only the recent window.
+    const totalEvents = Math.max(events.length, summary?.total ?? 0);
+    const useSummary = summary !== null && summary.total > events.length;
     return {
-      totalKilled, summedFatalities, reportedTotal, countries, topCountries, daysOfConflict,
-      missiles, airstrikes, drones, battles, strategicDevs,
-      recentEvents, totalEvents: events.length, latestEvent, civilianImpactEvents,
+      totalKilled: useSummary ? Math.max(totalKilled, summary.total_fatalities) : totalKilled,
+      summedFatalities: useSummary ? Math.max(summedFatalities, summary.total_fatalities) : summedFatalities,
+      reportedTotal,
+      countries: useSummary ? Math.max(countries, summary.countries) : countries,
+      topCountries, daysOfConflict,
+      missiles: useSummary ? (summary.by_type.missile_attack ?? missiles) : missiles,
+      airstrikes: useSummary ? (summary.by_type.airstrike ?? airstrikes) : airstrikes,
+      drones: useSummary ? (summary.by_type.drone_attack ?? drones) : drones,
+      battles: useSummary ? (summary.by_type.battle ?? battles) : battles,
+      strategicDevs: useSummary ? (summary.by_type.strategic_development ?? strategicDevs) : strategicDevs,
+      recentEvents, totalEvents, latestEvent, civilianImpactEvents,
     };
-  }, [events]);
+  }, [events, summary]);
 
   const openModal = useCallback((key: StatKey) => setActiveModal(key), []);
   const closeModal = useCallback(() => setActiveModal(null), []);

@@ -49,6 +49,7 @@ echo "[2/5] Packaging..."
 tar \
   --exclude='node_modules' \
   --exclude='.next' \
+  --exclude='.cache' \
   --exclude='.git' \
   --exclude='.env' \
   --exclude='.env.*' \

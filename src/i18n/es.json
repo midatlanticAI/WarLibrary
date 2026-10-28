@@ -4,7 +4,9 @@
     "live": "En vivo",
     "tracking": "Rastreando",
     "loading": "Cargando eventos...",
-    "updating": "Actualizando..."
+    "updating": "Actualizando...",
+    "loadingHistory": "Cargando el historial completo…",
+    "historyFailed": "Historial completo no disponible; se muestran los últimos 30 días. Reintentando…"
   },
   "nav": {
     "overview": "Resumen",
@@ -165,7 +167,9 @@
     "pileHint": "Usa el listado de eventos para leerlos uno por uno.",
     "unavailableTitle": "Mapa no disponible",
     "unavailableBody": "No hay ningún token de acceso de Mapbox configurado en este despliegue, así que el mapa interactivo no puede cargarse. Todos los {{events}} siguen siendo legibles en el listado de eventos y se pueden consultar con Preguntar.",
-    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN no está configurado"
+    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN no está configurado",
+    "showingCountry": "Mostrando solo",
+    "clearCountry": "Mostrar todos los países"
   },
   "ask": {
     "warLibraryAi": "War Library IA",

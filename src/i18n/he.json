@@ -4,7 +4,9 @@
     "live": "שידור חי",
     "tracking": "מעקב",
     "loading": "טוען אירועים...",
-    "updating": "מעדכן..."
+    "updating": "מעדכן...",
+    "loadingHistory": "טוען את ההיסטוריה המלאה…",
+    "historyFailed": "ההיסטוריה המלאה אינה זמינה; מוצגים 30 הימים האחרונים. מנסה שוב…"
   },
   "nav": {
     "overview": "סקירה",
@@ -165,7 +167,9 @@
     "pileHint": "השתמשו ברשימת האירועים כדי לקרוא אותם אחד-אחד.",
     "unavailableTitle": "המפה אינה זמינה",
     "unavailableBody": "לא הוגדר אסימון גישה של Mapbox בפריסה הזו, ולכן המפה האינטראקטיבית אינה נטענת. כל {{events}} עדיין ניתנים לקריאה ברשימת האירועים ולחיפוש דרך ״שאל״.",
-    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN אינו מוגדר"
+    "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN אינו מוגדר",
+    "showingCountry": "מוצג רק",
+    "clearCountry": "הצג את כל המדינות"
   },
   "ask": {
     "warLibraryAi": "AI של ספריית המלחמה",
