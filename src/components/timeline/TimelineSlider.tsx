@@ -38,7 +38,16 @@ export default function TimelineSlider({
     if (events.length === 0)
       return { minDate: "", maxDate: "", buckets: [] as Bucket[], allBuckets: [] as Bucket[] };
 
-    const timestamps = events.map((e) => new Date(e.date).getTime()).sort((a, b) => a - b);
+    // The live dataset carries a handful of calendar-invalid dates
+    // ("2026-04-00"). Their timestamp is NaN; a NaN-tainted sort is
+    // unordered and `new Date(NaN).toISOString()` throws "Invalid time
+    // value", which unmounted the entire map view. Drop them here.
+    const timestamps = events
+      .map((e) => new Date(e.date).getTime())
+      .filter((t) => !Number.isNaN(t))
+      .sort((a, b) => a - b);
+    if (timestamps.length === 0)
+      return { minDate: "", maxDate: "", buckets: [] as Bucket[], allBuckets: [] as Bucket[] };
     const min = new Date(timestamps[0]).toISOString();
     const max = new Date(timestamps[timestamps.length - 1]).toISOString();
 
