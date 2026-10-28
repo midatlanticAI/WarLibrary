@@ -38,7 +38,7 @@ echo "  ✓ Tests and build passed"
 #     makes cron on the droplet report "auto-update.sh: not found" and silently
 #     stops the pipeline and the nightly backup (happened 2026-10-28).
 #     .gitattributes pins *.sh to LF; this catches a checkout that predates it.
-if grep -l $'' deploy.sh scripts/*.sh 2>/dev/null; then
+if grep -l $'\r' deploy.sh scripts/*.sh 2>/dev/null; then
   echo "  ✗ ABORT: the files above have CRLF line endings. Re-checkout them:"
   echo "    rm deploy.sh scripts/*.sh && git checkout -- deploy.sh scripts/"
   exit 1
@@ -66,7 +66,8 @@ tar \
   --exclude='src/data/dedup-log.json' \
   --exclude='src/data/quarantine-duplicates.json' \
   --exclude='src/data/*.backup-*.json' \
-  --owner=0 --group=0 \n  -czf "$ARCHIVE" .
+  --owner=0 --group=0 \
+  -czf "$ARCHIVE" .
 echo "  ✓ Packaged"
 
 # 2b. Fail loudly if any server-owned runtime file slipped into the archive.
