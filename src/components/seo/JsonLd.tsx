@@ -30,6 +30,11 @@ export default function JsonLd() {
       "An open-source, real-time conflict tracker providing verified, source-attributed reporting on the 2026 US-Israel war on Iran.",
     sameAs: ["https://github.com/midatlanticAI/WarLibrary"],
     foundingDate: "2026-02-28",
+    parentOrganization: {
+      "@type": "Organization",
+      name: "Mid-Atlantic AI LLC",
+      url: "https://midatlantic.ai",
+    },
   };
 
   const website = {
