@@ -113,10 +113,6 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={localeDir(locale)} className="dark" suppressHydrationWarning>
       <head>
-        <link
-          href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css"
-          rel="stylesheet"
-        />
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />

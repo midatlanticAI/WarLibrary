@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth";
-import fs from "fs";
-import path from "path";
-
-const DATA_DIR = path.join(process.cwd(), "src", "data");
-
-function readEventCount(filePath: string): number {
-  try {
-    if (!fs.existsSync(filePath)) return 0;
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const parsed: { events?: unknown[] } = JSON.parse(raw);
-    return Array.isArray(parsed.events) ? parsed.events.length : 0;
-  } catch (err) {
-    console.error(`[stats] Failed to read ${filePath}:`, err);
-    return 0;
-  }
-}
+import { readAllEventCounts } from "@/lib/event-counts";
 
 // Simple in-memory page view counter (resets on restart, but that's fine)
 const pageViews = {
@@ -50,18 +35,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const seedCount = readEventCount(path.join(DATA_DIR, "events.json"));
-  const expandedCount = readEventCount(path.join(DATA_DIR, "events_expanded.json"));
-  const latestCount = readEventCount(path.join(DATA_DIR, "events_latest.json"));
+  const counts = readAllEventCounts();
 
   return NextResponse.json({
     data: {
-      events: {
-        total: seedCount + expandedCount + latestCount,
-        seed: seedCount,
-        expanded: expandedCount,
-        latest: latestCount,
-      },
+      events: counts,
       traffic: {
         total_views: pageViews.total,
         today_views: pageViews.today,

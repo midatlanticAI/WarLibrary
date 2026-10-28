@@ -18,7 +18,7 @@ export default function PWAProvider() {
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-    navigator.serviceWorker.register("/sw.js?v=2").catch((err) => {
+    navigator.serviceWorker.register("/sw.js?v=5").catch((err) => {
       console.warn("SW registration failed:", err);
     });
 
