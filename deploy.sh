@@ -34,6 +34,17 @@ echo "  ✓ Tests and build passed"
 #    runtime data — these files live only on the droplet and are mutated by the
 #    pipeline and the app. Shipping local copies would overwrite production data.
 #    Keep this list in sync with the "runtime data" block in .gitignore.)
+# 1b. Refuse to ship shell scripts with Windows line endings. A CRLF shebang
+#     makes cron on the droplet report "auto-update.sh: not found" and silently
+#     stops the pipeline and the nightly backup (happened 2026-10-28).
+#     .gitattributes pins *.sh to LF; this catches a checkout that predates it.
+if grep -l $'' deploy.sh scripts/*.sh 2>/dev/null; then
+  echo "  ✗ ABORT: the files above have CRLF line endings. Re-checkout them:"
+  echo "    rm deploy.sh scripts/*.sh && git checkout -- deploy.sh scripts/"
+  exit 1
+fi
+echo "  ✓ Shell scripts are LF"
+
 echo "[2/5] Packaging..."
 tar \
   --exclude='node_modules' \
@@ -55,7 +66,7 @@ tar \
   --exclude='src/data/dedup-log.json' \
   --exclude='src/data/quarantine-duplicates.json' \
   --exclude='src/data/*.backup-*.json' \
-  -czf "$ARCHIVE" .
+  --owner=0 --group=0 \n  -czf "$ARCHIVE" .
 echo "  ✓ Packaged"
 
 # 2b. Fail loudly if any server-owned runtime file slipped into the archive.
