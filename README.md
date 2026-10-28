@@ -11,8 +11,8 @@ A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on I
 ## What It Does
 
 - **Interactive conflict map** — Mapbox-powered map with event markers, country filtering, and a timeline slider to scrub through events by date
-- **~23,000 events on the live instance**, sourced from Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Reuters, and 20+ other outlets. This repository ships **112 seed events**; the rest live only on the server, in a gitignored file the pipeline appends to. See [Data](#data) for what that means for counts.
-- **Automated news pipeline** — Ingests articles from RSS feeds and NewsData.io every 30 minutes and extracts structured events with Claude Haiku 4.5, using [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs) so the response shape is guaranteed rather than parsed hopefully. A higher-capability [advisor model](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) is consulted mid-extraction on the judgement calls — whether a casualty figure is a per-event count or a cumulative total, whether several articles describe one incident
+- **~37,500 events on the live instance (2026-10-28)**, sourced from Al Jazeera, BBC, NYT, France 24, The Guardian, DW News, CNN, Reuters, and 20+ other outlets. This repository ships **112 seed events**; the rest live only on the server, in a gitignored file the pipeline appends to. See [Data](#data) for what that means for counts.
+- **Automated news pipeline** — Ingests articles from RSS feeds and NewsData.io every 30 minutes and extracts structured events with Claude Haiku 5.5, using [structured outputs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs) so the response shape is guaranteed rather than parsed hopefully. A higher-capability [advisor model](https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool) is consulted mid-extraction on the judgement calls — whether a casualty figure is a per-event count or a cumulative total, whether several articles describe one incident
 - **AI-powered Q&A** — Ask questions about the conflict and get sourced, guardrailed answers
 - **Admin dashboard** — Pipeline monitoring, source health, analytics, controls (installable as separate mobile app)
 - **Notification system** — In-app banners and browser push notifications for breaking events
@@ -27,7 +27,7 @@ A neutral, factual, open-source conflict tracker for the 2026 US-Israel war on I
 | Framework | Next.js 16.2 / React 19 / TypeScript (strict) |
 | Styling | Tailwind CSS 4 |
 | Map | Mapbox GL JS via react-map-gl v8, with native clustering |
-| AI | Claude Haiku 4.5 (extraction + chat) with a Claude Opus 4.8 advisor, via @anthropic-ai/sdk |
+| AI | Claude Haiku 5.5 (extraction + chat) with an optional Claude Opus 4.8 advisor, via @anthropic-ai/sdk |
 | News Ingestion | NewsData.io API, Google News RSS, outlet RSS feeds |
 | Article Extraction | Mozilla Readability + jsdom |
 | Languages | English, Spanish, Arabic, Hebrew (RTL) |
@@ -118,7 +118,7 @@ The automated pipeline runs every 30 minutes and:
 
 1. Fetches articles from NewsData.io API (25+), Google News RSS (3 queries), and 6 outlet RSS feeds (Al Jazeera, BBC, NYT, Guardian, France 24, DW)
 2. Resolves Google News redirect URLs and extracts full article text via Mozilla Readability
-3. Sends top 20 articles to Claude Haiku 4.5 for structured event extraction, with a Claude Opus 4.8 advisor available for ambiguous batches
+3. Sends top 20 articles to Claude Haiku 5.5 for structured event extraction, with a Claude Opus 4.8 advisor available for ambiguous batches (`ADVISOR_ENABLED`, off by default in production while its value on Haiku 5.5 is measured)
 4. Validates events: schema checks, date range (post-Feb 28, nothing unparseable, nothing in the future), coordinate sanity, fatality sanity (rejects cumulative totals, quarantines implausible counts)
 5. Deduplicates against existing events via description similarity plus a 50 km spatial guard, so two strikes in different cities on the same day stay separate
 6. Appends new events to `events_latest.json` and sends in-app notification
@@ -127,7 +127,7 @@ The automated pipeline runs every 30 minutes and:
 
 **Prompt injection**: article bodies are untrusted web text. Extraction rules live in the `system` parameter, never concatenated with article content, and every extracted event must cite a URL this run actually fetched — an event referencing anything else is discarded.
 
-**Cost**: Haiku 4.5 is $1/$5 per million input/output tokens; the Opus 4.8 advisor is $5/$25 and is billed separately from top-level usage (it appears in `usage.iterations[]`, which the pipeline sums into its own stats). Budget by measuring your own runs rather than trusting a figure here.
+**Cost**: Haiku 5.5 is $0.10/$0.50 per million input/output tokens for prompts up to 100K tokens ($0.50/$2.50 beyond); the Opus 4.8 advisor is $5/$25 and is billed separately from top-level usage (it appears in `usage.iterations[]`, which the pipeline sums into its own stats). Budget by measuring your own runs rather than trusting a figure here.
 
 ## Humanitarian Data
 
@@ -186,7 +186,7 @@ The Ask AI feature uses a 3-tier cost model:
 
 1. **Precomputed** — 12 suggested questions with instant, zero-cost answers
 2. **Cached** — (planned)
-3. **Live Claude** — Haiku 4.5 (~$0.001/question), rate limited to 10/hr per IP
+3. **Live Claude** — Haiku 5.5 (well under $0.001/question), rate limited to 10/hr per IP
 
 All responses are guardrailed: jailbreak detection, off-topic rejection, weapon content blocking, output validation, and a daily token spend cap (`MAX_DAILY_TOKENS` in `src/app/api/chat/route.ts` — check the constant rather than trusting a number here; it is process-local and resets on restart).
 

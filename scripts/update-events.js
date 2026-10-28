@@ -85,7 +85,12 @@ const client = new Anthropic({
   maxRetries: 1,
 });
 
-const MODEL = "claude-haiku-4-5-20251001";
+// Claude Haiku 5.5: $0.10/$0.50 per MTok (10x cheaper than Haiku 4.5), 1M
+// context, adaptive thinking on by default. The response is read by block type
+// below, so a leading `thinking` block is harmless. Haiku 5.5 is a valid
+// executor for the Opus 4.8 advisor; whether the advisor is still worth its
+// cost on this model is what ADVISOR_ENABLED=false runs are for.
+const MODEL = "claude-haiku-5-5";
 
 // --- Advisor tool ----------------------------------------------------------
 // Haiku does the bulk extraction cheaply; a stronger advisor model is consulted

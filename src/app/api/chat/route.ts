@@ -402,7 +402,7 @@ const spendTracker = {
   totalTokens: 0,
   resetAt: Date.now() + 86400_000,
 };
-const MAX_DAILY_TOKENS = 5_000_000; // ~$1.25 input + $6.25 output on Haiku — enough for virality
+const MAX_DAILY_TOKENS = 5_000_000; // ≤ $0.50 input + $2.50 output on Haiku 5.5 — enough for virality
 
 function checkSpendLimit(): boolean {
   if (Date.now() > spendTracker.resetAt) {
@@ -513,8 +513,11 @@ export async function POST(req: NextRequest) {
     const systemPrompt = (langPrompt || basePrompt) + eventContext;
 
     const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: "claude-haiku-5-5",
+      // Thinking is on by default on Haiku 5.5 and counts toward max_tokens;
+      // chat answers are short, so low effort keeps latency and spend down.
       max_tokens: 4096,
+      output_config: { effort: "low" },
       system: systemPrompt,
       messages: [{ role: "user", content: question }],
     });
@@ -525,10 +528,10 @@ export async function POST(req: NextRequest) {
       message.usage?.output_tokens || 0
     );
 
-    const answer =
-      message.content[0].type === "text"
-        ? message.content[0].text
-        : "Unable to generate a response.";
+    // Read the text block by type, not by position: on Haiku 5.5 the response
+    // can begin with a `thinking` block, so content[0] is not always the answer.
+    const textBlock = message.content.find((block) => block.type === "text");
+    const answer = textBlock ? textBlock.text : "Unable to generate a response.";
 
     // Output guardrail — check if Claude went off the rails
     const answerLower = answer.toLowerCase();
@@ -605,7 +608,7 @@ export async function POST(req: NextRequest) {
       data: {
         answer,
         sources: sources.length > 0 ? sources : ["War Library database"],
-        model: "haiku-4.5",
+        model: "haiku-5.5",
         remaining,
       },
     });

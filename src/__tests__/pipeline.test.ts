@@ -468,26 +468,43 @@ describe("EVENT_SCHEMA", () => {
 
 describe("advisor configuration", () => {
   it("pairs a Haiku executor with a valid advisor model", () => {
-    // Per the compatibility table, a Haiku 4.5 executor may use any of
-    // Fable 5 / Mythos 5 / Opus 5 / 4.8 / 4.7 / 4.6 / Sonnet 4.6 as advisor.
+    // Per the compatibility table, a Haiku 5.5 executor may use any of
+    // Mythos 5.1 / Fable 5.1 / Mythos 5 / Fable 5 / Opus 5.5 / Opus 5 / Opus 4.8 /
+    // Opus 4.7 / Sonnet 5.5 / Sonnet 5 / Haiku 5.5 as advisor. Opus 4.6 and
+    // Sonnet 4.6, which a Haiku 4.5 executor accepted, are no longer valid.
     const validAdvisors = [
-      "claude-fable-5",
+      "claude-mythos-5-1",
+      "claude-fable-5-1",
       "claude-mythos-5",
+      "claude-fable-5",
+      "claude-opus-5-5",
       "claude-opus-5",
       "claude-opus-4-8",
       "claude-opus-4-7",
-      "claude-opus-4-6",
-      "claude-sonnet-4-6",
+      "claude-sonnet-5-5",
+      "claude-sonnet-5",
+      "claude-haiku-5-5",
     ];
-    expect(pipeline.MODEL).toContain("claude-haiku-4-5");
+    expect(pipeline.MODEL).toBe("claude-haiku-5-5");
     expect(validAdvisors).toContain(pipeline.ADVISOR_MODEL);
   });
 
   it("uses an advisor that returns readable advice", () => {
-    // Opus 5, Fable 5 and Mythos 5 return `advisor_redacted_result` — an
+    // Every Claude 5-generation advisor (Opus 5.5 / 5, Sonnet 5.5, Haiku 5.5,
+    // Fable 5.1 / 5, Mythos 5.1 / 5) returns `advisor_redacted_result` — an
     // encrypted blob the client cannot read. This dataset publishes provenance,
-    // so the advice that shaped an event has to be loggable.
-    const encryptedAdvisors = ["claude-opus-5", "claude-fable-5", "claude-mythos-5"];
+    // so the advice that shaped an event has to be loggable. Opus 4.8 is the
+    // most capable advisor that still returns plaintext `advisor_result`.
+    const encryptedAdvisors = [
+      "claude-opus-5-5",
+      "claude-opus-5",
+      "claude-sonnet-5-5",
+      "claude-haiku-5-5",
+      "claude-fable-5-1",
+      "claude-fable-5",
+      "claude-mythos-5-1",
+      "claude-mythos-5",
+    ];
     expect(encryptedAdvisors).not.toContain(pipeline.ADVISOR_MODEL);
   });
 

@@ -33,7 +33,7 @@
 │  │  └── / (main app — map, feed, ask, donate, etc.)    │     │
 │  │                                                      │     │
 │  │  API Routes (server-side):                           │     │
-│  │  ├── /api/chat          → Claude Haiku 4.5          │     │
+│  │  ├── /api/chat          → Claude Haiku 5.5          │     │
 │  │  ├── /api/admin         → Admin auth (httpOnly)     │     │
 │  │  ├── /api/events        → Event data API            │     │
 │  │  ├── /api/notifications → Push notifications        │     │
@@ -102,7 +102,7 @@ User question
   ├─ Input guardrails pass?
   │   NO → Return filtered response
   │   YES ↓
-  ├─ Claude Haiku 4.5 API call
+  ├─ Claude Haiku 5.5 API call
   │   (system prompt + events database as context)
   │   (~$0.001 per question)
   │       │
@@ -231,7 +231,7 @@ Subsequent requests:
 |-----------|------|-------|
 | DigitalOcean droplet | $18/mo | 2GB/2vCPU |
 | Mapbox | Free tier | 50K map loads/mo |
-| Claude Haiku 4.5 | $1 / $5 per MTok | Chat + extraction executor |
+| Claude Haiku 5.5 | $0.10 / $0.50 per MTok (≤100K-token prompts) | Chat + extraction executor |
 | Claude Opus 4.8 | $5 / $25 per MTok | Extraction advisor. Billed separately — advisor tokens appear in `usage.iterations[]`, not in top-level `usage` |
 | Domain (midatlantic.ai) | ~$15/yr | GoDaddy |
 | SSL | Free | Let's Encrypt via Caddy |

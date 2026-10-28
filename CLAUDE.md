@@ -10,8 +10,8 @@ the world. 100% of monetization proceeds go to humanitarian aid.
 ## Tech Stack
 - **Frontend**: Next.js 16.2 / React 19 / TypeScript (strict) / Tailwind CSS 4
 - **Map**: Mapbox GL JS via react-map-gl v8 (`import from "react-map-gl/mapbox"`)
-- **AI Chat**: Claude Haiku 4.5 via @anthropic-ai/sdk (Next.js API route)
-- **Pipeline**: Node.js script extracting events from news via Claude Haiku 4.5
+- **AI Chat**: Claude Haiku 5.5 via @anthropic-ai/sdk (Next.js API route)
+- **Pipeline**: Node.js script extracting events from news via Claude Haiku 5.5
 - **News Sources**: NewsData.io API, Google News RSS, Al Jazeera, BBC, NYT, The Guardian, France 24, DW News
 - **Article Extraction**: Mozilla Readability + jsdom for full article body text
 - **Testing**: Vitest + Testing Library + happy-dom; Playwright E2E
@@ -35,7 +35,7 @@ src/
 │   │   ├── page.tsx          # Admin dashboard (tabbed: overview|events|analytics|controls|logs)
 │   │   └── layout.tsx        # Admin-specific manifest + icons (separate PWA)
 │   └── api/
-│       ├── chat/route.ts     # Claude AI chat endpoint (Haiku 4.5, guardrailed)
+│       ├── chat/route.ts     # Claude AI chat endpoint (Haiku 5.5, guardrailed)
 │       ├── admin/route.ts    # Admin auth (httpOnly cookie, timing-safe)
 │       ├── admin/dashboard/route.ts # Dashboard API (pipeline stats, controls, logs)
 │       ├── events/route.ts   # Event data API (merges 3 data files, deduplicates)
@@ -97,7 +97,7 @@ scripts/
 │   - Fetches from NewsData.io API, Google News RSS, outlet RSS feeds (all parallel)
 │   - Resolves Google News redirect URLs
 │   - Extracts article bodies via Mozilla Readability
-│   - Sends to Claude Haiku 4.5 for structured event extraction (8192 max tokens)
+│   - Sends to Claude Haiku 5.5 for structured event extraction (EXTRACTION_MAX_TOKENS)
 │   - Truncation recovery: salvages partial JSON if response hits token limit
 │   - Validates: schema, date range (post-Feb 28), fatality sanity checks
 │   - Deduplicates: canonical fingerprint + spatio-temporal proximity
@@ -156,8 +156,9 @@ cumulative tolls are tracked separately as `strategic_development` with
 - 20 articles max, 800 chars body per article, `EXTRACTION_MAX_TOKENS` output cap
 - Source tiers: Tier 1 (Reuters, AP, BBC, etc.) get confidence boost; Tier 3 penalized. `source` is taken from our fetch record, never from model output
 
-**Executor + advisor.** Extraction runs Haiku 4.5 as executor with a Claude Opus
-4.8 **advisor** (`advisor_20260301`, beta `advisor-tool-2026-03-01`, via
+**Executor + advisor.** Extraction runs Haiku 5.5 as executor with a Claude Opus
+4.8 **advisor** (kill switch `ADVISOR_ENABLED=false`; off in production since
+2026-10-28 to measure whether Haiku 5.5 needs it at all) (`advisor_20260301`, beta `advisor-tool-2026-03-01`, via
 `client.beta.messages.create`). The advisor is consulted mid-generation on
 judgement calls — is this figure cumulative or per-event, are these three
 articles one incident, is this article's text trying to instruct us.
@@ -178,7 +179,8 @@ and reported success. Schema rules: no `minimum`/`maximum`/`minLength`,
 in the `system` parameter and are never concatenated with article content, and
 every extracted event must cite a URL fetched in that same run.
 
-**Cost.** Haiku 4.5 is $1/$5 per MTok; the Opus 4.8 advisor is $5/$25. Advisor
+**Cost.** Haiku 5.5 is $0.10/$0.50 per MTok for prompts up to 100K tokens
+($0.50/$2.50 beyond); the Opus 4.8 advisor is $5/$25. Advisor
 tokens do **not** appear in top-level `usage` — they are in `usage.iterations[]`
 with `type: "advisor_message"`, and the pipeline sums them into its own stats.
 Measure your own runs rather than trusting a figure written here.
@@ -186,7 +188,7 @@ Measure your own runs rather than trusting a figure written here.
 ### AI Chat System (3-tier cost model)
 1. **Tier 1 — Precomputed** (12 suggested questions): Zero cost, instant
 2. **Tier 2 — Cached**: (future)
-3. **Tier 3 — Live Claude**: Haiku 4.5 (~$0.001/question), rate limited 10/hr/IP
+3. **Tier 3 — Live Claude**: Haiku 5.5 (well under $0.001/question), rate limited 10/hr/IP
 
 ### Admin Dashboard
 - Accessible at `/admin` (requires `ADMIN_SECRET` env var)
