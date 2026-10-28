@@ -52,7 +52,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.3",
-    "happy-dom": "^20.14.6",
+    "happy-dom": "^21.0.4",
     "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
     "typescript": "5.9.3",
