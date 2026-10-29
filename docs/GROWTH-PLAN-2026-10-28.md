@@ -306,3 +306,19 @@ Sources checked 2026-10-28: Google Search Central spam policies
 (scaled content abuse), Google Discover documentation, Google News
 sitemap documentation, Next.js self-hosting guide (updated 2026-10-15),
 Caddy access log and `analytics.json` on the droplet.
+
+## 10. Status log
+
+- **2026-10-29 02:10 UTC — Phase A live.** Deployed 645ba74 + 2cc049a.
+  The first deploy took the site down for about an hour: deploy.sh untars
+  over the old tree and never removed the deleted `src/app/sitemap.ts`, so
+  `next build` refused ("Conflicting route and metadata at /sitemap.xml")
+  and the error was hidden by `| tail -3`. deploy.sh now ships a manifest,
+  quarantines files that left the repo to `/opt/warlibrary-stale/<ts>/`,
+  logs the server build and aborts before restart on failure, and keeps the
+  previous `.next` to put back. Verified on production: 60-check smoke
+  script green, headless probe shows the map rendering, IndexNow accepted
+  48 sitemap URLs, pipeline ran at 02:00 UTC and added 2 events.
+  Sitemaps: 5 pages, 43 country hubs, 12,778 indexable events in 3 chunks.
+  Open: production's 30-day first-stage window is 2.4 MB (the July snapshot
+  measured 0.6 MB); consider a 14-day window for stage one.
