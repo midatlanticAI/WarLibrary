@@ -594,11 +594,13 @@ describe("useEvents", () => {
 
     const { result } = renderHook(() => useEvents());
 
+    // `loading` clears when the first (recent-window) stage settles; the
+    // error from the full-history stage can land a tick later, so wait for
+    // the error itself rather than reading it the instant loading flips.
     await waitFor(() => {
-      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBe("Failed to load events (500)");
     });
-
-    expect(result.current.error).toBe("Failed to load events (500)");
+    expect(result.current.loading).toBe(false);
   });
 
   it("provides a refresh function", async () => {
