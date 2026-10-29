@@ -185,10 +185,11 @@ function Stat({ label, value, sub }: { label: string; value: string | number; su
   );
 }
 
-type AdminTab = "overview" | "events" | "analytics" | "controls" | "logs";
+type AdminTab = "overview" | "dispatches" | "events" | "analytics" | "controls" | "logs";
 
 const TABS: { id: AdminTab; label: string }[] = [
   { id: "overview", label: "Overview" },
+  { id: "dispatches", label: "Dispatches" },
   { id: "events", label: "Events" },
   { id: "analytics", label: "Analytics" },
   { id: "controls", label: "Controls" },
@@ -645,6 +646,266 @@ function ControlsTab({
   );
 }
 
+// ─── Tab: Dispatches ────────────────────────────────────────────────────────
+
+interface DispatchSummary {
+  kind: "daily" | "weekly" | "monthly";
+  key: string;
+  title: string;
+  status: "draft" | "published" | "pulled";
+  effective_status: "draft" | "published" | "pulled";
+  publish_after: string | null;
+  published_at: string | null;
+  needs_review: string[];
+  generated_at: string;
+  edited_at: string | null;
+  revision: number;
+  sections: number;
+  cited: number;
+  events: number;
+  cost_usd: number;
+  label: string;
+  url: string;
+}
+
+interface DispatchDetail extends Omit<DispatchSummary, "sections" | "cited" | "events" | "cost_usd" | "label" | "url"> {
+  lede: string;
+  sections: { heading: string; body: string; event_ids: string[] }[];
+  civilian_note: string | null;
+  stats: { events: number; kinetic: number; fatalities: number; countries: number };
+  usage: { input_tokens: number; output_tokens: number; cost_usd: number; model: string };
+  check?: { dropped_sentences: number; dropped_sections: number; unverified_numbers: number[] };
+  social: string;
+  window: { label: string };
+}
+
+function dispatchStatusLabel(d: DispatchSummary): { text: string; cls: string } {
+  if (d.effective_status === "published") return { text: "published", cls: "bg-green-500/15 text-green-400" };
+  if (d.effective_status === "pulled") return { text: "pulled", cls: "bg-red-500/15 text-red-400" };
+  if (d.needs_review.length > 0) return { text: "needs review", cls: "bg-amber-500/15 text-amber-400" };
+  if (d.publish_after) {
+    const hours = Math.max(0, Math.round((new Date(d.publish_after).getTime() - Date.now()) / 3_600_000));
+    return { text: `draft · auto-publishes in ${hours}h`, cls: "bg-sky-500/15 text-sky-300" };
+  }
+  return { text: "draft · manual", cls: "bg-zinc-700/40 text-zinc-300" };
+}
+
+function DispatchesTab() {
+  const [items, setItems] = useState<DispatchSummary[]>([]);
+  const [nextKeys, setNextKeys] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<{ kind: string; key: string } | null>(null);
+  const [detail, setDetail] = useState<DispatchDetail | null>(null);
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editLede, setEditLede] = useState("");
+  const [genKind, setGenKind] = useState<"daily" | "weekly" | "monthly">("daily");
+  const [genKey, setGenKey] = useState("");
+
+  const loadList = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/dispatches", { credentials: "include" });
+      if (!res.ok) return;
+      const json = await res.json();
+      setItems(json.data.items);
+      setNextKeys(json.data.next_keys);
+    } catch { /* keep the last list */ }
+  }, []);
+
+  const loadDetail = useCallback(async (kind: string, key: string) => {
+    try {
+      const res = await fetch(`/api/admin/dispatches?kind=${encodeURIComponent(kind)}&key=${encodeURIComponent(key)}`, { credentials: "include" });
+      if (!res.ok) { setDetail(null); return; }
+      const json = await res.json();
+      setDetail(json.data);
+      setEditTitle(json.data.title);
+      setEditLede(json.data.lede);
+    } catch { setDetail(null); }
+  }, []);
+
+  useEffect(() => {
+    loadList();
+    const iv = setInterval(loadList, 30000);
+    return () => clearInterval(iv);
+  }, [loadList]);
+
+  useEffect(() => {
+    if (selected) loadDetail(selected.kind, selected.key);
+    else setDetail(null);
+  }, [selected, loadDetail]);
+
+  async function act(action: string, kind: string, key: string, extra: Record<string, string> = {}) {
+    setBusy(`${action}:${kind}:${key}`);
+    setMsg("");
+    try {
+      const res = await fetch("/api/admin/dispatches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ action, kind, key, ...extra }),
+      });
+      const json = await res.json();
+      setMsg(json.message || json.error || "Done");
+      setTimeout(() => { loadList(); if (selected) loadDetail(selected.kind, selected.key); }, 1500);
+      if (action === "generate" || action === "regenerate") {
+        setTimeout(() => { loadList(); loadDetail(kind, key); setSelected({ kind, key }); }, 45000);
+      }
+    } catch {
+      setMsg("Action failed");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function copySocial() {
+    if (!detail) return;
+    try {
+      await navigator.clipboard.writeText(detail.social);
+      setMsg("Social text copied.");
+    } catch {
+      setMsg("Could not copy; select the text below.");
+    }
+  }
+
+  const totalCost = items.reduce((n, d) => n + (d.cost_usd || 0), 0);
+  const pending = items.filter((d) => d.effective_status === "draft").length;
+
+  return (
+    <div className="space-y-6">
+      {msg && <div className="rounded-lg border border-[#1e1e1e] bg-[#141414] px-4 py-3 text-sm text-zinc-300">{msg}</div>}
+
+      <Card title="Generate">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="text-xs text-zinc-500">
+            Kind
+            <select value={genKind} onChange={(e) => { const k = e.target.value as "daily" | "weekly" | "monthly"; setGenKind(k); setGenKey(nextKeys[k] || ""); }} className="mt-1 block rounded-lg border border-[#262626] bg-[#0a0a0a] px-3 py-2 text-sm text-zinc-200">
+              <option value="daily">daily</option>
+              <option value="weekly">weekly</option>
+              <option value="monthly">monthly</option>
+            </select>
+          </label>
+          <label className="text-xs text-zinc-500">
+            Key
+            <input value={genKey} onChange={(e) => setGenKey(e.target.value)} placeholder={nextKeys[genKind] || "2026-10-28"} className="mt-1 block w-40 rounded-lg border border-[#262626] bg-[#0a0a0a] px-3 py-2 font-mono text-sm text-zinc-200 placeholder-zinc-600" />
+          </label>
+          <button
+            onClick={() => act("generate", genKind, genKey || nextKeys[genKind])}
+            disabled={!!busy}
+            className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-500 disabled:opacity-50"
+          >
+            {busy?.startsWith("generate") ? "Starting…" : "Generate"}
+          </button>
+          <span className="text-xs text-zinc-600">Runs the writer in the background (about a minute). Keys: 2026-10-28, 2026-W44, 2026-10.</span>
+        </div>
+      </Card>
+
+      <Card title={`Dispatches (${items.length}; ${pending} awaiting review; $${totalCost.toFixed(3)} total)`}>
+        {items.length === 0 ? (
+          <p className="text-sm text-zinc-500">None yet. Generate one above or wait for the 06:00 UTC cron.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-[10px] uppercase tracking-wider text-zinc-600">
+                  <th className="py-1 pr-3">Kind</th>
+                  <th className="py-1 pr-3">Key</th>
+                  <th className="py-1 pr-3">Title</th>
+                  <th className="py-1 pr-3">Status</th>
+                  <th className="py-1 pr-3 text-right">Events</th>
+                  <th className="py-1 pr-3 text-right">Cited</th>
+                  <th className="py-1 pr-3 text-right">Cost</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1e1e1e]">
+                {items.map((d) => {
+                  const s = dispatchStatusLabel(d);
+                  const active = selected?.kind === d.kind && selected?.key === d.key;
+                  return (
+                    <tr key={`${d.kind}-${d.key}`} onClick={() => setSelected({ kind: d.kind, key: d.key })} className={`cursor-pointer ${active ? "bg-[#1a1a1a]" : "hover:bg-[#141414]"}`}>
+                      <td className="py-1.5 pr-3 text-zinc-400">{d.kind}</td>
+                      <td className="py-1.5 pr-3 font-mono text-zinc-300">{d.key}</td>
+                      <td className="max-w-md truncate py-1.5 pr-3 text-zinc-200">{d.title}</td>
+                      <td className="py-1.5 pr-3"><span className={`rounded px-1.5 py-0.5 ${s.cls}`}>{s.text}</span></td>
+                      <td className="py-1.5 pr-3 text-right text-zinc-400">{d.events}</td>
+                      <td className="py-1.5 pr-3 text-right text-zinc-400">{d.cited}</td>
+                      <td className="py-1.5 pr-3 text-right text-zinc-500">${d.cost_usd.toFixed(4)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {selected && detail && (
+        <Card title={`${detail.kind} ${detail.key} · ${detail.window.label} · revision ${detail.revision}`}>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {detail.effective_status !== "published" && (
+              <button onClick={() => act("publish", detail.kind, detail.key)} disabled={!!busy} className="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-600 disabled:opacity-50">Publish</button>
+            )}
+            {detail.effective_status === "published" && (
+              <button onClick={() => act("pull", detail.kind, detail.key)} disabled={!!busy} className="rounded-lg bg-red-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50">Pull</button>
+            )}
+            <button onClick={() => act("regenerate", detail.kind, detail.key)} disabled={!!busy} className="rounded-lg border border-[#262626] px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#1a1a1a] disabled:opacity-50">Regenerate</button>
+            <button onClick={copySocial} className="rounded-lg border border-[#262626] px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#1a1a1a]">Copy social text</button>
+            <a href={`/dispatch/${detail.kind}/${detail.key}`} target="_blank" rel="noreferrer" className="rounded-lg border border-[#262626] px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#1a1a1a]">Open page ↗</a>
+          </div>
+
+          {detail.needs_review.length > 0 && (
+            <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+              Flagged: {detail.needs_review.join("; ")}. The writer dropped {detail.check?.dropped_sentences ?? 0} sentence(s) and {detail.check?.dropped_sections ?? 0} section(s). Edit or regenerate, then publish.
+            </div>
+          )}
+
+          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <Stat label="Events" value={String(detail.stats.events)} />
+            <Stat label="Kinetic" value={String(detail.stats.kinetic)} />
+            <Stat label="Fatalities (as reported)" value={String(detail.stats.fatalities)} />
+            <Stat label="Cost" value={`$${detail.usage.cost_usd.toFixed(4)}`} sub={`${detail.usage.input_tokens} in / ${detail.usage.output_tokens} out`} />
+          </div>
+
+          <label className="mb-2 block text-xs text-zinc-500">
+            Title
+            <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="mt-1 block w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-3 py-2 text-sm text-zinc-200" />
+          </label>
+          <label className="mb-2 block text-xs text-zinc-500">
+            Lede (keep the [ev:id] citations; sentences without one are fine here but will not link)
+            <textarea value={editLede} onChange={(e) => setEditLede(e.target.value)} rows={4} className="mt-1 block w-full rounded-lg border border-[#262626] bg-[#0a0a0a] px-3 py-2 text-sm text-zinc-200" />
+          </label>
+          <button
+            onClick={() => act("edit", detail.kind, detail.key, { title: editTitle, lede: editLede })}
+            disabled={!!busy || (editTitle === detail.title && editLede === detail.lede)}
+            className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-500 disabled:opacity-50"
+          >
+            Save edits
+          </button>
+
+          <div className="mt-5 space-y-3 text-sm text-zinc-300">
+            {detail.sections.map((s) => (
+              <div key={s.heading}>
+                <h4 className="font-semibold text-zinc-100">{s.heading}</h4>
+                <p className="whitespace-pre-wrap text-xs leading-relaxed text-zinc-400">{s.body}</p>
+              </div>
+            ))}
+            {detail.civilian_note && (
+              <div>
+                <h4 className="font-semibold text-amber-200">Human cost</h4>
+                <p className="text-xs leading-relaxed text-zinc-400">{detail.civilian_note}</p>
+              </div>
+            )}
+          </div>
+
+          <details className="mt-4 text-xs text-zinc-500">
+            <summary className="cursor-pointer">Social text</summary>
+            <pre className="mt-2 whitespace-pre-wrap rounded-lg bg-[#0a0a0a] p-3 text-zinc-300">{detail.social}</pre>
+          </details>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 // ─── Tab: Logs ──────────────────────────────────────────────────────────────
 
 function LogsTab({ logs }: { logs: string[] }) {
@@ -801,6 +1062,7 @@ function Dashboard() {
           )}
 
           {activeTab === "overview" && <OverviewTab data={data} stats={stats} sourceNames={sourceNames} />}
+          {activeTab === "dispatches" && <DispatchesTab />}
           {activeTab === "events" && <EventsTab data={data} stats={stats} />}
           {activeTab === "analytics" && <AnalyticsTab analytics={analytics} />}
           {activeTab === "controls" && <ControlsTab data={data} postAction={postAction} actionLoading={actionLoading} actionMsg={actionMsg} />}

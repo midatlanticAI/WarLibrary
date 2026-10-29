@@ -20,6 +20,8 @@ const VALID_PAGES = [
   "about",
   "event",
   "country",
+  "dispatch",
+  "codebook",
 ] as const;
 type PageName = (typeof VALID_PAGES)[number];
 export { VALID_PAGES };

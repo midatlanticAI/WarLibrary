@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useI18n, LOCALES, type Locale } from "@/i18n";
 
 type Tab = "map" | "ask" | "donate" | "sources" | "about";
@@ -130,6 +131,13 @@ export default function Header({
           <NavTab label={t("nav.donate")} active={activeTab === "donate"} onClick={() => onTabChange("donate")} />
           <NavTab label={t("nav.sources")} active={activeTab === "sources"} onClick={() => onTabChange("sources")} />
           <NavTab label={t("nav.about")} active={activeTab === "about"} onClick={() => onTabChange("about")} />
+          {/* A real page, not a tab: leaves the map app for the server-rendered route. */}
+          <Link
+            href="/dispatch"
+            className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+          >
+            {t("nav.dispatches")}
+          </Link>
         </nav>
       </div>
 

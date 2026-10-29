@@ -4,6 +4,7 @@ import { createHash } from "crypto";
 import { isAdmin } from "@/lib/auth";
 import { trackAiQuestion } from "@/lib/analytics-store";
 import { retrieveEvents, getAllEvents, getDatabaseSummary, buildContext } from "@/lib/rag";
+import { getActiveConflicts, conflictLabel } from "@/lib/conflicts";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "",
@@ -90,6 +91,22 @@ const BLOCKED_PATTERNS = [
   /summarize\s+this\s+(article|text|document|book|paper)/i,
   /explain\s+(quantum|relativity|blockchain|crypto)/i,
 ];
+
+// Country, actor and conflict names from the registry, so a question about a
+// newly tracked conflict passes the relevance gate without a code change.
+let _registryKeywords: string[] | null = null;
+function registryKeywords(): string[] {
+  if (!_registryKeywords) {
+    const words = new Set<string>();
+    for (const c of getActiveConflicts()) {
+      words.add(c.short_name.toLowerCase());
+      for (const country of c.countries) words.add(country.toLowerCase());
+      for (const actor of c.actors) words.add(actor.name.toLowerCase().replace(/\s*\(.*\)$/, ""));
+    }
+    _registryKeywords = [...words].filter((w) => w.length >= 3);
+  }
+  return _registryKeywords;
+}
 
 // Topics that must relate to the conflict
 const CONFLICT_KEYWORDS = [
@@ -243,13 +260,12 @@ function checkGuardrails(question: string): GuardrailResult {
   // Relevance check — at least one conflict keyword must appear
   // (generous matching: lowercase, partial)
   const qLower = q.toLowerCase();
-  const isRelevant = CONFLICT_KEYWORDS.some((kw) => qLower.includes(kw));
+  const isRelevant = CONFLICT_KEYWORDS.some((kw) => qLower.includes(kw)) || registryKeywords().some((kw) => qLower.includes(kw));
 
   if (!isRelevant) {
     return {
       allowed: false,
-      reason:
-        "I can only answer questions about the 2026 Middle East conflict (Operation Epic Fury). Please ask something related to the war, its participants, impacts, or events.",
+      reason: `I can only answer questions about the conflicts War Library tracks (${getActiveConflicts().map((c) => c.short_name).join(", ")}). Please ask something related to a war, its participants, impacts, or events.`,
     };
   }
 
@@ -257,19 +273,19 @@ function checkGuardrails(question: string): GuardrailResult {
 }
 
 function getBaseSystemPrompt(): string {
-  return `You are the War Library AI — a neutral, factual analyst for the 2026 Middle East conflict (Operation Epic Fury). You have access to a verified database of ${getAllEvents().length} conflict events AND essential background context about the conflict's origins.
+  // The conflicts and their background come from the registry, so a second
+  // conflict is a JSON entry, not a prompt edit.
+  const conflicts = getActiveConflicts();
+  const tracked = conflicts.map(conflictLabel).join("; ");
+  const background = conflicts
+    .map((c) => `${conflictLabel(c)} — since ${c.start_date}:\n${c.background.map((b) => `- ${b}`).join("\n")}`)
+    .join("\n\n");
 
-CONFLICT BACKGROUND — USE THIS TO ANSWER QUESTIONS ABOUT HOW/WHY THE WAR STARTED:
+  return `You are the War Library AI — a neutral, factual analyst for the armed conflicts this site tracks: ${tracked}. You have access to a verified database of ${getAllEvents().length} conflict events AND essential background context about each conflict's origins.
 
-Operation Epic Fury is the name given to the joint US-Israel military campaign against Iran that began on February 28, 2026. Key background:
+CONFLICT BACKGROUND — USE THIS TO ANSWER QUESTIONS ABOUT HOW/WHY A WAR STARTED:
 
-- **Escalation timeline**: Tensions between the US, Israel, and Iran had been escalating for years. Iran's nuclear program was a central flashpoint — Iran had been enriching uranium to near-weapons-grade levels, and the IAEA reported reduced cooperation and monitoring access throughout 2025.
-- **Proxies and regional tensions**: Iran-backed groups — Hezbollah in Lebanon, the Houthis in Yemen, and various militias in Iraq and Syria — had been conducting attacks on US forces, Israeli targets, and international shipping in the Red Sea and Strait of Hormuz throughout 2024-2025.
-- **Trump administration posture**: The Trump administration took an increasingly hawkish stance toward Iran, imposing "maximum pressure" sanctions and stating that Iran's nuclear progress represented an unacceptable threat. Israel shared this position and had been conducting covert operations against Iranian nuclear facilities.
-- **Triggering events**: In late February 2026, a combination of factors converged — intelligence assessments about Iran's nuclear breakout timeline, continued attacks by Iran-backed proxies on US forces in the region, and political alignment between Washington and Jerusalem — leading to the decision to launch coordinated military strikes.
-- **February 28, 2026**: The US and Israel launched coordinated airstrikes against Iranian military installations, nuclear facilities, air defense systems, and IRGC command infrastructure. Iran retaliated with ballistic missile salvos against US bases in the region and Israeli territory.
-- **Expansion**: The conflict rapidly expanded as Hezbollah opened a front from Lebanon, Houthis intensified attacks on Red Sea shipping, and Iran attempted to close the Strait of Hormuz. Multiple countries were drawn in — Cyprus (as a staging area), Iraq, Syria, Bahrain, Qatar, and others.
-- **International response**: Russia and China condemned the strikes. European allies were divided. The UN Security Council was deadlocked. Global oil prices spiked dramatically, and shipping through the Strait of Hormuz and Red Sea was severely disrupted.
+${background}
 
 IMPORTANT: When answering questions about the war's origins, causes, or background, use the context above. You are NOT limited to only the event database — you have this background knowledge. Be clear about what comes from the verified event database vs. background context.
 

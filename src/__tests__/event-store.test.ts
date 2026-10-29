@@ -41,6 +41,22 @@ function sample(): SerializedEvent {
     civilian_impact: null,
     location_precision: "city",
     created_at: "2026-05-01T10:00:00Z",
+    conflict_id: "epic-fury-2026",
+    sub_event_type: null,
+    evidence_quote: null,
+    fatalities_min: 3,
+    fatalities_max: 3,
+    fatalities_attribution: null,
+    sources: [{ name: "Reuters", url: "https://example.com/a" }],
+    source_count: 1,
+    actor1: "IDF",
+    actor2: null,
+    actor1_type: "unknown",
+    actor2_type: null,
+    geo_source: "article",
+    first_reported_at: null,
+    revision: 1,
+    updated_at: null,
   };
 }
 

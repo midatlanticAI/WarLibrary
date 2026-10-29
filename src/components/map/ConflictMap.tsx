@@ -548,6 +548,10 @@ function EventPopup({ event }: { event: ConflictEvent }) {
         </span>
         <span>{date(event.date)}</span>
       </div>
+      {/* Centroid placements are badged, never passed off as exact. */}
+      {(event.geo_source === "centroid" || event.location_precision === "country") && (
+        <div className="text-[11px] text-amber-400/80">{t("map.approximate")}</div>
+      )}
       {event.fatalities !== null && event.fatalities > 0 && (
         <div className="text-xs text-red-400">
           {plural("map.fatalityCount", event.fatalities)}

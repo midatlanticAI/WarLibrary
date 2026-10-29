@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import {
@@ -8,6 +7,8 @@ import {
   isCountryName,
   slugifyCountry,
 } from "@/lib/country";
+import { DEFAULT_CONFLICT_ID } from "@/lib/conflicts";
+import { stableEventId as coreStableEventId } from "@/lib/dispatch-core.cjs";
 
 export { canonicalCountry, countrySlug, isCountryName, slugifyCountry };
 
@@ -37,7 +38,45 @@ export const LATEST_FILE = path.join(DATA_DIR, "events_latest.json");
 // Types
 // ---------------------------------------------------------------------------
 
-export interface RawEvent {
+/** One outlet that reported an event. */
+export interface EventSource {
+  name: string;
+  url: string | null;
+  /** When the pipeline fetched this report (ISO); absent on legacy rows. */
+  fetched_at?: string;
+}
+
+/**
+ * Where the coordinates came from. "article": the extraction model placed
+ * it from the text; "gazetteer": matched a named place in the pipeline's
+ * table; "centroid": country centroid, approximate; "legacy": extracted
+ * before this field existed, so unknown.
+ */
+export type GeoSource = "article" | "gazetteer" | "centroid" | "legacy";
+
+/** Grounded fields added 2026-10-29 (see /codebook). All nullable on legacy rows. */
+export interface GroundedFields {
+  conflict_id?: string | null;
+  sub_event_type?: string | null;
+  /** Sentence(s) from the source article the event was extracted from. */
+  evidence_quote?: string | null;
+  fatalities_min?: number | null;
+  fatalities_max?: number | null;
+  /** Who reported the figure, e.g. "Iranian health ministry". */
+  fatalities_attribution?: string | null;
+  sources?: EventSource[];
+  source_count?: number;
+  actor1?: string | null;
+  actor2?: string | null;
+  actor1_type?: string | null;
+  actor2_type?: string | null;
+  geo_source?: GeoSource | null;
+  first_reported_at?: string | null;
+  revision?: number;
+  updated_at?: string | null;
+}
+
+export interface RawEvent extends GroundedFields {
   date: string;
   event_type: string;
   description: string;
@@ -53,6 +92,7 @@ export interface RawEvent {
   verification_status?: string | null;
   civilian_impact?: string | null;
   location_precision?: string | null;
+  approximate_location?: boolean;
 }
 
 export interface SerializedEvent {
@@ -73,12 +113,46 @@ export interface SerializedEvent {
   civilian_impact: string | null;
   location_precision: string | null;
   created_at: string;
+  conflict_id: string;
+  sub_event_type: string | null;
+  evidence_quote: string | null;
+  fatalities_min: number | null;
+  fatalities_max: number | null;
+  fatalities_attribution: string | null;
+  sources: EventSource[];
+  source_count: number;
+  actor1: string | null;
+  actor2: string | null;
+  actor1_type: string | null;
+  actor2_type: string | null;
+  geo_source: GeoSource;
+  first_reported_at: string | null;
+  revision: number;
+  updated_at: string | null;
 }
 
-/** Narrative fields omitted by `fields=lite`. */
+/** Narrative and provenance fields omitted by `fields=lite`. */
 export type LiteEvent = Omit<
   SerializedEvent,
-  "civilian_impact" | "actors" | "region" | "location_precision" | "created_at"
+  | "civilian_impact"
+  | "actors"
+  | "region"
+  | "location_precision"
+  | "created_at"
+  | "sub_event_type"
+  | "evidence_quote"
+  | "fatalities_min"
+  | "fatalities_max"
+  | "fatalities_attribution"
+  | "sources"
+  | "source_count"
+  | "actor1"
+  | "actor2"
+  | "actor1_type"
+  | "actor2_type"
+  | "first_reported_at"
+  | "revision"
+  | "updated_at"
 >;
 
 export interface EventSummary {
@@ -216,16 +290,31 @@ export function deduplicateEvents(events: RawEvent[]): RawEvent[] {
  * the id from immutable content keeps it stable across pipeline runs.
  */
 export function stableEventId(raw: RawEvent): string {
-  const basis = [
-    raw.date,
-    raw.latitude,
-    raw.longitude,
-    (raw.description || "").trim().toLowerCase().slice(0, 120),
-  ].join("|");
-  return crypto.createHash("sha1").update(basis).digest("hex").slice(0, 12);
+  // One implementation, shared with the dispatch writer that runs outside
+  // the bundler; see src/lib/dispatch-core.cjs.
+  return coreStableEventId(raw);
+}
+
+const GEO_SOURCES: ReadonlySet<string> = new Set(["article", "gazetteer", "centroid", "legacy"]);
+
+function geoSourceOf(raw: RawEvent): GeoSource {
+  if (raw.geo_source && GEO_SOURCES.has(raw.geo_source)) return raw.geo_source;
+  if (raw.approximate_location === true || raw.location_precision === "country") return "centroid";
+  return "legacy";
+}
+
+function fatalityBound(raw: RawEvent, field: "fatalities_min" | "fatalities_max"): number | null {
+  const explicit = raw[field];
+  if (typeof explicit === "number" && Number.isFinite(explicit)) return explicit;
+  return typeof raw.fatalities === "number" && Number.isFinite(raw.fatalities) ? raw.fatalities : null;
 }
 
 export function toSerializedEvent(raw: RawEvent, id: string): SerializedEvent {
+  const sources: EventSource[] =
+    Array.isArray(raw.sources) && raw.sources.length > 0
+      ? raw.sources
+      : [{ name: raw.source, url: raw.source_url ?? null }];
+  const actors = Array.isArray(raw.actors) ? raw.actors : [];
   return {
     id,
     date: raw.date,
@@ -240,7 +329,7 @@ export function toSerializedEvent(raw: RawEvent, id: string): SerializedEvent {
     // "None" and "null" (108 live rows) mean no region, not a place called
     // Unknown — they produced titles like "Airstrike in Unknown, Iran".
     region: cleanRegion(raw.region),
-    actors: raw.actors,
+    actors,
     fatalities: raw.fatalities ?? null,
     source: raw.source,
     source_url: raw.source_url ?? null,
@@ -249,6 +338,22 @@ export function toSerializedEvent(raw: RawEvent, id: string): SerializedEvent {
     civilian_impact: raw.civilian_impact ?? null,
     location_precision: raw.location_precision ?? null,
     created_at: raw.date,
+    conflict_id: raw.conflict_id || DEFAULT_CONFLICT_ID,
+    sub_event_type: raw.sub_event_type ?? null,
+    evidence_quote: raw.evidence_quote ?? null,
+    fatalities_min: fatalityBound(raw, "fatalities_min"),
+    fatalities_max: fatalityBound(raw, "fatalities_max"),
+    fatalities_attribution: raw.fatalities_attribution ?? null,
+    sources,
+    source_count: sources.length,
+    actor1: raw.actor1 ?? actors[0] ?? null,
+    actor2: raw.actor2 ?? actors[1] ?? null,
+    actor1_type: raw.actor1_type ?? null,
+    actor2_type: raw.actor2_type ?? null,
+    geo_source: geoSourceOf(raw),
+    first_reported_at: raw.first_reported_at ?? null,
+    revision: typeof raw.revision === "number" && raw.revision > 0 ? raw.revision : 1,
+    updated_at: raw.updated_at ?? null,
   };
 }
 
@@ -259,6 +364,20 @@ export function toLite(event: SerializedEvent): LiteEvent {
     region: _region,
     location_precision: _locationPrecision,
     created_at: _createdAt,
+    sub_event_type: _subEventType,
+    evidence_quote: _evidenceQuote,
+    fatalities_min: _fatalitiesMin,
+    fatalities_max: _fatalitiesMax,
+    fatalities_attribution: _fatalitiesAttribution,
+    sources: _sources,
+    source_count: _sourceCount,
+    actor1: _actor1,
+    actor2: _actor2,
+    actor1_type: _actor1Type,
+    actor2_type: _actor2Type,
+    first_reported_at: _firstReportedAt,
+    revision: _revision,
+    updated_at: _updatedAt,
     ...lite
   } = event;
   return lite;

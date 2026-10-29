@@ -322,3 +322,27 @@ Caddy access log and `analytics.json` on the droplet.
   Sitemaps: 5 pages, 43 country hubs, 12,778 indexable events in 3 chunks.
   Open: production's 30-day first-stage window is 2.4 MB (the July snapshot
   measured 0.6 MB); consider a 14-day window for stage one.
+
+- **2026-10-29 — Registry, grounded fields and dispatches built (Phase B +
+  section 9 schema).** `src/data/conflicts.json` (epic-fury-2026 active;
+  sudan-2023 and sahel-insurgency prepared as `planned`); the pipeline reads
+  its queries, start dates, actors and spillover hints and stamps
+  `conflict_id`. New grounded fields on every extracted row: verbatim
+  `evidence_quote` (kept only if found in the fetched article),
+  `fatalities_min/max/attribution`, `sub_event_type`, `actor1/actor2` with
+  types, `geo_source`, `sources[]`/`source_count`, `first_reported_at`,
+  `updated_at`, `revision`. Two-outlet rule for `confirmed`; a duplicate from
+  another outlet is merged as corroboration instead of discarded.
+  `scripts/backfill-registry.js` adds honest values to legacy rows (seed
+  files done in-repo; the live file on the next droplet run). Dispatch
+  engine: `src/lib/dispatch-core.cjs` (shared period maths, stats, citation
+  check, number guard), `scripts/write-dispatch.js` (Haiku 5.5, structured
+  output, ~$0.002 per daily), `scripts/dispatch.sh` + three cron lines,
+  `/dispatch`, `/dispatch/<kind>/<key>` with NewsArticle markup and OG card,
+  `/dispatch/feed.xml`, `/sitemaps/dispatches.xml` and `/sitemaps/news.xml`,
+  admin Dispatches tab (generate, publish, pull, edit, regenerate, copy
+  social text). `/codebook` published. Chat and RAG read the registry.
+  Not done: direct Postiz push (social text is copied from admin instead),
+  Buttondown (needs the account; the signup box appears once
+  `NEXT_PUBLIC_NEWSLETTER_URL` is set), the non-English chat prompts still
+  carry the Iran background text.

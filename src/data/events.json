@@ -14,7 +14,28 @@
       ],
       "fatalities": 12,
       "source": "Al Jazeera",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T02:30:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 12,
+      "fatalities_max": 12,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T03:00:00Z",
@@ -30,7 +51,28 @@
       ],
       "fatalities": null,
       "source": "CNN",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T03:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "CNN",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T03:15:00Z",
@@ -45,7 +87,28 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "CSIS"
+      "source": "CSIS",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T03:15:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "CSIS",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T03:30:00Z",
@@ -60,7 +123,28 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "FDD"
+      "source": "FDD",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T03:30:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "FDD",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T03:30:00Z",
@@ -75,7 +159,28 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T03:30:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T03:45:00Z",
@@ -90,7 +195,28 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "FDD"
+      "source": "FDD",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T03:45:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "FDD",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T08:00:00Z",
@@ -105,7 +231,28 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "The War Zone"
+      "source": "The War Zone",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T08:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "The War Zone",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T18:00:00Z",
@@ -121,7 +268,28 @@
       "fatalities": 1,
       "source": "Times of Israel",
       "civilian_impact": "One civilian woman (foreign caregiver) killed, 22 others injured in residential strike in Tel Aviv",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T18:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Times of Israel",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 1,
+      "fatalities_max": 1,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T18:30:00Z",
@@ -135,7 +303,28 @@
         "Iran"
       ],
       "fatalities": null,
-      "source": "Al Arabiya"
+      "source": "Al Arabiya",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T18:30:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Arabiya",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T20:00:00Z",
@@ -151,7 +340,28 @@
       "fatalities": 3,
       "source": "Al Jazeera",
       "civilian_impact": "Three people killed (one Asian worker on March 2 in Salman Industrial City, one 29-year-old woman on March 10 in Manama, Bahrain, one person in Dubai on March 7); debris from intercepted missiles caused casualties",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T20:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 3,
+      "fatalities_max": 3,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-01T06:00:00Z",
@@ -167,7 +377,28 @@
       "fatalities": 3,
       "source": "Al Jazeera",
       "civilian_impact": "Two Kuwait Fire Force officers killed while performing duties at Kuwait International Airport",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-01T06:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 3,
+      "fatalities_max": 3,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-01T08:00:00Z",
@@ -182,7 +413,28 @@
         "Saraya Awliya al-Dam"
       ],
       "fatalities": null,
-      "source": "Kurdistan24"
+      "source": "Kurdistan24",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-01T08:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Kurdistan24",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Islamic Resistance in Iraq",
+      "actor2": "Saraya Awliya al-Dam",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-01T09:00:00Z",
@@ -198,7 +450,28 @@
       "fatalities": 6,
       "source": "CNN",
       "civilian_impact": "Six US service members killed, four others seriously injured at makeshift operations center",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-01T09:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "CNN",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 6,
+      "fatalities_max": 6,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-01T12:00:00Z",
@@ -214,7 +487,28 @@
       "fatalities": 9,
       "source": "Times of Israel",
       "civilian_impact": "Nine people killed in synagogue and bomb shelter strike; 49 others injured",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-01T12:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Times of Israel",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 9,
+      "fatalities_max": 9,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-01T14:00:00Z",
@@ -231,7 +525,28 @@
       "fatalities": 0,
       "source": "Al Jazeera",
       "civilian_impact": "16 people injured from missile and drone strikes across Qatar; no deaths reported",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-01T14:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": "Qatar",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-01T16:00:00Z",
@@ -245,7 +560,28 @@
         "Iran"
       ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-01T16:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-02T00:00:00Z",
@@ -259,7 +595,28 @@
         "Iran"
       ],
       "fatalities": 0,
-      "source": "NPR"
+      "source": "NPR",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-02T00:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "NPR",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-02T00:30:00Z",
@@ -274,7 +631,28 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "Anadolu Agency"
+      "source": "Anadolu Agency",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-02T00:30:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Anadolu Agency",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Hezbollah",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-02T03:00:00Z",
@@ -290,7 +668,28 @@
       "fatalities": 31,
       "source": "Al Jazeera",
       "civilian_impact": "31 people killed in strikes on Beirut suburbs; Hezbollah intelligence chief Hussein Makled and senior IRGC Quds Force commanders killed",
-      "verification_status": "reported"
+      "verification_status": "reported",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-02T03:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 31,
+      "fatalities_max": 31,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-02T06:00:00Z",
@@ -306,7 +705,28 @@
       "fatalities": 11,
       "source": "Al Jazeera",
       "civilian_impact": "11 people killed, 58 wounded in southern Lebanon; IDF issues evacuation orders to 50 villages across southern Lebanon and Bekaa Valley",
-      "verification_status": "reported"
+      "verification_status": "reported",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-02T06:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 11,
+      "fatalities_max": 11,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-02T08:00:00Z",
@@ -320,7 +740,28 @@
         "Qatar"
       ],
       "fatalities": 0,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-02T08:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Qatar",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-02T12:00:00Z",
@@ -340,7 +781,28 @@
         "United Arab Emirates"
       ],
       "fatalities": 0,
-      "source": "US State Department"
+      "source": "US State Department",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-02T12:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "US State Department",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Bahrain",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-03T02:00:00Z",
@@ -355,7 +817,28 @@
         "Hezbollah"
       ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-03T02:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": "Hezbollah",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-03T06:00:00Z",
@@ -369,7 +852,28 @@
         "Iran"
       ],
       "fatalities": 0,
-      "source": "PBS"
+      "source": "PBS",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-03T06:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "PBS",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-03T08:00:00Z",
@@ -383,7 +887,28 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "Times of Israel"
+      "source": "Times of Israel",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-03T08:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Times of Israel",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-03T10:00:00Z",
@@ -397,7 +922,28 @@
         "Syria"
       ],
       "fatalities": 0,
-      "source": "The National"
+      "source": "The National",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-03T10:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "The National",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Syria",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-03T12:00:00Z",
@@ -411,7 +957,28 @@
         "Syria"
       ],
       "fatalities": 0,
-      "source": "The National"
+      "source": "The National",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-03T12:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "The National",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Syria",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-04T01:00:00Z",
@@ -426,7 +993,28 @@
         "Iran"
       ],
       "fatalities": 87,
-      "source": "Naval News"
+      "source": "Naval News",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-04T01:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Naval News",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 87,
+      "fatalities_max": 87,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Iran",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-04T06:00:00Z",
@@ -440,7 +1028,28 @@
         "Iran"
       ],
       "fatalities": 0,
-      "source": "Stars and Stripes"
+      "source": "Stars and Stripes",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-04T06:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Stars and Stripes",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-04T10:00:00Z",
@@ -455,7 +1064,28 @@
         "Iran"
       ],
       "fatalities": null,
-      "source": "Naval News"
+      "source": "Naval News",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-04T10:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Naval News",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Iran",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-05T00:00:00Z",
@@ -469,7 +1099,28 @@
         "Iran"
       ],
       "fatalities": 0,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-05T00:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-05T08:00:00Z",
@@ -483,7 +1134,28 @@
         "Islamic Resistance in Iraq"
       ],
       "fatalities": null,
-      "source": "The National"
+      "source": "The National",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-05T08:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "The National",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Islamic Resistance in Iraq",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-06T00:00:00Z",
@@ -498,7 +1170,28 @@
         "Israel"
       ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-06T00:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-06T04:00:00Z",
@@ -512,7 +1205,28 @@
         "Iran"
       ],
       "fatalities": null,
-      "source": "Al Jazeera"
+      "source": "Al Jazeera",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-06T04:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-06T08:00:00Z",
@@ -528,7 +1242,28 @@
       "fatalities": null,
       "source": "NPR",
       "civilian_impact": "At least 294 killed and 1,023 wounded in Lebanon from Israeli attacks; 95,000 displaced as of March 6",
-      "verification_status": "reported"
+      "verification_status": "reported",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-06T08:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "NPR",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-06T12:00:00Z",
@@ -543,7 +1278,28 @@
         "Iran"
       ],
       "fatalities": 0,
-      "source": "Washington Post"
+      "source": "Washington Post",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-06T12:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Washington Post",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Russia",
+      "actor2": "Iran",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-07T02:00:00Z",
@@ -560,7 +1316,28 @@
       "fatalities": 41,
       "source": "Al Jazeera",
       "civilian_impact": "At least 41 people killed and 40 wounded in Nabi Chit, Bekaa Valley during airstrike coinciding with commando raid",
-      "verification_status": "confirmed"
+      "verification_status": "confirmed",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-07T02:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 41,
+      "fatalities_max": 41,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": "Hezbollah",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-07T03:00:00Z",
@@ -575,7 +1352,28 @@
         "Hezbollah"
       ],
       "fatalities": null,
-      "source": "Times of Israel"
+      "source": "Times of Israel",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-07T03:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Times of Israel",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": "Hezbollah",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-07T06:00:00Z",
@@ -592,7 +1390,28 @@
       "fatalities": 0,
       "source": "Gulf News",
       "civilian_impact": "UAE intercepts 109 drones and 9 ballistic missiles in single day; no casualties reported from successful interceptions",
-      "verification_status": "reported"
+      "verification_status": "reported",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-07T06:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Gulf News",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": "United Arab Emirates",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-07T10:00:00Z",
@@ -608,7 +1427,28 @@
       "fatalities": 1,
       "source": "Irish Times",
       "civilian_impact": "One person killed in Dubai during Iranian missile and drone attacks",
-      "verification_status": "reported"
+      "verification_status": "reported",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-07T10:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Irish Times",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 1,
+      "fatalities_max": 1,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-07T14:00:00Z",
@@ -624,7 +1464,28 @@
         "Syria"
       ],
       "fatalities": null,
-      "source": "Enab Baladi"
+      "source": "Enab Baladi",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-07T14:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Enab Baladi",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": "Iran",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-08T00:00:00Z",
@@ -643,7 +1504,28 @@
       "source": "Al Jazeera",
       "civilian_impact": "Over 500,000 displaced in Lebanon; 1,332 killed in Iran according to Iranian Health Ministry as of March 7; 300 children and adolescents hospitalized; over 6,000 people wounded",
       "verification_status": "reported",
-      "_note": "Cumulative death toll — fatalities zeroed to prevent double-counting (March 22 audit)"
+      "_note": "Cumulative death toll — fatalities zeroed to prevent double-counting (March 22 audit)",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-08T00:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Iran",
+      "actor2": "United States",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-02T10:00:00Z",
@@ -657,7 +1539,28 @@
         "Houthis"
       ],
       "fatalities": 0,
-      "source": "FDD Long War Journal"
+      "source": "FDD Long War Journal",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-02T10:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "FDD Long War Journal",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "Houthis",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-02-28T10:00:00Z",
@@ -671,7 +1574,28 @@
         "United States"
       ],
       "fatalities": null,
-      "source": "PBS"
+      "source": "PBS",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-02-28T10:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "PBS",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-06T16:00:00Z",
@@ -689,7 +1613,28 @@
       "source": "Al Jazeera",
       "civilian_impact": "At least 1,332 people killed according to Iranian Health Ministry as of March 7; damage includes Grand Bazaar in Tehran and Golestan Palace (UNESCO World Heritage Site); 300 children and adolescents hospitalized; over 6,000 people wounded",
       "verification_status": "reported",
-      "_note": "Cumulative death toll — fatalities zeroed to prevent double-counting (March 22 audit)"
+      "_note": "Cumulative death toll — fatalities zeroed to prevent double-counting (March 22 audit)",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-06T16:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 0,
+      "fatalities_max": 0,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": "Israel",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-05T14:00:00Z",
@@ -703,7 +1648,28 @@
         "United States"
       ],
       "fatalities": null,
-      "source": "Critical Threats"
+      "source": "Critical Threats",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-05T14:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Critical Threats",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": null,
+      "fatalities_max": null,
+      "fatalities_attribution": null,
+      "actor1": "United States",
+      "actor2": null,
+      "actor1_type": "unknown",
+      "actor2_type": null,
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-03T14:00:00Z",
@@ -720,7 +1686,28 @@
       "fatalities": 52,
       "source": "Al Jazeera",
       "civilian_impact": "52 people killed and 154 injured in deadliest single day of Lebanon front; multiple Hezbollah command posts and weapons caches destroyed",
-      "verification_status": "reported"
+      "verification_status": "reported",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-03T14:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 52,
+      "fatalities_max": 52,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": "Hezbollah",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     },
     {
       "date": "2026-03-08T06:00:00Z",
@@ -737,7 +1724,28 @@
       "fatalities": 2,
       "source": "Al Jazeera",
       "civilian_impact": "Two Israeli soldiers killed; more than 517,000 registered as displaced in Lebanon",
-      "verification_status": "reported"
+      "verification_status": "reported",
+      "conflict_id": "epic-fury-2026",
+      "revision": 1,
+      "first_reported_at": "2026-03-08T06:00:00Z",
+      "updated_at": null,
+      "sources": [
+        {
+          "name": "Al Jazeera",
+          "url": null
+        }
+      ],
+      "source_count": 1,
+      "evidence_quote": null,
+      "sub_event_type": null,
+      "fatalities_min": 2,
+      "fatalities_max": 2,
+      "fatalities_attribution": null,
+      "actor1": "Israel",
+      "actor2": "Hezbollah",
+      "actor1_type": "unknown",
+      "actor2_type": "unknown",
+      "geo_source": "legacy"
     }
   ],
   "metadata": {

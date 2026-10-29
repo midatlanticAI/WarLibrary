@@ -37,6 +37,34 @@ export const PRECISION_LABEL: Record<string, string> = {
   country: "Country centroid (approximate)",
 };
 
+export const GEO_SOURCE_LABEL: Record<string, string> = {
+  article: "Placed from the article text",
+  gazetteer: "Matched to a named place",
+  centroid: "Country centroid, approximate",
+  legacy: "Placed before provenance was recorded",
+};
+
+export const ACTOR_TYPE_LABEL: Record<string, string> = {
+  state: "state",
+  non_state: "non-state",
+  coalition: "coalition",
+  civilians: "civilians",
+  unknown: "type not recorded",
+};
+
+/** "one_way_attack_drone" → "One-way attack drone". */
+export function subTypeLabel(value: string): string {
+  const words = value.replace(/_/g, " ");
+  const fixed = words.replace(/\bone way\b/, "one-way").replace(/\bied\b/, "IED").replace(/\buav\b/, "UAV");
+  return fixed.charAt(0).toUpperCase() + fixed.slice(1);
+}
+
+export const DISPATCH_KIND_LABEL: Record<string, string> = {
+  daily: "Daily dispatch",
+  weekly: "Weekly dispatch",
+  monthly: "Monthly dispatch",
+};
+
 /** "28 October 2026" in UTC, or the raw string when it cannot be parsed. */
 export function formatDate(iso: string): string {
   const time = new Date(iso).getTime();

@@ -16,6 +16,7 @@
     "about": "حول",
     "map": "الخريطة",
     "feed": "الأخبار",
+    "dispatches": "الإحاطات",
     "ask": "اسأل"
   },
   "header": {
@@ -169,6 +170,7 @@
     "unavailableBody": "لم يُضبط أي رمز وصول لـ Mapbox في هذا النشر، لذا تتعذّر تهيئة الخريطة التفاعلية. لا تزال {{events}} قابلة للقراءة في قائمة الأحداث وللبحث عبر «اسأل».",
     "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN غير مضبوط",
     "showingCountry": "يُعرض فقط",
+    "approximate": "موقع تقريبي: مركز الدولة",
     "clearCountry": "عرض كل الدول"
   },
   "ask": {

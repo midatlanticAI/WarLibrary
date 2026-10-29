@@ -8,7 +8,7 @@
 - Kinetic events (strikes, attacks, battles, violence against civilians) are the headline count and the map default. Strategic developments (statements, deployments, sanctions, diplomacy) are kept as a separate stream.
 - Verification: confirmed (multiple outlets), reported (one outlet), claimed (a party to the conflict), disputed, unconfirmed.
 - Location precision: exact, city, region, country (centroid). Country-centroid events are approximate placements.
-- Fatalities are per-event figures as each source reported them and are not de-duplicated across reports of the same incident.
+- Fatalities are per-event figures as each source reported them and are not de-duplicated across reports of the same incident. Rows extracted from 2026-10-29 on also carry fatalities_min / fatalities_max / fatalities_attribution, an evidence_quote copied verbatim from the source, a sub_event_type, actor1 / actor2 with types, geo_source (article, gazetteer, centroid, legacy), a sources[] list and a conflict_id from the registry.
 - Updated every 30 minutes by an automated pipeline; the pipeline's current stats are at /api/health.
 
 ## Pages
@@ -17,9 +17,13 @@
 - Countries, ranked by activity: https://warlibrary.midatlantic.ai/country
 - One country: https://warlibrary.midatlantic.ai/country/{slug} (for example /country/iran, /country/yemen)
 - One event: https://warlibrary.midatlantic.ai/event/{id}
+- Dispatches (daily, weekly and monthly digests; numbers computed from the data, narrative model-written and citation-checked): https://warlibrary.midatlantic.ai/dispatch
+- One dispatch: https://warlibrary.midatlantic.ai/dispatch/{daily|weekly|monthly}/{key} (keys: 2026-10-28, 2026-W44, 2026-10)
+- Codebook (every field, enum and rule, with a changelog): https://warlibrary.midatlantic.ai/codebook
 - Sources and verification method: https://warlibrary.midatlantic.ai/sources
 - About: https://warlibrary.midatlantic.ai/about
 - RSS of latest verified kinetic events: https://warlibrary.midatlantic.ai/feed.xml
+- RSS of dispatches: https://warlibrary.midatlantic.ai/dispatch/feed.xml
 - Sitemap index: https://warlibrary.midatlantic.ai/sitemap.xml
 
 ## API (JSON, no key, MIT-licensed data)

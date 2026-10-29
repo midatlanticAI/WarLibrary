@@ -16,6 +16,7 @@
     "about": "Acerca de",
     "map": "Mapa",
     "feed": "Noticias",
+    "dispatches": "Partes",
     "ask": "Preguntar"
   },
   "header": {
@@ -169,6 +170,7 @@
     "unavailableBody": "No hay ningún token de acceso de Mapbox configurado en este despliegue, así que el mapa interactivo no puede cargarse. Todos los {{events}} siguen siendo legibles en el listado de eventos y se pueden consultar con Preguntar.",
     "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN no está configurado",
     "showingCountry": "Mostrando solo",
+    "approximate": "Posición aproximada: centro del país",
     "clearCountry": "Mostrar todos los países"
   },
   "ask": {

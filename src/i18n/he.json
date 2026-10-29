@@ -16,6 +16,7 @@
     "about": "אודות",
     "map": "מפה",
     "feed": "עדכונים",
+    "dispatches": "סיכומים",
     "ask": "שאל"
   },
   "header": {
@@ -169,6 +170,7 @@
     "unavailableBody": "לא הוגדר אסימון גישה של Mapbox בפריסה הזו, ולכן המפה האינטראקטיבית אינה נטענת. כל {{events}} עדיין ניתנים לקריאה ברשימת האירועים ולחיפוש דרך ״שאל״.",
     "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN אינו מוגדר",
     "showingCountry": "מוצג רק",
+    "approximate": "מיקום משוער: מרכז המדינה",
     "clearCountry": "הצג את כל המדינות"
   },
   "ask": {

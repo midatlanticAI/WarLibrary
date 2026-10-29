@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "updated": "2026-10-29",
+  "note": "Conflict registry. The pipeline, the chat background, the country hubs and the dispatches all read this file. Adding a conflict is a new entry here plus a review of its first week of extractions. `status` is one of active (fetched and extracted every run), planned (entry prepared, not fetched), dormant (was tracked, no longer fetched).",
+  "conflicts": [
+    {
+      "id": "epic-fury-2026",
+      "name": "US-Israel war on Iran",
+      "short_name": "Iran war",
+      "operation_name": "Operation Epic Fury",
+      "status": "active",
+      "start_date": "2026-02-28",
+      "tracking_from": "2026-02-28",
+      "end_date": null,
+      "timezone": "Asia/Tehran",
+      "bbox": [24, 10, 66, 44],
+      "countries": [
+        "Iran", "Israel", "United States", "Lebanon", "Yemen", "Iraq", "Syria",
+        "Saudi Arabia", "United Arab Emirates", "Bahrain", "Qatar", "Kuwait", "Oman",
+        "Jordan", "Turkey", "Cyprus", "Palestine", "International Waters"
+      ],
+      "actors": [
+        { "name": "United States", "type": "state" },
+        { "name": "Israel", "type": "state" },
+        { "name": "Iran", "type": "state" },
+        { "name": "IRGC", "type": "state" },
+        { "name": "Hezbollah", "type": "non_state" },
+        { "name": "Houthis (Ansar Allah)", "type": "non_state" },
+        { "name": "Iraqi militias (PMF)", "type": "non_state" },
+        { "name": "Gulf Cooperation Council states", "type": "coalition" }
+      ],
+      "queries": {
+        "google_news": [
+          "iran war operation epic fury 2026",
+          "iran airstrike missile 2026",
+          "hezbollah houthi iran war 2026",
+          "iran sanctions diplomacy 2026",
+          "strait hormuz persian gulf navy 2026",
+          "iran nuclear IAEA 2026",
+          "iran humanitarian civilian casualties 2026"
+        ],
+        "newsdata": [
+          "iran war airstrike missile",
+          "iran israel hezbollah conflict",
+          "strait hormuz military IRGC",
+          "iran sanctions humanitarian ceasefire",
+          "houthi yemen red sea shipping"
+        ]
+      },
+      "extra_feeds": [],
+      "spillover_hint": "Include regional spillover (Bahrain, UAE, Saudi Arabia, Turkey, Cyprus, Red Sea and Strait of Hormuz shipping).",
+      "description": "Joint US-Israel military campaign against Iran that began on 28 February 2026, with Iranian retaliation and fronts opened by Hezbollah and the Houthis.",
+      "background": [
+        "Escalation timeline: tensions between the US, Israel and Iran had been escalating for years. Iran's nuclear programme was the central flashpoint; Iran had been enriching uranium to near-weapons-grade levels and the IAEA reported reduced cooperation and monitoring access throughout 2025.",
+        "Proxies and regional tensions: Iran-backed groups (Hezbollah in Lebanon, the Houthis in Yemen, militias in Iraq and Syria) had been attacking US forces, Israeli targets and international shipping in the Red Sea and the Strait of Hormuz through 2024-2025.",
+        "US posture: the Trump administration imposed maximum-pressure sanctions and described Iran's nuclear progress as an unacceptable threat; Israel shared that position and had conducted covert operations against Iranian nuclear facilities.",
+        "Triggering events: in late February 2026 intelligence assessments about Iran's breakout timeline, continued proxy attacks on US forces, and political alignment between Washington and Jerusalem led to the decision to launch coordinated strikes.",
+        "28 February 2026: the US and Israel launched coordinated airstrikes against Iranian military installations, nuclear facilities, air defences and IRGC command infrastructure. Iran retaliated with ballistic missile salvos against US bases in the region and Israeli territory.",
+        "Expansion: Hezbollah opened a front from Lebanon, the Houthis intensified attacks on Red Sea shipping, and Iran attempted to close the Strait of Hormuz. Cyprus, Iraq, Syria, Bahrain, Qatar and others were drawn in.",
+        "International response: Russia and China condemned the strikes, European allies were divided, the UN Security Council was deadlocked, oil prices spiked and shipping through Hormuz and the Red Sea was severely disrupted."
+      ]
+    },
+    {
+      "id": "sudan-2023",
+      "name": "Sudan civil war",
+      "short_name": "Sudan",
+      "operation_name": null,
+      "status": "planned",
+      "start_date": "2023-04-15",
+      "tracking_from": null,
+      "end_date": null,
+      "timezone": "Africa/Khartoum",
+      "bbox": [21, 8, 39, 23],
+      "countries": ["Sudan", "South Sudan", "Chad", "Egypt", "Libya", "Ethiopia", "Eritrea", "Central African Republic"],
+      "actors": [
+        { "name": "Sudanese Armed Forces (SAF)", "type": "state" },
+        { "name": "Rapid Support Forces (RSF)", "type": "non_state" },
+        { "name": "Joint Forces (Darfur armed movements)", "type": "non_state" },
+        { "name": "SPLM-North", "type": "non_state" }
+      ],
+      "queries": {
+        "google_news": [
+          "sudan RSF SAF fighting",
+          "sudan el fasher darfur attack",
+          "sudan khartoum omdurman shelling drone",
+          "sudan civilians killed displaced famine",
+          "sudan ceasefire talks jeddah"
+        ],
+        "newsdata": [
+          "sudan RSF army fighting",
+          "darfur el fasher attack civilians",
+          "sudan ceasefire humanitarian"
+        ]
+      },
+      "extra_feeds": [],
+      "spillover_hint": "Include cross-border effects in Chad, South Sudan and Egypt (refugee flows, border clashes).",
+      "description": "War between the Sudanese Armed Forces and the Rapid Support Forces that began on 15 April 2023 in Khartoum and spread to Darfur, Kordofan and Gezira.",
+      "background": [
+        "The war began on 15 April 2023 when fighting broke out in Khartoum between the Sudanese Armed Forces under Abdel Fattah al-Burhan and the Rapid Support Forces under Mohamed Hamdan Dagalo (Hemedti), after a dispute over integrating the RSF into the army during a planned transition to civilian rule.",
+        "Fighting spread to Darfur, where the RSF and allied militias were accused of ethnically targeted killings, and to Kordofan and Gezira. Millions were displaced inside Sudan and into Chad, South Sudan and Egypt, and famine was declared in parts of the country.",
+        "Repeated ceasefire talks, including the Jeddah process, produced no durable truce."
+      ]
+    },
+    {
+      "id": "sahel-insurgency",
+      "name": "Sahel insurgency (Mali, Burkina Faso, Niger)",
+      "short_name": "Sahel",
+      "operation_name": null,
+      "status": "planned",
+      "start_date": "2012-01-16",
+      "tracking_from": null,
+      "end_date": null,
+      "timezone": "Africa/Bamako",
+      "bbox": [-12, 9, 16, 25],
+      "countries": ["Mali", "Burkina Faso", "Niger", "Benin", "Togo", "Mauritania", "Chad", "Nigeria"],
+      "actors": [
+        { "name": "JNIM (Jama'at Nasr al-Islam wal Muslimin)", "type": "non_state" },
+        { "name": "Islamic State Sahel Province", "type": "non_state" },
+        { "name": "Mali Armed Forces (FAMa)", "type": "state" },
+        { "name": "Burkina Faso Armed Forces", "type": "state" },
+        { "name": "Niger Armed Forces", "type": "state" },
+        { "name": "Africa Corps (Russia)", "type": "non_state" },
+        { "name": "Alliance of Sahel States", "type": "coalition" }
+      ],
+      "queries": {
+        "google_news": [
+          "mali JNIM attack",
+          "burkina faso jihadist attack killed",
+          "niger army attack islamic state sahel",
+          "sahel alliance AES military",
+          "mali burkina niger civilians killed"
+        ],
+        "newsdata": [
+          "mali burkina faso attack",
+          "niger jihadist attack",
+          "sahel JNIM islamic state"
+        ]
+      },
+      "extra_feeds": [],
+      "spillover_hint": "Include attacks in northern Benin and Togo and cross-border operations into Mauritania and Niger.",
+      "description": "Jihadist insurgency across the central Sahel involving JNIM and Islamic State Sahel Province against the armed forces of Mali, Burkina Faso and Niger, now grouped as the Alliance of Sahel States.",
+      "background": [
+        "The insurgency grew out of the 2012 Tuareg rebellion and Islamist takeover of northern Mali. French intervention in 2013 pushed the groups back, but they regrouped and spread into central Mali, Burkina Faso and Niger.",
+        "Military coups in Mali (2020, 2021), Burkina Faso (2022) and Niger (2023) ended cooperation with France and the UN mission; the three juntas formed the Alliance of Sahel States and brought in Russian forces.",
+        "JNIM (al-Qaeda affiliated) and Islamic State Sahel Province fight the state forces and each other, with mass-casualty attacks on soldiers and civilians and sieges of towns."
+      ]
+    }
+  ]
+}

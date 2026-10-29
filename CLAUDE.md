@@ -30,7 +30,11 @@ src/
 │   ├── page.tsx              # Main page — tab router (map|feed|ask|donate|sources|about)
 │   ├── layout.tsx            # Root layout, dark theme, Mapbox CSS, PWA meta
 │   ├── globals.css           # Dark war-room aesthetic, custom scrollbars
-│   ├── sitemap.ts            # Dynamic sitemap for SEO
+│   ├── sitemap.xml/route.ts  # Sitemap index → /sitemaps/{pages,countries,events-N,dispatches,news}.xml
+│   ├── event/[id]/           # One event (Article JSON-LD, evidence quote, sources, OG map card)
+│   ├── country/[slug]/       # Country hub
+│   ├── dispatch/             # /dispatch index, /dispatch/[kind]/[key] (NewsArticle), /dispatch/feed.xml
+│   ├── codebook/page.tsx     # Every field, enum and rule, with changelog
 │   ├── admin/
 │   │   ├── page.tsx          # Admin dashboard (tabbed: overview|events|analytics|controls|logs)
 │   │   └── layout.tsx        # Admin-specific manifest + icons (separate PWA)
@@ -111,6 +115,10 @@ scripts/
 │   - 180-second execution timeout
 ├── auto-update.sh            # Cron wrapper with flock + logging
 ├── backup-data.sh            # Data file backup utility
+├── write-dispatch.js         # Daily/weekly/monthly dispatch writer (Haiku 5.5, structured output)
+├── dispatch.sh               # Cron wrapper for the writer (06:00 daily, Mon 06:30, 1st 07:00 UTC)
+├── backfill-registry.js      # Adds conflict_id + grounded fields to legacy rows (idempotent, backs up first)
+├── indexnow.js               # IndexNow ping (--sitemap or explicit URLs)
 └── generate-icons.mjs        # PWA icon generator (Sharp)
 ```
 
@@ -149,6 +157,45 @@ Reuters, NPR, Times of Israel, Axios, PBS, Naval News, UN News, and more.
 Per-event fatalities are summed from individual event attributions only —
 cumulative tolls are tracked separately as `strategic_development` with
 `fatalities=0`. Read the current figure from the data, don't hardcode it.
+
+### Conflict registry and grounded fields (2026-10-29)
+
+`src/data/conflicts.json` is the registry (typed by `src/lib/conflicts.ts`).
+Only `status: "active"` entries are fetched; the pipeline builds its Google
+News and NewsData queries, the extraction framing, per-conflict start-date
+checks and `conflict_id` from it, and the chat/RAG background text comes from
+each entry's `background[]`. Sudan and the Sahel are prepared as `planned`:
+activating one is a status flip plus a review of its first week.
+
+Every extracted row carries the grounded fields documented at `/codebook`:
+`evidence_quote` (verbatim; the pipeline drops it unless it finds it in the
+fetched article), `fatalities_min/max/attribution`, `sub_event_type`,
+`actor1/actor2` + types, `geo_source` (article/gazetteer/centroid/legacy),
+`sources[]`/`source_count`, `first_reported_at`, `updated_at`, `revision`.
+`confirmed` requires two outlets: a single run awards at most `reported`, and
+a duplicate from another outlet is merged into `sources` (and upgrades the
+status) rather than discarded. Legacy rows are backfilled by
+`scripts/backfill-registry.js` with null/derived values and are NOT
+downgraded retroactively. `src/lib/event-store.ts` normalises all of this in
+`toSerializedEvent`; `fields=lite` strips it.
+
+### Dispatches
+
+"The model narrates, the code counts." `src/lib/dispatch-core.cjs` (CommonJS
+so the cron script and the app share one implementation; types in
+`dispatch-core.d.cts`) holds the period maths (daily key `YYYY-MM-DD`, weekly
+`YYYY-Www` ISO, monthly `YYYY-MM`), `computeStats`, `citationCheck` (every
+sentence must cite `[ev:<id>]` from the input; unknown citations are dropped)
+and `numberGuard` (any figure ≥10 not in the input flags the dispatch).
+`scripts/write-dispatch.js` builds the inputs, calls Haiku 5.5 with a JSON
+schema, assembles the record and writes `src/data/dispatches/<kind>/<key>.json`
+(gitignored, droplet-only, behind `src/lib/dispatch-store.ts`). Daily
+publishes on generation when clean; weekly/monthly are drafts that
+auto-publish after 24 h unless pulled or edited (`effectiveStatus`). Admin
+tab "Dispatches" → `/api/admin/dispatches` (generate/regenerate run the
+writer detached; publish pings IndexNow; nothing deletes). Pages:
+`/dispatch`, `/dispatch/[kind]/[key]`, `/dispatch/feed.xml`,
+`/sitemaps/news.xml` (last 48 h, Google News namespace).
 
 ### Event Pipeline
 - Runs every 30 minutes via cron

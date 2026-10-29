@@ -16,6 +16,7 @@
     "about": "About",
     "map": "Map",
     "feed": "Feed",
+    "dispatches": "Dispatches",
     "ask": "Ask"
   },
   "header": {
@@ -169,6 +170,7 @@
     "unavailableBody": "No Mapbox access token is configured for this deployment, so the interactive map can't load. All {{events}} are still readable in the event feed and searchable via Ask.",
     "unavailableToken": "NEXT_PUBLIC_MAPBOX_TOKEN is not set",
     "showingCountry": "Showing only",
+    "approximate": "Approximate position: country centroid",
     "clearCountry": "Show all countries"
   },
   "ask": {

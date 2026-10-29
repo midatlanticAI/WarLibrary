@@ -12,6 +12,7 @@
  *   - Deduplication across event files
  */
 
+import { getActiveConflicts, conflictLabel } from "@/lib/conflicts";
 import fs from "fs";
 import path from "path";
 
@@ -573,7 +574,8 @@ export function getDatabaseSummary(): string {
   const dates = allEvents.map((e) => e.date?.split("T")[0]).filter(Boolean).sort();
   const dateRange = dates.length > 0 ? `${dates[0]} – ${dates[dates.length - 1]}` : "unknown";
 
-  _cachedSummary = `CONFLICT DATABASE — Operation Epic Fury (US-Israel War on Iran)\n`;
+  const tracked = getActiveConflicts().map(conflictLabel).join("; ");
+  _cachedSummary = `CONFLICT DATABASE — ${tracked}\n`;
   _cachedSummary += `Period: ${dateRange} | ${allEvents.length} verified events | ${totalFatalities.toLocaleString()}+ fatalities reported\n`;
   _cachedSummary += `Countries affected: ${countries.join(", ")}\n`;
   _cachedSummary += `Event types: ${eventTypes.map((t) => t.replace(/_/g, " ")).join(", ")}\n`;

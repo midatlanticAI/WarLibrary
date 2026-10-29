@@ -15,7 +15,24 @@ export interface ConflictEvent {
   confidence?: number;           // 0.0 to 1.0
   verification_status?: "confirmed" | "reported" | "claimed" | "disputed" | "unconfirmed";
   location_precision?: "exact" | "city" | "region" | "country";
-  civilian_impact?: string;  // e.g., "500+ displaced", "hospital damaged", "aid convoy blocked"
+  civilian_impact?: string | null;  // e.g., "500+ displaced", "hospital damaged", "aid convoy blocked"
+  // Grounded fields (2026-10-29, see /codebook). Null on legacy rows.
+  conflict_id?: string;
+  sub_event_type?: string | null;
+  evidence_quote?: string | null;
+  fatalities_min?: number | null;
+  fatalities_max?: number | null;
+  fatalities_attribution?: string | null;
+  sources?: { name: string; url: string | null; fetched_at?: string }[];
+  source_count?: number;
+  actor1?: string | null;
+  actor2?: string | null;
+  actor1_type?: string | null;
+  actor2_type?: string | null;
+  geo_source?: "article" | "gazetteer" | "centroid" | "legacy";
+  first_reported_at?: string | null;
+  revision?: number;
+  updated_at?: string | null;
 }
 
 export interface Faction {

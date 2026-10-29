@@ -39,11 +39,21 @@ const nextConfig: NextConfig = {
       // no-store`. Cloudflare honours CDN-Cache-Control independently, so the
       // public, locale-free pages are cached at the edge for a while anyway.
       // The pipeline writes every 30 minutes; these windows match that.
-      ...["/event/:id", "/country", "/country/:slug", "/event/:id/opengraph-image", "/country/:slug/opengraph-image"].map((source) => ({
+      ...[
+        "/event/:id",
+        "/country",
+        "/country/:slug",
+        "/event/:id/opengraph-image",
+        "/country/:slug/opengraph-image",
+        "/dispatch",
+        "/dispatch/:kind/:key",
+        "/dispatch/:kind/:key/opengraph-image",
+        "/codebook",
+      ].map((source) => ({
         source,
         headers: [{ key: "CDN-Cache-Control", value: "public, max-age=1800, stale-while-revalidate=3600" }],
       })),
-      ...["/sitemap.xml", "/sitemaps/:name", "/feed.xml", "/llms.txt"].map((source) => ({
+      ...["/sitemap.xml", "/sitemaps/:name", "/feed.xml", "/dispatch/feed.xml", "/llms.txt"].map((source) => ({
         source,
         headers: [{ key: "CDN-Cache-Control", value: "public, max-age=1800, stale-while-revalidate=3600" }],
       })),

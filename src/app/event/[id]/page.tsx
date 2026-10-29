@@ -9,12 +9,16 @@ import {
   countrySlug,
   getCountryBySlug,
 } from "@/lib/event-store";
+import { conflictForEvent, conflictLabel } from "@/lib/conflicts";
 import {
   SITE_URL,
   SITE_NAME,
   eventTypeLabel,
+  subTypeLabel,
   VERIFICATION_LABEL,
   PRECISION_LABEL,
+  GEO_SOURCE_LABEL,
+  ACTOR_TYPE_LABEL,
   formatDate,
   excerpt,
   formatNumber,
@@ -61,6 +65,16 @@ function pageTitle(event: EventRecord): string {
   return `${headline(event)}, ${formatDate(event.date)}: ${excerpt(event.description, 70)}`;
 }
 
+/** "12", "12–30", or "None reported"; the range only when it differs from the point figure. */
+function fatalitiesText(event: EventRecord): string {
+  const point = event.fatalities && event.fatalities > 0 ? event.fatalities : 0;
+  const min = event.fatalities_min ?? point;
+  const max = event.fatalities_max ?? point;
+  if (max <= 0) return "None reported";
+  if (min !== max) return `${formatNumber(min)}–${formatNumber(max)}`;
+  return formatNumber(max);
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const event = getEventById(id);
@@ -96,6 +110,7 @@ export default async function EventPage({ params }: Params) {
   const related = getRelatedEvents(event, 8);
   const slug = countrySlug(event.country);
   const country = slug ? getCountryBySlug(slug) : null;
+  const conflict = conflictForEvent(event);
   const title = pageTitle(event);
   const url = `${SITE_URL}/event/${event.id}`;
   const dateValid = !Number.isNaN(new Date(event.date).getTime());
@@ -104,6 +119,8 @@ export default async function EventPage({ params }: Params) {
     ? `/?e=${event.id}&from=${day}&to=${day}${slug ? `&c=${slug}` : ""}`
     : `/?e=${event.id}`;
   const kinetic = isKinetic(event);
+  const approximate = event.geo_source === "centroid" || event.location_precision === "country";
+  const extraSources = event.sources.filter((s) => s.url !== event.source_url);
 
   // Article, not schema.org/Event: that type is for organised, attendable
   // events, and stamping it on tens of thousands of strike reports reads as
@@ -114,6 +131,7 @@ export default async function EventPage({ params }: Params) {
     headline: headline(event),
     description: excerpt(event.description, 300),
     datePublished: dateValid ? event.date : undefined,
+    dateModified: event.updated_at ?? undefined,
     about: {
       "@type": "Place",
       name: placeName(event),
@@ -127,7 +145,7 @@ export default async function EventPage({ params }: Params) {
     mainEntityOfPage: url,
     url,
     isAccessibleForFree: true,
-    citation: event.source_url ?? undefined,
+    citation: event.sources.map((s) => s.url).filter(Boolean),
     author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
     publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
   };
@@ -168,10 +186,16 @@ export default async function EventPage({ params }: Params) {
           <span className={`rounded px-2 py-0.5 font-semibold uppercase tracking-wider ${kinetic ? "bg-red-900/50 text-red-300" : "bg-blue-900/40 text-blue-300"}`}>
             {eventTypeLabel(event.event_type)}
           </span>
+          {event.sub_event_type && (
+            <span className="rounded border border-zinc-800 px-2 py-0.5 text-zinc-400">{subTypeLabel(event.sub_event_type)}</span>
+          )}
           {event.verification_status && (
             <span className="rounded border border-zinc-800 px-2 py-0.5 text-zinc-400">
               {VERIFICATION_LABEL[event.verification_status] ?? event.verification_status}
             </span>
+          )}
+          {approximate && (
+            <span className="rounded border border-amber-900/60 px-2 py-0.5 text-amber-300/80">Approximate location</span>
           )}
           {!kinetic && (
             <span className="text-zinc-500">Development, not a kinetic event</span>
@@ -181,11 +205,30 @@ export default async function EventPage({ params }: Params) {
         <h1 className="text-2xl font-bold leading-tight tracking-tight text-zinc-100 sm:text-3xl">
           {headline(event)}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">{formatDate(event.date)}</p>
+        <p className="mt-1 text-sm text-zinc-500">
+          {formatDate(event.date)}
+          {conflict && <> · {conflictLabel(conflict)}</>}
+        </p>
 
         <p className="mt-5 text-base leading-relaxed text-zinc-300 sm:text-lg">
           {event.description}
         </p>
+
+        {event.evidence_quote && (
+          <figure className="mt-4 border-s-2 border-zinc-700 ps-4">
+            <blockquote className="text-sm italic leading-relaxed text-zinc-400">“{event.evidence_quote}”</blockquote>
+            <figcaption className="mt-1 text-xs text-zinc-500">
+              From the source report
+              {event.source_url ? (
+                <>
+                  {" "}
+                  (<a href={event.source_url} target="_blank" rel="noopener noreferrer nofollow" className="underline-offset-2 hover:underline">{event.source}</a>)
+                </>
+              ) : null}
+              . Copied verbatim by the pipeline; see <Link href="/codebook#evidence" className="underline-offset-2 hover:underline">evidence quotes</Link>.
+            </figcaption>
+          </figure>
+        )}
 
         {event.civilian_impact && (
           <p className="mt-4 rounded-lg border border-amber-900/40 bg-amber-950/20 p-3 text-sm text-amber-200/80">
@@ -206,17 +249,49 @@ export default async function EventPage({ params }: Params) {
             {event.location_precision && (
               <span className="ms-2 text-xs text-zinc-500">{PRECISION_LABEL[event.location_precision] ?? event.location_precision}</span>
             )}
+            <span className="block text-xs text-zinc-500">{GEO_SOURCE_LABEL[event.geo_source] ?? event.geo_source}</span>
           </Row>
           <Row label="Fatalities">
-            {event.fatalities && event.fatalities > 0 ? formatNumber(event.fatalities) : "None reported"}
+            {fatalitiesText(event)}
+            {event.fatalities_attribution && (
+              <span className="block text-xs text-zinc-500">Figure from {event.fatalities_attribution}</span>
+            )}
+            {!event.fatalities_attribution && (event.fatalities ?? 0) > 0 && (
+              <span className="block text-xs text-zinc-500">As reported by the source; attribution not recorded</span>
+            )}
           </Row>
-          {event.actors && event.actors.length > 0 && (
-            <Row label="Actors">{event.actors.join(", ")}</Row>
+          {(event.actor1 || event.actors.length > 0) && (
+            <Row label="Actors">
+              {event.actor1 ? (
+                <>
+                  <span>{event.actor1}</span>
+                  {event.actor1_type && event.actor1_type !== "unknown" && (
+                    <span className="text-xs text-zinc-500"> ({ACTOR_TYPE_LABEL[event.actor1_type] ?? event.actor1_type})</span>
+                  )}
+                  {event.actor2 && (
+                    <>
+                      <span className="text-zinc-500"> → </span>
+                      <span>{event.actor2}</span>
+                      {event.actor2_type && event.actor2_type !== "unknown" && (
+                        <span className="text-xs text-zinc-500"> ({ACTOR_TYPE_LABEL[event.actor2_type] ?? event.actor2_type})</span>
+                      )}
+                    </>
+                  )}
+                  {event.actors.filter((a) => a !== event.actor1 && a !== event.actor2).length > 0 && (
+                    <span className="block text-xs text-zinc-500">
+                      Also named: {event.actors.filter((a) => a !== event.actor1 && a !== event.actor2).join(", ")}
+                    </span>
+                  )}
+                </>
+              ) : (
+                event.actors.join(", ")
+              )}
+            </Row>
           )}
           {typeof event.confidence === "number" && (
             <Row label="Extraction confidence">{Math.round(event.confidence * 100)}%</Row>
           )}
-          <Row label="Source">
+          <Row label={event.source_count > 1 ? `Sources (${event.source_count})` : "Source"}>
             {event.source_url ? (
               <a href={event.source_url} target="_blank" rel="noopener noreferrer nofollow" className="text-zinc-100 underline-offset-2 hover:underline">
                 {event.source}
@@ -224,6 +299,30 @@ export default async function EventPage({ params }: Params) {
             ) : (
               event.source
             )}
+            {extraSources.length > 0 && (
+              <ul className="mt-1 space-y-0.5 text-xs text-zinc-400">
+                {extraSources.map((s) => (
+                  <li key={s.url ?? s.name}>
+                    {s.url ? (
+                      <a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="underline-offset-2 hover:underline">{s.name}</a>
+                    ) : (
+                      s.name
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Row>
+          <Row label="Record">
+            <span className="text-xs text-zinc-400">
+              Revision {event.revision}
+              {event.first_reported_at && !Number.isNaN(new Date(event.first_reported_at).getTime()) && (
+                <> · first recorded {formatDate(event.first_reported_at)}</>
+              )}
+              {event.updated_at && !Number.isNaN(new Date(event.updated_at).getTime()) && (
+                <> · updated {formatDate(event.updated_at)}</>
+              )}
+            </span>
           </Row>
         </dl>
 
@@ -263,7 +362,10 @@ export default async function EventPage({ params }: Params) {
           This record was extracted from the linked report by the War Library
           pipeline and carries its own source, confidence and verification
           status. Figures are as reported at the time; see{" "}
-          <Link href="/sources" className="underline-offset-2 hover:underline">how events are verified</Link>.
+          <Link href="/sources" className="underline-offset-2 hover:underline">how events are verified</Link>
+          {" "}and the{" "}
+          <Link href="/codebook" className="underline-offset-2 hover:underline">codebook</Link>
+          {" "}for what every field means.
           Event ID <span className="font-mono">{event.id}</span>.
         </p>
       </main>

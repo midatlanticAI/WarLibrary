@@ -56,3 +56,6 @@ src/data/*.backup-*.json
 
 # Server-side caches (Mapbox backdrops for social cards)
 .cache/
+
+# dispatches (written by scripts/write-dispatch.js on the droplet)
+src/data/dispatches/
