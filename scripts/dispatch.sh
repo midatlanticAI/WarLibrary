@@ -47,4 +47,11 @@ if [ "$RC" -ne 0 ]; then
   log "ERROR: write-dispatch.js exited $RC"
   exit "$RC"
 fi
+
+# Email whatever is published and not yet emailed (the daily, normally).
+# Its own lock, its own exit code: an email failure never fails the
+# dispatch run, and the hourly sweep retries it.
+if [ -x "$PROJECT_DIR/scripts/newsletter.sh" ]; then
+  "$PROJECT_DIR/scripts/newsletter.sh" sweep || log "WARNING: newsletter sweep failed (hourly sweep will retry)"
+fi
 log "=== dispatch $KIND done ==="

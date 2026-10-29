@@ -1,14 +1,6 @@
 "use client";
 
-import { LOCALES, LOCALE_COOKIE, type Locale } from "@/i18n/locale";
-
-/** Endonyms: a language's own name never needs translating. */
-const ENDONYM: Record<Locale, string> = {
-  en: "English",
-  es: "Español",
-  ar: "العربية",
-  he: "עברית",
-};
+import { ENDONYM, LOCALES, LOCALE_COOKIE, type Locale } from "@/i18n/locale";
 
 const STORAGE_KEY = "warlibrary_lang";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;

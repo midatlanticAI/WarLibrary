@@ -11,6 +11,7 @@ import {
   readJSONFile,
   toLite,
 } from "@/lib/event-store";
+import { isContentLanguage, localizeEvents, translationSignature } from "@/lib/translation-store";
 
 /**
  * Events API route for War Library.
@@ -152,10 +153,27 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const dataset = getDataset();
 
-  // ETag covers both the underlying data and the shape of this specific query.
+  // lang=xx swaps each event's description (and civilian impact) for the
+  // machine translation in that language where one exists, and says so on
+  // the event (`description_lang`, `translated`). English, or no param,
+  // returns the record as written. An unknown code is a 400 like any other
+  // malformed parameter, not a silent fallback to English.
+  const langParam = searchParams.get("lang");
+  const lang = langParam && langParam !== "en" ? langParam : null;
+  if (lang !== null && !isContentLanguage(lang)) {
+    return NextResponse.json(
+      { error: "Invalid 'lang' parameter. Use one of the site's language codes (es, fr, tr, ar, fa, ur, he) or omit it for English." },
+      { status: 400 }
+    );
+  }
+
+  // ETag covers the underlying data, the translation table in play and the
+  // shape of this specific query. Without the translation signature a poll
+  // after new translations landed would be answered 304 with the English
+  // text still on screen.
   const etag = `W/"${crypto
     .createHash("sha1")
-    .update(`${dataset.signature}|${searchParams.toString()}`)
+    .update(`${dataset.signature}|${lang ? translationSignature(lang) : ""}|${searchParams.toString()}`)
     .digest("hex")
     .slice(0, 20)}"`;
 
@@ -234,9 +252,11 @@ export async function GET(request: NextRequest) {
     matched
   );
 
-  const page = events.slice(offset, offset + limit);
+  const page = localizeEvents(events.slice(offset, offset + limit), lang);
   const data =
-    searchParams.get("fields") === "lite" ? page.map(toLite) : page;
+    searchParams.get("fields") === "lite"
+      ? page.map((e) => ({ ...toLite(e), description_lang: e.description_lang, translated: e.translated }))
+      : page;
 
   return NextResponse.json(
     {

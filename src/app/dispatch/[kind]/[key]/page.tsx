@@ -7,6 +7,9 @@ import type { Dispatch, DispatchKind } from "@/lib/dispatch-core.cjs";
 import { countrySlug } from "@/lib/event-store";
 import { SITE_URL, SITE_NAME, PUBLICATION_NAME, DISPATCH_KIND_LABEL, excerpt } from "@/lib/site";
 import { resolveLocale, makeT, formatDateFor, formatNumberFor } from "@/i18n/server";
+import { localeDir, textAttrs } from "@/i18n/locale";
+import { localizeDispatch } from "@/lib/dispatch-i18n";
+import { localizeEvent } from "@/lib/translation-store";
 import { ldJson } from "@/components/seo/JsonLd";
 import PageView from "@/components/analytics/PageView";
 import SiteNav from "@/components/site/SiteNav";
@@ -23,7 +26,11 @@ import NewsletterBox from "@/components/dispatch/NewsletterBox";
  */
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ kind: string; key: string }> };
+type Params = {
+  params: Promise<{ kind: string; key: string }>;
+  /** `?original=1` shows the English record under a non-English interface. */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
 const KIND_KEY = { daily: "pages.dailyDispatch", weekly: "pages.weeklyDispatch", monthly: "pages.monthlyDispatch" } as const;
 const PRIOR_KEY = { daily: "pages.priorDay", weekly: "pages.priorWeek", monthly: "pages.priorMonth" } as const;
@@ -57,13 +64,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function DispatchPage({ params }: Params) {
+export default async function DispatchPage({ params, searchParams }: Params) {
   const { kind, key } = await params;
   const d = load(kind, key);
   if (!d) notFound();
 
   const locale = await resolveLocale();
   const t = makeT(locale);
+  const query = searchParams ? await searchParams : {};
+  // The narrative in the reader's language when the translator produced one.
+  // `d` keeps the English record for metadata, JSON-LD and the feed.
+  const text = localizeDispatch(d, locale, { original: query.original === "1" });
   const n = (v: number) => formatNumberFor(locale, v);
   const url = `${SITE_URL}${core.dispatchUrlPath(d.kind, d.key)}`;
   const published = new Date(publishedAt(d));
@@ -133,22 +144,33 @@ export default async function DispatchPage({ params }: Params) {
         </nav>
 
         <p className="text-xs font-semibold uppercase tracking-widest text-red-300">{t(KIND_KEY[d.kind])}</p>
-        <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight text-zinc-100 sm:text-3xl" lang="en" dir="ltr">
-          {core.stripCitations(d.title)}
+        <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight text-zinc-100 sm:text-3xl" lang={text.lang} dir={localeDir(text.lang)}>
+          {core.stripCitations(text.title)}
         </h1>
         <p className="mt-2 text-sm text-zinc-500">
           <span lang="en">{d.window.label}</span> · {t("pages.published")} <time dateTime={published.toISOString()}>{formatDateFor(locale, published.toISOString())}</time>
           {d.edited_at && <> · {t("pages.edited")} {formatDateFor(locale, d.edited_at)}</>}
         </p>
-        {locale !== "en" && <p className="mt-2 text-xs text-zinc-500">{t("pages.englishContent")}</p>}
+        {locale !== "en" && (
+          <p className="mt-2 text-xs text-zinc-500">
+            {text.translated ? (
+              <>
+                {t("pages.machineTranslated")}{" "}
+                <Link href={`${core.dispatchUrlPath(d.kind, d.key)}?original=1`} className="underline-offset-2 hover:underline">{t("pages.readInEnglish")}</Link>
+              </>
+            ) : (
+              t("pages.englishContent")
+            )}
+          </p>
+        )}
 
-        <div lang="en" dir="ltr">
+        <div lang={text.lang} dir={localeDir(text.lang)}>
           <p className="mt-5 text-base leading-relaxed text-zinc-200 sm:text-lg">
-            <Cited text={d.lede} index={index} />
+            <Cited text={text.lede} index={index} />
           </p>
 
-          {d.sections.map((s) => (
-            <section key={s.heading} className="mt-8">
+          {text.sections.map((s, si) => (
+            <section key={d.sections[si]?.heading ?? si} className="mt-8">
               <h2 className="mb-2 text-lg font-semibold text-zinc-100">{s.heading}</h2>
               {s.body.split(/\n{2,}/).map((para, i) => (
                 <p key={i} className="mb-3 leading-relaxed text-zinc-300">
@@ -158,10 +180,10 @@ export default async function DispatchPage({ params }: Params) {
             </section>
           ))}
 
-          {d.civilian_note && (
+          {text.civilian_note && (
             <section className="mt-8 rounded-lg border border-amber-900/40 bg-amber-950/20 p-4">
-              <h2 className="mb-1 text-sm font-semibold text-amber-200" lang={locale}>{t("pages.humanCost")}</h2>
-              <p className="text-sm leading-relaxed text-amber-100/80"><Cited text={d.civilian_note} index={index} /></p>
+              <h2 className="mb-1 text-sm font-semibold text-amber-200" lang={locale} dir={localeDir(locale)}>{t("pages.humanCost")}</h2>
+              <p className="text-sm leading-relaxed text-amber-100/80"><Cited text={text.civilian_note} index={index} /></p>
             </section>
           )}
         </div>
@@ -214,7 +236,7 @@ export default async function DispatchPage({ params }: Params) {
                         {t(`eventTypes.${e.event_type}`)} · {e.region && e.region !== e.country ? `${e.region}, ${e.country}` : e.country}
                       </Link>
                       <span className="text-zinc-500"> · {formatDateFor(locale, e.date)}{e.fatalities > 0 ? ` · ${t("pages.killedN", { n: n(e.fatalities) })}` : ""}</span>
-                      <p className="mt-0.5 text-zinc-400" lang="en" dir="ltr">{excerpt(e.description, 180)}</p>
+                      <p className="mt-0.5 text-zinc-400" {...textAttrs(localizeEvent(e, locale).description_lang, locale)}>{excerpt(localizeEvent(e, locale).description, 180)}</p>
                       <p className="mt-0.5 text-xs text-zinc-500">
                         {e.source_url ? <a href={e.source_url} target="_blank" rel="noopener noreferrer nofollow" className="underline-offset-2 hover:underline">{e.source}</a> : e.source}
                       </p>
@@ -239,7 +261,7 @@ export default async function DispatchPage({ params }: Params) {
           )}
         </nav>
 
-        <NewsletterBox t={t} />
+        <NewsletterBox t={t} locale={locale} />
 
         <p className="mt-10 border-t border-zinc-800 pt-4 text-xs leading-relaxed text-zinc-500">
           <span lang="en">{d.disclosure}</span>{" "}

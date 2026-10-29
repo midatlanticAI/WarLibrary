@@ -337,6 +337,13 @@ function assemble({ kind, key, inputs, output, usage, now = new Date(), existing
     disclosure: core.DISCLOSURE,
     revision: existing ? (existing.revision || 1) + 1 : 1,
     edited_at: null,
+    // Translations belong to the old narrative and are dropped (the
+    // translator re-runs after the write). The email record is NOT: a
+    // regenerated dispatch has already reached subscribers, and losing
+    // `emailed` here would make the next sweep send it again.
+    translations: null,
+    translated_at: null,
+    emailed: existing && existing.emailed ? existing.emailed : null,
     check: {
       dropped_sentences: check.dropped_sentences + ledeCheck.dropped_sentences + noteDropped,
       uncited_sentences: check.uncited_sentences + ledeCheck.uncited_sentences,
@@ -467,6 +474,19 @@ async function main() {
 
   if (dispatch.status === "published") {
     await pingIndexNow([`${SITE_URL}${core.dispatchUrlPath(kind, key)}`, `${SITE_URL}/dispatch`]);
+  }
+
+  // Translate the narrative into every served language. A failure here is
+  // logged, never fatal: the dispatch is on disk and readable in English.
+  // Skipped with TRANSLATE_DISPATCHES=false (tests, cost emergencies).
+  if (process.env.TRANSLATE_DISPATCHES !== "false") {
+    try {
+      const { translateDispatch } = require("./translate-dispatch.js");
+      const r = await translateDispatch({ kind, key, log: (m) => console.log(`  [translate] ${m}`) });
+      console.log(`  Translations: ${r.translated.length} ok, ${r.failed.length} failed, $${r.cost_usd.toFixed(4)}`);
+    } catch (err) {
+      console.error(`  Translation failed (dispatch stays English): ${err.message}`);
+    }
   }
   console.log(`STATUS: WRITTEN status=${dispatch.status}`);
 }

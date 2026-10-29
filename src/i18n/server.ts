@@ -1,7 +1,11 @@
 import { cookies, headers } from "next/headers";
 import en from "./en.json";
 import es from "./es.json";
+import fr from "./fr.json";
+import tr from "./tr.json";
 import ar from "./ar.json";
+import fa from "./fa.json";
+import ur from "./ur.json";
 import he from "./he.json";
 import { LOCALE_COOKIE, LOCALE_TAG, isLocale, matchBrowserLocale, type Locale } from "./locale";
 
@@ -23,7 +27,7 @@ export { LOCALE_TAG };
  */
 
 type TranslationMap = typeof en;
-const translations: Record<Locale, TranslationMap> = { en, es, ar, he };
+const translations: Record<Locale, TranslationMap> = { en, es, fr, tr, ar, fa, ur, he };
 
 /** Parse an Accept-Language header into tags in preference order. */
 export function parseAcceptLanguage(header: string | null | undefined): string[] {

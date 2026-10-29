@@ -199,6 +199,34 @@ button, nav {
   font-family: var(--font-noto-hebrew), "Noto Sans Hebrew", var(--font-sans), Arial, sans-serif;
 }
 
+/* Persian: Vazirmatn (loaded in the root layout), Noto Sans Arabic as the fallback. */
+[lang="fa"] body {
+  font-family: var(--font-vazirmatn), "Vazirmatn", var(--font-noto-arabic), "Noto Sans Arabic", var(--font-sans), Arial, sans-serif;
+}
+
+/* Urdu: Nastaliq hangs below the baseline and needs roughly a third more
+   line height than Latin or Naskh, otherwise descenders of one line collide
+   with the next. The utility classes that tighten line height are raised
+   too, since they are set per element and would win over the body rule. */
+[lang="ur"] body {
+  font-family: var(--font-noto-nastaliq), "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", var(--font-noto-arabic), var(--font-sans), sans-serif;
+  line-height: 1.9;
+}
+[lang="ur"] .leading-tight,
+[lang="ur"] .leading-snug,
+[lang="ur"] .leading-normal {
+  line-height: 1.8;
+}
+[lang="ur"] .leading-relaxed {
+  line-height: 2.1;
+}
+/* Runs of English inside an Urdu or Persian page keep the Latin face. */
+[lang="ur"] [lang="en"],
+[lang="fa"] [lang="en"] {
+  font-family: var(--font-sans), Arial, sans-serif;
+  line-height: inherit;
+}
+
 /* RTL scrollbar positioning */
 [dir="rtl"] ::-webkit-scrollbar {
   direction: rtl;

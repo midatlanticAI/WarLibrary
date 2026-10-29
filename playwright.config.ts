@@ -5,7 +5,8 @@ export default defineConfig({
   timeout: 30_000,
   retries: 1,
   use: {
-    baseURL: "http://localhost:3000",
+    // Override to point the suite at another port or at production.
+    baseURL: process.env.PW_BASE_URL || "http://localhost:3000",
     screenshot: "only-on-failure",
   },
   projects: [

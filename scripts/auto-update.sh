@@ -74,5 +74,21 @@ else
   log "WARNING: Could not determine update status from script output."
 fi
 
+# Translate whatever is new into every served language. Bounded (--limit)
+# and its own timeout, so a slow model never holds the lock past the next
+# pipeline tick; anything left over is picked up by the next run. The
+# one-off archive backfill is the same script with --all (see CLAUDE.md).
+log "Translating new events..."
+set +e
+TRANSLATE_OUTPUT=$(timeout 600 "$NODE_BIN" scripts/translate-events.js --limit 120 2>&1)
+TRANSLATE_RC=$?
+set -e
+echo "$TRANSLATE_OUTPUT" | while IFS= read -r line; do
+  log "  [translate] $line"
+done
+if [ "$TRANSLATE_RC" -ne 0 ]; then
+  log "WARNING: translate-events.js exited $TRANSLATE_RC (events stay English until the next run)"
+fi
+
 log "Auto-update complete."
 log "=========================================="

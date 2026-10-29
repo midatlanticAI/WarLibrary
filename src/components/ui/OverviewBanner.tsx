@@ -1,6 +1,6 @@
 "use client";
 
-import { LOCALE_TAG } from "@/i18n/locale";
+import { LOCALE_TAG, textAttrs } from "@/i18n/locale";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ConflictEvent } from "@/types";
 import { EVENT_COLORS } from "@/lib/constants";
@@ -29,6 +29,9 @@ export default function OverviewBanner({ events, summary = null }: OverviewBanne
   const { t, locale } = useI18n();
   const [collapsed, setCollapsed] = useState(true);
   const [activeModal, setActiveModal] = useState<StatKey | null>(null);
+  const numberFormat = useMemo(() => new Intl.NumberFormat(LOCALE_TAG[locale]), [locale]);
+  const pluralRules = useMemo(() => new Intl.PluralRules(locale), [locale]);
+  const fmt = (n: number) => numberFormat.format(n);
 
   useEffect(() => {
     if (window.innerWidth >= 640) setCollapsed(false);
@@ -38,10 +41,13 @@ export default function OverviewBanner({ events, summary = null }: OverviewBanne
     const summedFatalities = events.reduce((sum, e) => sum + (e.fatalities || 0), 0);
     let reportedTotal = 0;
     for (const e of events) {
-      const desc = (e.description || "").toLowerCase();
+      // Pattern-matched on the English record: the description on screen
+      // may be a translation, and these regexes are English.
+      const english = e.description_en ?? e.description ?? "";
+      const desc = english.toLowerCase();
       const tollMatch = desc.match(/(?:death toll|toll|casualties).*?(\d[\d,]+)\s*(?:killed|dead|people)/i)
         || desc.match(/(?:death toll|toll).*?(?:reaches|exceeds|surpasses|passes|tops)\s*(\d[\d,]+)/i)
-        || (e.description || "").match(/(\d[\d,]+)\+?\s*(?:fatalities|killed|dead)\s*(?:reported|confirmed)/i);
+        || english.match(/(\d[\d,]+)\+?\s*(?:fatalities|killed|dead)\s*(?:reported|confirmed)/i);
       if (tollMatch) {
         const num = parseInt(tollMatch[1].replace(/,/g, ""), 10);
         if (num > reportedTotal) reportedTotal = num;
@@ -119,7 +125,7 @@ export default function OverviewBanner({ events, summary = null }: OverviewBanne
               <span className="text-xs text-zinc-500">
                 {t("stats.day")} {stats.daysOfConflict} ·{" "}
                 <span className="text-red-400">{stats.totalKilled.toLocaleString(LOCALE_TAG[locale])}+</span> {t("stats.killed").toLowerCase()} ·{" "}
-                {stats.totalEvents} {t("stats.events").toLowerCase()} · {stats.countries} {t("stats.countriesText")}
+                {fmt(stats.totalEvents)} {t("stats.events").toLowerCase()} · {fmt(stats.countries)} {t("stats.countries").toLowerCase()}
               </span>
             )}
           </div>
@@ -134,16 +140,20 @@ export default function OverviewBanner({ events, summary = null }: OverviewBanne
               <span className="font-semibold text-zinc-100">
                 {t("stats.operationEpicFury")}: {t("stats.day")} {stats.daysOfConflict}.
               </span>{" "}
-              {stats.totalEvents} {t("stats.verifiedEvents")} {stats.countries} {t("stats.countriesText")}
-              ({stats.topCountries.join(", ")}). {stats.airstrikes} {t("stats.airstrikesStat")},{" "}
-              {stats.missiles} {t("stats.missileAttacks")}, {stats.drones} {t("stats.droneStrikes")}
-              {stats.battles > 0 ? `, ${stats.battles} ${t("stats.groundEngagements")}` : ""}
-              {stats.strategicDevs > 0 ? `, ${stats.strategicDevs} ${t("stats.strategicDevelopments")}` : ""}.{" "}
+              {/* Whole sentences with placeholders, not fragments glued
+                  around numbers: Turkish and Urdu put the country count
+                  first, Persian attaches the counter to the noun, and the
+                  old "N event(s)" was English in every language. */}
+              {t("stats.overviewLine", { events: fmt(stats.totalEvents), countries: fmt(stats.countries) })}
+              {" "}({stats.topCountries.join(", ")}). {fmt(stats.airstrikes)} {t("stats.airstrikesStat")},{" "}
+              {fmt(stats.missiles)} {t("stats.missileAttacks")}, {fmt(stats.drones)} {t("stats.droneStrikes")}
+              {stats.battles > 0 ? `, ${fmt(stats.battles)} ${t("stats.groundEngagements")}` : ""}
+              {stats.strategicDevs > 0 ? `, ${fmt(stats.strategicDevs)} ${t("stats.strategicDevelopments")}` : ""}.{" "}
               {stats.totalKilled > 0
-                ? `${stats.totalKilled.toLocaleString(LOCALE_TAG[locale])}+ ${t("stats.fatalitiesReported")}`
+                ? t("stats.fatalitiesLine", { n: fmt(stats.totalKilled) })
                 : t("stats.casualtiesBeing")}{" "}
               {stats.recentEvents.length > 0
-                ? `${stats.recentEvents.length} event${stats.recentEvents.length !== 1 ? "s" : ""} ${t("stats.eventsInLast24h")}`
+                ? t(`stats.recentLine.${pluralRules.select(stats.recentEvents.length)}`, { n: fmt(stats.recentEvents.length) })
                 : ""}
             </p>
 
@@ -175,7 +185,7 @@ export default function OverviewBanner({ events, summary = null }: OverviewBanne
                     — <span lang="en" dir="ltr">{stats.latestEvent.region}, {stats.latestEvent.country}</span>
                   </div>
                   <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500">
-                    <span lang="en" dir="ltr">{stats.latestEvent.description}</span>
+                    <span {...textAttrs(stats.latestEvent.description_lang, locale)}>{stats.latestEvent.description}</span>
                   </p>
                   <span className="mt-0.5 text-[10px] text-zinc-500">
                     {t("stats.source")}: {stats.latestEvent.source}
@@ -479,7 +489,7 @@ function MilitaryBreakdown({ events, type }: { events: ConflictEvent[]; type: st
               <span className="text-xs text-zinc-400" lang="en" dir="ltr">{e.region}, {e.country}</span>
               <span className="text-xs text-zinc-500">{new Date(e.date).toLocaleDateString(LOCALE_TAG[locale], { month: "short", day: "numeric" })}</span>
             </div>
-            <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300" lang="en" dir="ltr">{e.description}</p>
+            <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300" {...textAttrs(e.description_lang, locale)}>{e.description}</p>
             <div className="mt-0.5 flex items-center gap-2 text-[10px] text-zinc-500">
               {e.fatalities !== null && e.fatalities > 0 && <span className="text-red-400">{e.fatalities} {t("modal.killedLabel")}</span>}
               <span>{t("stats.source")}: {e.source}</span>
@@ -511,7 +521,9 @@ function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]
     const cats: Record<string, number> = {};
     for (const e of civilianEvents) {
       if (e.civilian_impact) {
-        const ci = e.civilian_impact.toLowerCase();
+        // English keywords, so classify the English record even when the
+        // note on screen is a translation.
+        const ci = (e.civilian_impact_en ?? e.civilian_impact).toLowerCase();
         if (ci.includes("displac")) cats["displaced"] = (cats["displaced"] || 0) + 1;
         if (ci.includes("hospital") || ci.includes("medical")) cats["healthcare"] = (cats["healthcare"] || 0) + 1;
         if (ci.includes("school") || ci.includes("education")) cats["schools"] = (cats["schools"] || 0) + 1;
@@ -560,9 +572,9 @@ function CivilianBreakdown({ events, civilianEvents }: { events: ConflictEvent[]
               <span className="text-xs text-zinc-400" lang="en" dir="ltr">{e.region}, {e.country}</span>
               <span className="text-xs text-zinc-500">{new Date(e.date).toLocaleDateString(LOCALE_TAG[locale], { month: "short", day: "numeric" })}</span>
             </div>
-            <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300" lang="en" dir="ltr">{e.description}</p>
+            <p className="mt-0.5 line-clamp-2 text-xs text-zinc-300" {...textAttrs(e.description_lang, locale)}>{e.description}</p>
             {e.civilian_impact && (
-              <p className="mt-0.5 text-[10px] text-amber-400" lang="en" dir="ltr">{e.civilian_impact}</p>
+              <p className="mt-0.5 text-[10px] text-amber-400" {...textAttrs(e.civilian_impact_en ? e.description_lang : "en", locale)}>{e.civilian_impact}</p>
             )}
             <span className="text-[10px] text-zinc-500">{t("stats.source")}: {e.source}</span>
           </div>
@@ -629,7 +641,7 @@ function RecentBreakdown({ recentEvents }: { recentEvents: ConflictEvent[] }) {
                 {new Date(e.date).toLocaleTimeString(LOCALE_TAG[locale], { hour: "numeric", minute: "2-digit" })}
               </span>
             </div>
-            <p className="mt-0.5 line-clamp-2 ps-4 text-xs text-zinc-300" lang="en" dir="ltr">{e.description}</p>
+            <p className="mt-0.5 line-clamp-2 ps-4 text-xs text-zinc-300" {...textAttrs(e.description_lang, locale)}>{e.description}</p>
             <div className="mt-0.5 flex items-center gap-2 ps-4 text-[10px] text-zinc-500">
               <span lang="en" dir="ltr">{e.region}, {e.country}</span>
               {e.fatalities !== null && e.fatalities > 0 && <span className="text-red-400">{e.fatalities} {t("modal.killedLabel")}</span>}

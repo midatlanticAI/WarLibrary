@@ -15,9 +15,11 @@ async function enterApp(page: import("@playwright/test").Page) {
   // The landing page may show "Enter War Library" or "Continue to Library"
   // or may auto-dismiss. Try to find and click the button.
   try {
-    const enterBtn = page.locator("button", { hasText: /enter|continue|continuar|ادخل|כניסה/i });
+    // Whole words only: a loose "gir" matched a Spanish filter chip and the
+    // click then hung on an element that intercepted it.
+    const enterBtn = page.locator("button", { hasText: /\benter\b|\bcontinue\b|continuar|\bentrer\b|\bgir\b|\bdevam\b|ادخل|ورود|ادامه|داخل|جاری|כניסה|המשך/i });
     await enterBtn.first().waitFor({ state: "visible", timeout: 8000 });
-    await enterBtn.first().click();
+    await enterBtn.first().click({ timeout: 5000 });
   } catch {
     // May have auto-dismissed or already on the app
   }
@@ -39,7 +41,11 @@ function getLangBtn(page: import("@playwright/test").Page) {
 const ENDONYM = {
   en: "English",
   es: "Español",
+  fr: "Français",
+  tr: "Türkçe",
   ar: "العربية",
+  fa: "فارسی",
+  ur: "اردو",
   he: "עברית",
 } as const;
 
@@ -68,7 +74,7 @@ test.describe("Language selector", () => {
     await expect(langBtn).toHaveText(/EN/i);
   });
 
-  test("clicking language selector shows all 4 languages", async ({
+  test("clicking language selector shows all 8 languages", async ({
     page,
   }) => {
     await page.goto("/");
@@ -78,10 +84,9 @@ test.describe("Language selector", () => {
 
     // Endonyms in every locale, English included — the reader who most needs
     // the picker is the one who cannot read the current UI.
-    await expect(page.getByRole("option", { name: ENDONYM.en })).toBeVisible();
-    await expect(page.getByRole("option", { name: ENDONYM.es })).toBeVisible();
-    await expect(page.getByRole("option", { name: ENDONYM.ar })).toBeVisible();
-    await expect(page.getByRole("option", { name: ENDONYM.he })).toBeVisible();
+    for (const name of Object.values(ENDONYM)) {
+      await expect(page.getByRole("option", { name, exact: true })).toBeVisible();
+    }
   });
 
   test("language names stay endonyms after switching locale", async ({
@@ -129,6 +134,11 @@ test.describe("Spanish locale", () => {
   });
 
   test("Spanish locale persists across page reload", async ({ page }) => {
+    // A language switch re-requests the dataset in that language (the
+    // descriptions differ), and the reload requests it again: three full
+    // downloads of the local snapshot in one test need more than the
+    // default budget.
+    test.setTimeout(90_000);
     await page.goto("/");
     await enterApp(page);
     await switchLanguage(page, "es");
@@ -462,6 +472,91 @@ test.describe("Server-resolved locale from Accept-Language", () => {
       await page.waitForLoadState("networkidle");
       await expect(page.locator("html")).toHaveAttribute("lang", "en");
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Countries");
+    });
+  });
+
+  test.describe("Persian browser", () => {
+    test.use({ locale: "fa-IR" });
+
+    test("home and countries are RTL Persian with Persian digits", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.locator("html")).toHaveAttribute("lang", "fa");
+      await page.goto("/country");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("کشورها");
+      // Persian pins the extended Arabic-Indic digits; a Western-digit table
+      // cell would mean the locale tag was dropped somewhere.
+      await expect(page.locator("tbody td").nth(1)).toHaveText(/[۰-۹]/);
+    });
+  });
+
+  test.describe("Urdu browser", () => {
+    test.use({ locale: "ur-PK" });
+
+    test("dispatch index is RTL Urdu", async ({ page }) => {
+      await page.goto("/dispatch");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.locator("html")).toHaveAttribute("lang", "ur");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("بلیٹن");
+    });
+  });
+
+  test.describe("French and Turkish browsers", () => {
+    test.use({ locale: "fr-CA" });
+
+    test("French gets French; a Turkish cookie overrides it", async ({ page }) => {
+      await page.goto("/country");
+      await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pays");
+      await page.getByRole("combobox", { name: /langue/i }).selectOption("tr");
+      await page.waitForLoadState("networkidle");
+      await expect(page.locator("html")).toHaveAttribute("lang", "tr");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ülkeler");
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 11. Events in the reader's language: the API carries the language of each
+// description, the app asks for it, and an unknown code is rejected.
+// ---------------------------------------------------------------------------
+test.describe("Translated event descriptions", () => {
+  test("GET /api/events?lang=fa labels every event with its text language", async ({ request }) => {
+    const res = await request.get("/api/events?lang=fa&limit=3&from=2026-01-01");
+    expect(res.ok()).toBeTruthy();
+    const json = (await res.json()) as { data: { description: string; description_lang: string; translated: boolean }[] };
+    expect(json.data.length).toBeGreaterThan(0);
+    for (const e of json.data) {
+      expect(["fa", "en"]).toContain(e.description_lang);
+      expect(typeof e.translated).toBe("boolean");
+      expect(e.description.length).toBeGreaterThan(0);
+    }
+  });
+
+  test("the English table carries no translation marker beyond description_lang=en", async ({ request }) => {
+    const res = await request.get("/api/events?limit=1&from=2026-01-01");
+    const json = (await res.json()) as { data: { description_lang: string; translated: boolean; description_en?: string }[] };
+    expect(json.data[0].description_lang).toBe("en");
+    expect(json.data[0].translated).toBe(false);
+    expect(json.data[0].description_en).toBeUndefined();
+  });
+
+  test("an unknown language code is a 400", async ({ request }) => {
+    const res = await request.get("/api/events?lang=xx&limit=1");
+    expect(res.status()).toBe(400);
+  });
+
+  test.describe("Persian app", () => {
+    test.use({ locale: "fa-IR" });
+
+    test("the map requests events in Persian", async ({ page }) => {
+      const urls: string[] = [];
+      page.on("request", (req) => {
+        if (req.url().includes("/api/events")) urls.push(req.url());
+      });
+      await page.goto("/");
+      await enterApp(page);
+      await expect.poll(() => urls.some((u) => u.includes("lang=fa"))).toBe(true);
     });
   });
 });

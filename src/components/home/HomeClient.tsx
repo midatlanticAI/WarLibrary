@@ -61,10 +61,13 @@ export default function HomeClient({ initialLocale = "en" }: { initialLocale?: L
 }
 
 function HomeContent() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { events, loading, refreshing, complete, error, stale, lastUpdated } = useEvents();
+  // Events arrive in the reader's language: descriptions are swapped for the
+  // machine translation where one exists, and each event says which
+  // language its text is in (`description_lang`).
+  const { events, loading, refreshing, complete, error, stale, lastUpdated } = useEvents(locale);
   const summary = useSummary();
   const [selectedEvent, setSelectedEvent] = useState<ConflictEvent | null>(null);
   const [showApp, setShowApp] = useState(false);

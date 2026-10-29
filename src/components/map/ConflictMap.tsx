@@ -1,6 +1,6 @@
 "use client";
 
-import { LOCALE_TAG } from "@/i18n/locale";
+import { LOCALE_TAG, textAttrs } from "@/i18n/locale";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, {
   Source,
@@ -107,7 +107,7 @@ function useMapFormat() {
     [locale]
   );
 
-  return { t, num, plural, date };
+  return { t, num, plural, date, locale };
 }
 
 interface ConflictMapProps {
@@ -515,7 +515,7 @@ export default function ConflictMap({
 }
 
 function EventPopup({ event }: { event: ConflictEvent }) {
-  const { t, plural, date } = useMapFormat();
+  const { t, plural, date, locale } = useMapFormat();
 
   return (
     <div className="space-y-2 text-sm">
@@ -532,7 +532,7 @@ function EventPopup({ event }: { event: ConflictEvent }) {
           {t(`eventTypes.${event.event_type}`)}
         </span>
       </div>
-      <p className="leading-relaxed text-zinc-300">{event.description}</p>
+      <p className="leading-relaxed text-zinc-300" {...textAttrs(event.description_lang, locale)}>{event.description}</p>
       <div className="flex flex-wrap gap-1">
         {event.actors.map((actor) => (
           <span

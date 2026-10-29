@@ -118,6 +118,10 @@ scripts/
 ├── write-dispatch.js         # Daily/weekly/monthly dispatch writer (Haiku 5.5, structured output)
 ├── dispatch.sh               # Cron wrapper for the writer (06:00 daily, Mon 06:30, 1st 07:00 UTC)
 ├── backfill-registry.js      # Adds conflict_id + grounded fields to legacy rows (idempotent, backs up first)
+├── translate-events.js       # Event descriptions into every served language (incremental after each pipeline run; --all = archive backfill)
+├── translate-dispatch.js     # One dispatch's narrative into every language (run by the writer and after admin edits)
+├── newsletter.js / newsletter.sh  # Resend broadcasts per language: `sweep` (hourly cron + after the daily writer), `send`, `status`
+├── lib/translate-call.cjs    # The model-calling half of translation (Haiku 5.5, structured output, retries)
 ├── indexnow.js               # IndexNow ping (--sitemap or explicit URLs)
 └── generate-icons.mjs        # PWA icon generator (Sharp)
 ```
@@ -197,7 +201,7 @@ writer detached; publish pings IndexNow; nothing deletes). Pages:
 `/dispatch`, `/dispatch/[kind]/[key]`, `/dispatch/feed.xml`,
 `/sitemaps/news.xml` (last 48 h, Google News namespace).
 
-### Languages (en, es, ar, he)
+### Languages (en, es, fr, tr, ar, fa, ur, he)
 
 One set of JSON files (`src/i18n/*.json`, parity enforced by tests) feeds two
 translators: the client provider in `src/i18n/index.tsx` for the app, and
@@ -206,12 +210,65 @@ is resolved on the server by `resolveLocale()` (cookie `wl_lang`, then
 `Accept-Language`, then English) and passed as `initialLocale` to every
 `I18nProvider`, so the first byte is already in the reader's language and
 direction. All `Intl` calls use `LOCALE_TAG` from `src/i18n/locale.ts`
-(Arabic pins Arabic-Indic digits). Use logical Tailwind classes (`ms-`,
-`end-`, `text-start`) never physical ones. Event descriptions, evidence
-quotes and dispatch prose are English and carry `lang="en" dir="ltr"`
-inside non-English pages. The AI analyst uses one registry-driven prompt
-plus a language directive per language (`LANGUAGE_DIRECTIVES` in the chat
-route). Audit and roadmap: `docs/I18N-AUDIT-2026-10-29.md`.
+(Arabic pins Arabic-Indic digits, Persian the extended set; Urdu stays on
+Western digits). Fonts: Noto Sans Arabic, Vazirmatn (fa), Noto Nastaliq
+Urdu (ur, with raised line height in globals.css), Noto Sans Hebrew. Use
+logical Tailwind classes (`ms-`, `end-`, `text-start`) never physical ones.
+Sentences with numbers are whole strings with `{{placeholders}}` (plural
+forms via `Intl.PluralRules` keys zero/one/two/few/many/other), never
+fragments glued around a number. Adding a language: `LOCALES`, `LOCALE_TAG`,
+`ENDONYM`, `LANGUAGE_NAME` and the RTL set in `locale.ts`; a JSON file; a
+`language.<code>` key in every file; a font if the script needs one; a
+directive in `LANGUAGE_DIRECTIVES` (chat route); `LANGUAGES` in
+`translate-core.cjs` (a test ties it to `CONTENT_LOCALES`).
+
+**Content in the reader's language.** English stays the canonical record.
+`scripts/translate-events.js` (Haiku 5.5, structured output) translates
+`description` and `civilian_impact` into every non-English locale and
+appends one JSON line per event and language to
+`src/data/translations/<lang>.jsonl` (gitignored, droplet-only, excluded
+from deploys; `TRANSLATIONS_DIR` overrides). It runs after every pipeline
+run from `auto-update.sh` (bounded by `--limit`) and `--all` is the
+resumable archive backfill (~$2–3 per language). Every translation passes
+`src/lib/translate-core.cjs` checks before it is written: same multiset of
+numbers (Arabic-Indic and Persian digits normalised), sane length ratio,
+not left in English, no HTML; a rejected item stays English and is retried
+up to three times. `src/lib/translation-store.ts` reads the sidecar lazily
+per language (cached on mtime+size) and `localizeEvent()` swaps the text in,
+adding `description_lang`, `translated` and `description_en`. `/api/events`
+takes `lang=`; the ETag includes the translation file signature;
+`useEvents(locale)` requests it and caches per language. Every component
+that renders a description uses `textAttrs(event.description_lang, locale)`
+so a run not in the page's language is isolated with its own `lang`/`dir`.
+Dispatches: `scripts/translate-dispatch.js` writes `translations[lang]`
+into the dispatch file (all-or-nothing per language: citation multiset and
+numbers must match); the writer calls it after writing, the admin edit
+action clears and re-runs it; pages read it through
+`src/lib/dispatch-i18n.ts` and offer `?original=1`. Evidence quotes,
+metadata, JSON-LD, feeds and sitemaps stay English. The AI analyst uses one
+registry-driven prompt plus a language directive per language
+(`LANGUAGE_DIRECTIVES` in the chat route). Audit and roadmap:
+`docs/I18N-AUDIT-2026-10-29.md`.
+
+### Newsletter (Resend)
+
+`src/lib/newsletter-core.cjs` (pure: HMAC-signed 48 h confirmation tokens,
+address validation, email rendering per language with Resend's
+`{{{RESEND_UNSUBSCRIBE_URL}}}` placeholder) and `newsletter-resend.cjs`
+(the only module that talks to Resend: one segment per language named
+`warlibrary-<lang>`, created on first use and cached with a local
+subscriber tally in `src/data/newsletter.json`). Double opt-in: `POST
+/api/newsletter` (rate limited per IP, honeypot field, same-origin) emails a
+signed link; `GET /api/newsletter/confirm` creates or re-subscribes the
+contact and redirects to `/dispatch?subscribe=ok` setting the reader's
+language cookie. `NewsletterBox` renders the form only when `RESEND_API_KEY`
+and `NEWSLETTER_FROM` are set. `scripts/newsletter.js sweep` (hourly cron,
+and after the daily writer) sends one broadcast per published dispatch per
+language that has subscribers, using the dispatch's translation, and
+records it under `emailed[lang]` in the dispatch file, so it is idempotent;
+a weekly or monthly that auto-publishes 24 h after generation is caught by
+the hourly sweep. Admin publish starts a sweep. Free plan: 3,000 emails a
+month, 100 a day, 1,000 contacts.
 
 ### Event Pipeline
 - Runs every 30 minutes via cron
@@ -317,6 +374,11 @@ NEXT_PUBLIC_MAPBOX_TOKEN=...
 ANTHROPIC_API_KEY=...
 ADMIN_SECRET=...
 NEWSDATA_API_KEY=...  # Optional, enhances article content quality
+RESEND_API_KEY=...    # Newsletter; with NEWSLETTER_FROM the subscribe form appears
+NEWSLETTER_FROM="War Library <dispatch@example.com>"  # Verified Resend domain
+NEWSLETTER_REPLY_TO=... # Optional
+NEWSLETTER_SECRET=...   # Optional; signs confirmation links (defaults to ADMIN_SECRET)
+TRANSLATE_DISPATCHES=false  # Optional kill switch for dispatch translation
 ```
 
 ## Key Principles

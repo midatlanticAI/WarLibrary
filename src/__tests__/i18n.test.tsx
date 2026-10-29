@@ -15,10 +15,14 @@ import {
 } from "@/i18n";
 import en from "@/i18n/en.json";
 import es from "@/i18n/es.json";
+import fr from "@/i18n/fr.json";
+import tr from "@/i18n/tr.json";
 import ar from "@/i18n/ar.json";
+import fa from "@/i18n/fa.json";
+import ur from "@/i18n/ur.json";
 import he from "@/i18n/he.json";
 
-const allTranslations: Record<string, Record<string, unknown>> = { en, es, ar, he };
+const allTranslations: Record<string, Record<string, unknown>> = { en, es, fr, tr, ar, fa, ur, he };
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -48,7 +52,7 @@ function wrapper({ children }: { children: ReactNode }) {
 // 1. Translation file structure & completeness
 // ---------------------------------------------------------------------------
 describe("Translation file completeness", () => {
-  const locales = ["es", "ar", "he"] as const;
+  const locales = ["es", "fr", "tr", "ar", "fa", "ur", "he"] as const;
 
   for (const locale of locales) {
     describe(`${locale} translations`, () => {
@@ -108,7 +112,7 @@ describe("Translation values are actually translated", () => {
     "language",
   ];
 
-  for (const locale of ["es", "ar", "he"] as const) {
+  for (const locale of ["es", "fr", "tr", "ar", "fa", "ur", "he"] as const) {
     it(`${locale}: major sections differ from English`, () => {
       let identicalCount = 0;
       let totalChecked = 0;
@@ -139,7 +143,7 @@ describe("Translation values are actually translated", () => {
 describe("AI suggested questions are translated", () => {
   const questionKeys = Array.from({ length: 12 }, (_, i) => `ask.q${i + 1}`);
 
-  for (const locale of ["es", "ar", "he"] as const) {
+  for (const locale of ["es", "fr", "tr", "ar", "fa", "ur", "he"] as const) {
     it(`${locale}: all 12 suggested questions differ from English`, () => {
       for (const key of questionKeys) {
         const parts = key.split(".");
@@ -184,6 +188,18 @@ describe("RTL configuration", () => {
   it("Spanish is an LTR locale", () => {
     const { result } = renderHook(() => useI18n(), { wrapper });
     act(() => result.current.setLocale("es"));
+    expect(result.current.dir).toBe("ltr");
+  });
+
+  it("Persian and Urdu are RTL; French and Turkish are LTR", () => {
+    const { result } = renderHook(() => useI18n(), { wrapper });
+    act(() => result.current.setLocale("fa"));
+    expect(result.current.dir).toBe("rtl");
+    act(() => result.current.setLocale("ur"));
+    expect(result.current.dir).toBe("rtl");
+    act(() => result.current.setLocale("fr"));
+    expect(result.current.dir).toBe("ltr");
+    act(() => result.current.setLocale("tr"));
     expect(result.current.dir).toBe("ltr");
   });
 
@@ -293,8 +309,8 @@ describe("useI18n hook — locale persistence", () => {
 // 8. LOCALES constant
 // ---------------------------------------------------------------------------
 describe("LOCALES constant", () => {
-  it("contains exactly en, es, ar, he", () => {
-    expect(LOCALES).toEqual(["en", "es", "ar", "he"]);
+  it("contains the eight served languages in picker order", () => {
+    expect(LOCALES).toEqual(["en", "es", "fr", "tr", "ar", "fa", "ur", "he"]);
   });
 
 });
@@ -356,9 +372,9 @@ describe("Language selector in Header", () => {
   it("uses the same endonyms in every locale", () => {
     // Guards against a future translation pass "helpfully" localising these
     // back into exonyms.
-    const expected = { en: "English", es: "Español", ar: "العربية", he: "עברית" };
+    const expected = { en: "English", es: "Español", fr: "Français", tr: "Türkçe", ar: "العربية", fa: "فارسی", ur: "اردو", he: "עברית" };
     for (const locale of LOCALES) {
-      const bundle = { en, es, ar, he }[locale] as unknown as {
+      const bundle = allTranslations[locale] as unknown as {
         language: Record<string, string>;
       };
       for (const [code, name] of Object.entries(expected)) {

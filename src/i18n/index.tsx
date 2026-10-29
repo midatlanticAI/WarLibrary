@@ -3,7 +3,11 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import en from "./en.json";
 import es from "./es.json";
+import fr from "./fr.json";
+import tr from "./tr.json";
 import ar from "./ar.json";
+import fa from "./fa.json";
+import ur from "./ur.json";
 import he from "./he.json";
 
 // Locale primitives live in ./locale so server components can use them. This
@@ -28,7 +32,7 @@ export {
 };
 
 type TranslationMap = typeof en;
-const translations: Record<Locale, TranslationMap> = { en, es, ar, he };
+const translations: Record<Locale, TranslationMap> = { en, es, fr, tr, ar, fa, ur, he };
 
 const STORAGE_KEY = "warlibrary_lang";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;

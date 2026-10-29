@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ConflictEvent } from "@/types";
+import type { Locale } from "@/i18n/locale";
 
 interface EventsApiResponse {
   data: ConflictEvent[];
@@ -50,15 +51,49 @@ function recentWindowStart(): string {
     .slice(0, 10);
 }
 
-/**
- * The last complete dataset this tab downloaded, kept for the life of the
- * page's JavaScript. Navigating to /about and back remounts the map, and
- * without this it re-downloaded the whole history every time.
- */
-let fullCache: { events: ConflictEvent[]; etag: string | null; lastUpdated: string | null } | null = null;
+/** The API URL for a scope in a language. English is the record itself and takes no parameter. */
+function eventsUrl(scope: "recent" | "full", locale: Locale): string {
+  const params = new URLSearchParams();
+  if (scope === "recent") params.set("from", recentWindowStart());
+  if (locale !== "en") params.set("lang", locale);
+  const query = params.toString();
+  return query ? `/api/events?${query}` : "/api/events";
+}
+
+interface CachedDataset {
+  events: ConflictEvent[];
+  etag: string | null;
+  lastUpdated: string | null;
+}
 
 /**
- * Loads the merged event dataset and keeps it fresh.
+ * The last complete dataset this tab downloaded, per language, kept for the
+ * life of the page's JavaScript. Navigating to /about and back remounts the
+ * map, and without this it re-downloaded the whole history every time. Keyed
+ * by language because the descriptions differ: a Persian reader who switches
+ * to English and back must not be handed the English table under a Persian
+ * label.
+ */
+const fullCache = new Map<Locale, CachedDataset>();
+/**
+ * Two datasets at most (the current language and the one before it): each
+ * is tens of MB as JavaScript objects, and a reader who tries every
+ * language on a phone must not accumulate eight of them.
+ */
+const FULL_CACHE_MAX = 2;
+
+function rememberFull(locale: Locale, entry: CachedDataset): void {
+  fullCache.delete(locale);
+  fullCache.set(locale, entry);
+  while (fullCache.size > FULL_CACHE_MAX) {
+    const oldest = fullCache.keys().next().value;
+    if (oldest === undefined) break;
+    fullCache.delete(oldest);
+  }
+}
+
+/**
+ * Loads the merged event dataset in the reader's language and keeps it fresh.
  *
  * Load order: the recent window first (small, fast), then the full history,
  * then a conditional poll of the full history every minute. The poll holds
@@ -68,20 +103,26 @@ let fullCache: { events: ConflictEvent[]; etag: string | null; lastUpdated: stri
  * body instead of re-downloading the whole dataset. The poll is also the
  * retry: a failed or timed-out full load is simply attempted again a minute
  * later.
+ *
+ * Changing `locale` starts the same sequence for the new language while the
+ * previous language's events stay on screen, so a language switch is a
+ * refresh, not a blank map.
  */
-export function useEvents(): UseEventsReturn {
-  const [events, setEvents] = useState<ConflictEvent[]>(() => fullCache?.events ?? []);
-  const [loading, setLoading] = useState(() => fullCache === null);
+export function useEvents(locale: Locale = "en"): UseEventsReturn {
+  const [events, setEvents] = useState<ConflictEvent[]>(() => fullCache.get(locale)?.events ?? []);
+  const [loading, setLoading] = useState(() => !fullCache.has(locale));
   const [refreshing, setRefreshing] = useState(false);
-  const [complete, setComplete] = useState(() => fullCache !== null);
+  const [complete, setComplete] = useState(() => fullCache.has(locale));
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(() =>
-    fullCache?.lastUpdated ? new Date(fullCache.lastUpdated).toLocaleString() : null
-  );
+  const [lastUpdated, setLastUpdated] = useState<string | null>(() => {
+    const cached = fullCache.get(locale);
+    return cached?.lastUpdated ? new Date(cached.lastUpdated).toLocaleString() : null;
+  });
   const [stale, setStale] = useState(false);
 
-  const etagRef = useRef<string | null>(fullCache?.etag ?? null);
-  const hasLoadedRef = useRef(fullCache !== null);
+  const localeRef = useRef<Locale>(locale);
+  const etagRef = useRef<string | null>(fullCache.get(locale)?.etag ?? null);
+  const hasLoadedRef = useRef(fullCache.has(locale));
   // Tracks the in-flight request so an earlier, slower response can never
   // overwrite the result of a later one.
   const inFlightRef = useRef<AbortController | null>(null);
@@ -105,6 +146,7 @@ export function useEvents(): UseEventsReturn {
       const controller = new AbortController();
       inFlightRef.current = controller;
       const seq = ++requestSeqRef.current;
+      const lang = localeRef.current;
 
       // Belt and braces: release a hung socket rather than pinning forever.
       const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -125,12 +167,7 @@ export function useEvents(): UseEventsReturn {
           headers["If-None-Match"] = etagRef.current;
         }
 
-        const url =
-          scope === "recent"
-            ? `/api/events?from=${recentWindowStart()}`
-            : "/api/events";
-
-        const res = await fetch(url, {
+        const res = await fetch(eventsUrl(scope, lang), {
           cache: "no-store",
           headers,
           signal: controller.signal,
@@ -167,7 +204,7 @@ export function useEvents(): UseEventsReturn {
 
         if (scope === "full") {
           if (etag) etagRef.current = etag;
-          fullCache = { events: json.data, etag: etagRef.current, lastUpdated: json.meta?.last_updated ?? null };
+          rememberFull(lang, { events: json.data, etag: etagRef.current, lastUpdated: json.meta?.last_updated ?? null });
           setComplete(true);
         }
         hasLoadedRef.current = true;
@@ -215,13 +252,27 @@ export function useEvents(): UseEventsReturn {
 
   useEffect(() => {
     let cancelled = false;
+    localeRef.current = locale;
+
+    // A language switch: the ETag belongs to the previous language's table.
+    // Serve the cached set for the new language if this tab has it, keep
+    // whatever is on screen otherwise, and let the sequence below replace it.
+    const cached = fullCache.get(locale);
+    etagRef.current = cached?.etag ?? null;
+    if (cached) {
+      setEvents(cached.events);
+      setComplete(true);
+      hasLoadedRef.current = true;
+    } else if (hasLoadedRef.current) {
+      setComplete(false);
+    }
 
     // Recent window first, then the whole history behind it. If the small
     // request fails the full one still runs, so a transient error on the first
     // hop never leaves the reader without data. With a cached full set from an
     // earlier mount, go straight to a conditional poll instead.
     (async () => {
-      if (fullCache === null) {
+      if (!cached) {
         await fetchEvents({ supersede: true, scope: "recent" });
         if (cancelled) return;
       }
@@ -240,7 +291,7 @@ export function useEvents(): UseEventsReturn {
       clearInterval(interval);
       inFlightRef.current?.abort();
     };
-  }, [fetchEvents]);
+  }, [fetchEvents, locale]);
 
   return {
     events,

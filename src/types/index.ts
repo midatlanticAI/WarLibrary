@@ -33,6 +33,13 @@ export interface ConflictEvent {
   first_reported_at?: string | null;
   revision?: number;
   updated_at?: string | null;
+  // Set by /api/events?lang=…: the language `description` is in ("en" when
+  // no translation exists) and whether it is a machine translation of the
+  // English record. See src/lib/translation-store.ts.
+  description_lang?: string;
+  translated?: boolean;
+  description_en?: string;
+  civilian_impact_en?: string | null;
 }
 
 export interface Faction {

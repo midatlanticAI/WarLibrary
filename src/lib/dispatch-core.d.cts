@@ -71,6 +71,21 @@ export interface DispatchUsage {
   model: string;
 }
 
+/** A dispatch narrative in one language (see src/lib/translate-core.cjs). */
+export interface DispatchTranslationText {
+  title: string;
+  lede: string;
+  sections: { heading: string; body: string }[];
+  civilian_note: string | null;
+}
+
+/** One email broadcast of a dispatch, per language. */
+export interface DispatchEmailRecord {
+  broadcast_id: string;
+  at: string;
+  lang: string;
+}
+
 export interface Dispatch {
   kind: DispatchKind;
   key: string;
@@ -95,6 +110,16 @@ export interface Dispatch {
   disclosure: string;
   revision: number;
   edited_at: string | null;
+  /**
+   * Machine translations of the narrative, keyed by locale, written by
+   * scripts/translate-dispatch.js. Absent until the translator has run;
+   * cleared by the writer when the narrative is regenerated.
+   */
+  translations?: Record<string, DispatchTranslationText> | null;
+  /** Model and time of the translations, for the admin and the record. */
+  translated_at?: string | null;
+  /** Email broadcasts sent for this dispatch, keyed by language. */
+  emailed?: Record<string, DispatchEmailRecord> | null;
 }
 
 export interface CitationResult {

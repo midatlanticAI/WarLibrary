@@ -68,6 +68,9 @@ tar \
   --exclude='src/data/dedup-log.json' \
   --exclude='src/data/quarantine-duplicates.json' \
   --exclude='src/data/*.backup-*.json' \
+  --exclude='src/data/translations' \
+  --exclude='src/data/newsletter.json' \
+  --exclude='src/data/dispatches' \
   --owner=0 --group=0 \
   -czf "$ARCHIVE" .
 echo "  ✓ Packaged"
@@ -75,7 +78,7 @@ echo "  ✓ Packaged"
 # 2b. Fail loudly if any server-owned runtime file slipped into the archive.
 echo "[2b/5] Verifying archive contains no runtime data..."
 tar tzf "$ARCHIVE" > "$MANIFEST"
-if grep -E '(events_latest|article-url-cache|pipeline-history|pipeline-stats|analytics|notification|dedup-log|quarantine-duplicates)\.json|\.backup-.*\.json|push-subscriptions\.json|\.env($|\.)' "$MANIFEST"; then
+if grep -E '(events_latest|article-url-cache|pipeline-history|pipeline-stats|analytics|notification|dedup-log|quarantine-duplicates|newsletter)\.json|\.backup-.*\.json|push-subscriptions\.json|src/data/translations/|src/data/dispatches/|\.env($|\.)' "$MANIFEST"; then
   echo "  ✗ ABORT: archive contains server-owned runtime data (listed above)."
   echo "    Deploying it would overwrite production. Fix the --exclude list."
   rm -f "$ARCHIVE" "$MANIFEST"

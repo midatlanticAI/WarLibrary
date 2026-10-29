@@ -5,7 +5,8 @@ import * as core from "@/lib/dispatch-core.cjs";
 import type { Dispatch } from "@/lib/dispatch-core.cjs";
 import { SITE_URL, SITE_NAME, excerpt } from "@/lib/site";
 import { resolveLocale, makeT, formatDateFor, formatNumberFor, type Translate } from "@/i18n/server";
-import type { Locale } from "@/i18n/locale";
+import { localeDir, type Locale } from "@/i18n/locale";
+import { localizeDispatch } from "@/lib/dispatch-i18n";
 import { ldJson } from "@/components/seo/JsonLd";
 import PageView from "@/components/analytics/PageView";
 import SiteNav from "@/components/site/SiteNav";
@@ -34,6 +35,7 @@ const KIND_KEY = { daily: "pages.dailyDispatch", weekly: "pages.weeklyDispatch",
 function Row({ d, locale, t }: { d: Dispatch; locale: Locale; t: Translate }) {
   const published = new Date(publishedAt(d)).toISOString();
   const n = (v: number) => formatNumberFor(locale, v);
+  const text = localizeDispatch(d, locale);
   return (
     <li>
       <Link href={core.dispatchUrlPath(d.kind, d.key)} className="block rounded-lg border border-zinc-800 bg-[#111] p-3 transition-colors hover:border-zinc-700 hover:bg-[#151515]">
@@ -44,21 +46,25 @@ function Row({ d, locale, t }: { d: Dispatch; locale: Locale; t: Translate }) {
           <span aria-hidden="true">·</span>
           <span>{t("pages.eventsKinetic", { events: n(d.stats.events), kinetic: n(d.stats.kinetic) })}</span>
         </div>
-        <p className="text-sm font-semibold leading-snug text-zinc-100" lang="en" dir="ltr">{core.stripCitations(d.title)}</p>
-        <p className="mt-1 text-sm text-zinc-400" lang="en" dir="ltr">{excerpt(core.stripCitations(d.lede), 200)}</p>
+        <p className="text-sm font-semibold leading-snug text-zinc-100" lang={text.lang} dir={localeDir(text.lang)}>{core.stripCitations(text.title)}</p>
+        <p className="mt-1 text-sm text-zinc-400" lang={text.lang} dir={localeDir(text.lang)}>{excerpt(core.stripCitations(text.lede), 200)}</p>
       </Link>
     </li>
   );
 }
 
-export default async function DispatchIndexPage() {
+export default async function DispatchIndexPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const locale = await resolveLocale();
+  // Outcome of a confirmation link (/api/newsletter/confirm redirects here).
+  const query = searchParams ? await searchParams : {};
+  const subscribeNotice = typeof query.subscribe === "string" ? query.subscribe : null;
   const t = makeT(locale);
   const n = (v: number) => formatNumberFor(locale, v);
   const daily = publishedDispatches("daily", DAILY_LIMIT);
   const weekly = publishedDispatches("weekly");
   const monthly = publishedDispatches("monthly");
   const latest = daily[0] ?? weekly[0] ?? monthly[0] ?? null;
+  const latestText = latest ? localizeDispatch(latest, locale) : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -99,8 +105,8 @@ export default async function DispatchIndexPage() {
             <h2 className="mb-2 text-xs font-semibold uppercase tracking-widest text-red-300">{t("pages.latest")}</h2>
             <Link href={core.dispatchUrlPath(latest.kind, latest.key)} className="block rounded-xl border border-zinc-700 bg-[#141414] p-5 transition-colors hover:border-zinc-600">
               <p className="text-xs text-zinc-500">{t(KIND_KEY[latest.kind])} · <span lang="en">{latest.window.label}</span></p>
-              <p className="mt-1 text-xl font-bold leading-tight text-zinc-100" lang="en" dir="ltr">{core.stripCitations(latest.title)}</p>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-300" lang="en" dir="ltr">{excerpt(core.stripCitations(latest.lede), 320)}</p>
+              <p className="mt-1 text-xl font-bold leading-tight text-zinc-100" lang={latestText!.lang} dir={localeDir(latestText!.lang)}>{core.stripCitations(latestText!.title)}</p>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-300" lang={latestText!.lang} dir={localeDir(latestText!.lang)}>{excerpt(core.stripCitations(latestText!.lede), 320)}</p>
               <p className="mt-3 text-xs text-zinc-500">
                 {t("pages.summaryLine", { events: n(latest.stats.events), kinetic: n(latest.stats.kinetic), fatalities: n(latest.stats.fatalities), countries: n(latest.stats.countries) })}
               </p>
@@ -108,7 +114,7 @@ export default async function DispatchIndexPage() {
           </section>
         )}
 
-        <NewsletterBox t={t} />
+        <NewsletterBox t={t} locale={locale} notice={subscribeNotice} />
 
         {monthly.length > 0 && (
           <section className="mt-10">

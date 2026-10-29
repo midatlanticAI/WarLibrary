@@ -22,6 +22,8 @@ import { SITE_URL } from "@/lib/site";
 
 const WRITER = join(process.cwd(), "scripts", "write-dispatch.js");
 const INDEXNOW = join(process.cwd(), "scripts", "indexnow.js");
+const TRANSLATOR = join(process.cwd(), "scripts", "translate-dispatch.js");
+const NEWSLETTER = join(process.cwd(), "scripts", "newsletter.js");
 const LOG_PATH = "/var/log/warlibrary-dispatch.log";
 
 /** Writer runs in flight, keyed `kind/key`, so a double click cannot start two. */
@@ -56,6 +58,8 @@ function summary(d: Dispatch, now: Date) {
     label: d.window.label,
     url: core.dispatchUrlPath(d.kind, d.key),
     in_flight: inflight.has(`${d.kind}/${d.key}`),
+    translations: Object.keys(d.translations ?? {}),
+    emailed: Object.keys(d.emailed ?? {}),
   };
 }
 
@@ -189,7 +193,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     } catch (err) {
       console.error("[dispatches] IndexNow ping failed to start:", err);
     }
-    return NextResponse.json({ ok: true, message: `Published ${k} ${d.key}.` });
+    // Email subscribers now rather than at the next hourly sweep.
+    try {
+      runDetached([NEWSLETTER, "sweep"]);
+    } catch (err) {
+      console.error("[dispatches] newsletter sweep failed to start:", err);
+    }
+    return NextResponse.json({ ok: true, message: `Published ${k} ${d.key}. Subscribers are being emailed.` });
+  }
+
+  if (action === "translate") {
+    try {
+      runDetached([TRANSLATOR, "--kind", k, "--key", d.key, "--force"]);
+    } catch (err) {
+      return NextResponse.json({ error: `Could not start the translator: ${err instanceof Error ? err.message : String(err)}` }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true, message: `Translating ${k} ${d.key} into every language in the background.` });
   }
 
   if (action === "pull") {
@@ -217,9 +236,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // An edited draft is "touched": it no longer auto-publishes. The operator
     // presses Publish when the edit is done.
     if (d.status === "draft") d.publish_after = null;
+    // The translations were of the old title and lede. Drop them (readers
+    // see English with a notice meanwhile) and re-translate in the background.
+    d.translations = null;
+    d.translated_at = null;
     writeDispatch(d);
-    return NextResponse.json({ ok: true, message: `Saved ${k} ${d.key}${d.status === "draft" ? " (draft; press Publish when ready)" : ""}.` });
+    try {
+      runDetached([TRANSLATOR, "--kind", k, "--key", d.key, "--force"]);
+    } catch (err) {
+      console.error("[dispatches] translator failed to start after edit:", err);
+    }
+    return NextResponse.json({ ok: true, message: `Saved ${k} ${d.key}${d.status === "draft" ? " (draft; press Publish when ready)" : ""}. Re-translating in the background.` });
   }
 
-  return NextResponse.json({ error: `Unknown action: ${action}. Valid: publish, pull, edit, regenerate, generate` }, { status: 400 });
+  return NextResponse.json({ error: `Unknown action: ${action}. Valid: publish, pull, edit, regenerate, generate, translate` }, { status: 400 });
 }

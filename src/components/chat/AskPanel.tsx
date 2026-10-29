@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ConflictEvent } from "@/types";
 import { useI18n } from "@/i18n";
+import { LOCALE_TAG } from "@/i18n/locale";
 
 interface AskPanelProps {
   events: ConflictEvent[];
@@ -172,8 +173,7 @@ export default function AskPanel({ events, onBack }: AskPanelProps) {
                 {t("ask.warLibraryAi")}
               </h2>
               <p className="mt-1 text-xs text-zinc-500">
-                {t("ask.askAnything")}{" "}
-                {events.length}+ {t("ask.verifiedEvents")}
+                {t("ask.askAnythingWith", { n: events.length.toLocaleString(LOCALE_TAG[locale]) })}
               </p>
               <div className="mx-auto mt-3 max-w-sm rounded-lg border border-amber-900/40 bg-amber-950/20 px-3 py-2">
                 <p className="text-[11px] leading-relaxed text-amber-200/70">

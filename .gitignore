@@ -59,3 +59,7 @@ src/data/*.backup-*.json
 
 # dispatches (written by scripts/write-dispatch.js on the droplet)
 src/data/dispatches/
+
+# event translations and newsletter state (written on the droplet)
+src/data/translations/
+src/data/newsletter.json

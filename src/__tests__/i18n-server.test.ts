@@ -28,10 +28,19 @@ describe("resolveLocale", () => {
     expect(await resolveLocale()).toBe("en");
     headerBag.set("accept-language", "he-IL,he;q=0.9,en;q=0.5");
     expect(await resolveLocale()).toBe("he");
-    headerBag.set("accept-language", "fr-FR,fr;q=0.9");
+    headerBag.set("accept-language", "pl-PL,pl;q=0.9");
     expect(await resolveLocale()).toBe("en");
-    headerBag.set("accept-language", "fr-FR,es;q=0.9");
+    headerBag.set("accept-language", "pl-PL,es;q=0.9");
     expect(await resolveLocale()).toBe("es");
+    headerBag.set("accept-language", "fa-IR,fa;q=0.9,en;q=0.5");
+    expect(await resolveLocale()).toBe("fa");
+    headerBag.set("accept-language", "ur-PK,ur;q=0.9");
+    expect(await resolveLocale()).toBe("ur");
+    headerBag.set("accept-language", "fr-CA,fr;q=0.9");
+    expect(await resolveLocale()).toBe("fr");
+    headerBag.set("accept-language", "tr-TR");
+    expect(await resolveLocale()).toBe("tr");
+    headerBag.set("accept-language", "pl-PL,es;q=0.9");
     cookieJar.set("wl_lang", "ar");
     expect(await resolveLocale()).toBe("ar");
     cookieJar.set("wl_lang", "xx");
@@ -52,7 +61,7 @@ describe("makeT", () => {
   it("every pages.* key exists in every locale", async () => {
     const en = (await import("@/i18n/en.json")).default as Record<string, unknown>;
     const pages = en.pages as Record<string, unknown>;
-    for (const locale of ["es", "ar", "he"] as const) {
+    for (const locale of ["es", "fr", "tr", "ar", "fa", "ur", "he"] as const) {
       const t = makeT(locale);
       for (const key of Object.keys(pages)) {
         if (typeof pages[key] === "string") {
@@ -72,5 +81,10 @@ describe("formatters", () => {
     expect(formatDateFor("en", "not a date")).toBe("not a date");
     expect(formatNumberFor("en", 12345)).toBe("12,345");
     expect(formatNumberFor("ar", 12)).toMatch(/[٠-٩]/);
+    // Persian pins the extended Arabic-Indic set; Urdu stays on Western digits.
+    expect(formatNumberFor("fa", 12)).toMatch(/[۰-۹]/);
+    expect(formatNumberFor("ur", 12)).toBe("12");
+    expect(formatDateFor("fr", "2026-10-29T23:30:00Z")).toBe("29 octobre 2026");
+    expect(formatDateFor("tr", "2026-10-29T23:30:00Z")).toBe("29 Ekim 2026");
   });
 });

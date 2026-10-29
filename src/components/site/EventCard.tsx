@@ -3,7 +3,8 @@ import type { SerializedEvent } from "@/lib/event-store";
 import { EVENT_COLORS } from "@/lib/constants";
 import { excerpt } from "@/lib/site";
 import { formatDateFor, formatNumberFor, makeT, type Translate } from "@/i18n/server";
-import type { Locale } from "@/i18n/locale";
+import { textAttrs, type Locale } from "@/i18n/locale";
+import { localizeEvent } from "@/lib/translation-store";
 
 /**
  * One event as a list row on the server-rendered pages. The page resolves
@@ -13,6 +14,7 @@ import type { Locale } from "@/i18n/locale";
 export default function EventCard({ event, locale, t }: { event: SerializedEvent; locale: Locale; t?: Translate }) {
   const tr = t ?? makeT(locale);
   const color = EVENT_COLORS[event.event_type] ?? "#71717a";
+  const shown = localizeEvent(event, locale);
   return (
     <Link
       href={`/event/${event.id}`}
@@ -38,7 +40,7 @@ export default function EventCard({ event, locale, t }: { event: SerializedEvent
           </>
         ) : null}
       </div>
-      <p className="text-sm leading-snug text-zinc-200" lang="en">{excerpt(event.description, 220)}</p>
+      <p className="text-sm leading-snug text-zinc-200" {...textAttrs(shown.description_lang, locale)}>{excerpt(shown.description, 220)}</p>
       <p className="mt-1 text-xs text-zinc-500">{event.source}</p>
     </Link>
   );

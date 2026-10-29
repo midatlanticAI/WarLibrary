@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ConflictEvent } from "@/types";
 import { useI18n } from "@/i18n";
+import { LOCALE_TAG } from "@/i18n/locale";
 
 type VisitState = "first-visit" | "return-visit" | "dismissed";
 
@@ -203,7 +204,7 @@ function StatsBar({
     <div className="grid grid-cols-3 gap-3 rounded-lg bg-zinc-900/80 p-3">
       <div className="text-center">
         <div className="text-lg font-bold text-red-400">
-          {totalKilled.toLocaleString(locale)}+
+          {totalKilled.toLocaleString(LOCALE_TAG[locale])}+
         </div>
         <div className="text-xs text-zinc-500">{t("landing.killed")}</div>
       </div>
@@ -232,7 +233,7 @@ function FirstVisit({
   eventCount: number;
   onEnter: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   return (
     <div className="space-y-4 rounded-xl border border-zinc-800 bg-[#111] p-4 sm:space-y-5 sm:p-6">
       <div className="text-center">
@@ -284,7 +285,7 @@ function FirstVisit({
       </button>
 
       <div className="text-center text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
-        <span className="font-medium">{eventCount} {t("landing.verifiedEventsFrom")}</span> {t("landing.from")}{" "}
+        <span className="font-medium">{t("landing.verifiedFrom", { n: eventCount.toLocaleString(LOCALE_TAG[locale]) })}</span>{" "}
         <span className="font-medium">
           Al Jazeera, CNN, BBC, Reuters, AP
         </span>{" "}

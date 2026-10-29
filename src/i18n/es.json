@@ -48,18 +48,24 @@
     "24h": "24H",
     "situationOverview": "Resumen de la situación",
     "operationEpicFury": "Operación Epic Fury",
-    "verifiedEvents": "eventos verificados en",
-    "countriesText": "países",
     "airstrikesStat": "ataques aéreos",
     "missileAttacks": "ataques con misiles",
     "droneStrikes": "ataques con drones",
     "groundEngagements": "enfrentamientos terrestres",
     "strategicDevelopments": "desarrollos estratégicos",
-    "fatalitiesReported": "víctimas mortales reportadas.",
     "casualtiesBeing": "Las cifras de víctimas están siendo compiladas.",
-    "eventsInLast24h": "en las últimas 24 horas.",
     "latest": "Último",
-    "source": "Fuente"
+    "source": "Fuente",
+    "overviewLine": "{{events}} eventos verificados en {{countries}} países",
+    "fatalitiesLine": "{{n}}+ muertes reportadas.",
+    "recentLine": {
+      "zero": "{{n}} eventos en las últimas 24 horas.",
+      "one": "{{n}} evento en las últimas 24 horas.",
+      "two": "{{n}} eventos en las últimas 24 horas.",
+      "few": "{{n}} eventos en las últimas 24 horas.",
+      "many": "{{n}} eventos en las últimas 24 horas.",
+      "other": "{{n}} eventos en las últimas 24 horas."
+    }
   },
   "modal": {
     "killedTitle": "Desglose de víctimas mortales",
@@ -122,7 +128,8 @@
     "approximateLocation": "(ubicación aproximada)",
     "confidence": "confianza",
     "share": "Compartir",
-    "copied": "¡Copiado!"
+    "copied": "¡Copiado!",
+    "machineTranslated": "Las descripciones se traducen automáticamente del registro en inglés."
   },
   "map": {
     "legendFilters": "Leyenda y filtros",
@@ -175,8 +182,6 @@
   },
   "ask": {
     "warLibraryAi": "War Library IA",
-    "askAnything": "Pregunta lo que quieras sobre el conflicto. Impulsado por IA con",
-    "verifiedEvents": "eventos verificados.",
     "aiDisclaimer": "Aviso sobre IA:",
     "disclaimerText": "Las respuestas son generadas por inteligencia artificial y pueden contener errores, información desactualizada o inexactitudes. Siempre verifica la información crítica con fuentes primarias.",
     "situation": "Situación",
@@ -202,7 +207,8 @@
     "q10": "¿Qué están haciendo los hutíes en el Mar Rojo y Yemen?",
     "q11": "¿Cuál es el papel y posición de Rusia en la guerra de 2026 en Medio Oriente?",
     "q12": "¿Qué ha pasado con las capacidades militares de Irán desde que comenzó la guerra?",
-    "genericError": "Algo salió mal. Inténtalo de nuevo."
+    "genericError": "Algo salió mal. Inténtalo de nuevo.",
+    "askAnythingWith": "Pregunta lo que quieras sobre el conflicto. Impulsado por IA con {{n}}+ eventos verificados."
   },
   "timeline": {
     "all": "Todo",
@@ -228,8 +234,6 @@
     "feedFeature": "Eventos",
     "feedDesc": "Cronología de eventos",
     "enter": "Entrar a War Library",
-    "verifiedEventsFrom": "eventos verificados",
-    "from": "de",
     "andMore": "y más",
     "welcomeBack": "Bienvenido de nuevo",
     "noNewEvents": "No se han reportado nuevos eventos desde tu última visita",
@@ -242,7 +246,8 @@
     "skipBriefing": "Saltar resumen en visitas futuras",
     "killed": "Muertos",
     "countries": "Países",
-    "days": "Días"
+    "days": "Días",
+    "verifiedFrom": "{{n}} eventos verificados de"
   },
   "pwa": {
     "installTitle": "Instalar War Library",
@@ -440,7 +445,7 @@
     "countries": "Países",
     "codebook": "Libro de códigos",
     "supportAid": "Apoya la ayuda",
-    "englishContent": "Las descripciones de los eventos, las citas de evidencia y los boletines están escritos en inglés; la interfaz, las etiquetas y las cifras están localizadas.",
+    "englishContent": "La interfaz, las etiquetas y las cifras están localizadas. Las descripciones de los eventos y los boletines se traducen del registro en inglés mediante un modelo de lenguaje; donde aún no hay traducción, se muestra el texto en inglés.",
     "date": "Fecha",
     "country": "País",
     "region": "Región",
@@ -556,12 +561,35 @@
     "byVerification": "Por verificación",
     "newsletterTitle": "Recibe el boletín por correo",
     "newsletterBody": "El resumen diario en tu bandeja de entrada cada mañana. Sin rastreo más allá de la entrega; cancela con un clic.",
-    "subscribe": "Suscribirse"
+    "subscribe": "Suscribirse",
+    "machineTranslated": "Traducido del registro en inglés por un modelo de lenguaje. Los nombres, las cifras y las fuentes se conservan tal como se registraron; el texto en inglés es el autorizado.",
+    "showOriginal": "Mostrar el original en inglés",
+    "englishOriginal": "Original en inglés",
+    "readInEnglish": "Leer el original en inglés",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "emailLabel": "Dirección de correo",
+    "subscribing": "Enviando…",
+    "checkInbox": "Revisa tu bandeja de entrada y abre el enlace de confirmación para completar la suscripción.",
+    "subscribeError": "No se pudo completar la suscripción. Inténtalo más tarde.",
+    "invalidEmail": "Introduce una dirección de correo válida.",
+    "subscribed": "Suscripción confirmada. El próximo boletín llegará por correo.",
+    "confirmExpired": "Este enlace de confirmación caducó o ya se usó. Suscríbete de nuevo para recibir otro.",
+    "newsletterLang": "Los correos llegan en {{language}}; cambia el idioma del sitio antes de suscribirte para elegir otro.",
+    "readOnSite": "Leer en War Library",
+    "unsubscribe": "Cancelar suscripción",
+    "emailFooter": "Recibes este correo porque te suscribiste en warlibrary.midatlantic.ai. Cada cifra se calcula a partir del conjunto de datos; cada frase cita el evento en que se apoya.",
+    "confirmSubject": "Confirma tu suscripción a War Library",
+    "confirmBody": "Abre el enlace de abajo para confirmar que quieres recibir los boletines de War Library por correo. Si no lo solicitaste, ignora este mensaje y no se enviará nada.",
+    "confirmButton": "Confirmar suscripción"
   },
   "language": {
     "en": "English",
     "es": "Español",
+    "fr": "Français",
+    "tr": "Türkçe",
     "ar": "العربية",
+    "fa": "فارسی",
+    "ur": "اردو",
     "he": "עברית",
     "label": "Idioma"
   }

@@ -346,3 +346,21 @@ Caddy access log and `analytics.json` on the droplet.
   Buttondown (needs the account; the signup box appears once
   `NEXT_PUBLIC_NEWSLETTER_URL` is set), the non-English chat prompts still
   carry the Iran background text.
+
+- **2026-10-29 — Four more languages, content in the reader's language,
+  newsletter on Resend.** French, Turkish, Persian and Urdu join the four
+  shipped languages (8 × 534 strings, parity-tested; Vazirmatn and Noto
+  Nastaliq Urdu loaded; Persian digits pinned). Sentence fragments in the
+  overview banner, landing and Ask panel became whole parameterised strings.
+  Event descriptions and civilian-impact notes are now translated by Haiku
+  5.5 into every non-English language with number, length and HTML checks
+  (`scripts/translate-events.js`, sidecar `src/data/translations/<lang>.jsonl`,
+  incremental after every pipeline run, `--all` for the archive at roughly
+  $2–3 per language); `/api/events?lang=` serves them and every description
+  on the site carries its text language. Dispatch narratives are translated
+  on write (`scripts/translate-dispatch.js`, citation multiset must match,
+  all-or-nothing per language) and pages offer the English original.
+  Newsletter: Resend, double opt-in, one segment per language, broadcasts
+  per published dispatch from an hourly sweep (`scripts/newsletter.js`),
+  recorded in the dispatch file. Pending on the droplet: deploy, the hourly
+  cron line, the archive backfill, and the Resend keys in `.env.local`.

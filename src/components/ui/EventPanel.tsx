@@ -5,6 +5,7 @@ import type { ConflictEvent } from "@/types";
 import { EVENT_COLORS } from "@/lib/constants";
 import { shareEvent } from "@/lib/share";
 import { useI18n, type Locale } from "@/i18n";
+import { textAttrs } from "@/i18n/locale";
 
 // --- Feed tuning -----------------------------------------------------------
 // The live dataset is ~25k events, so the list is windowed: only the rows in
@@ -55,7 +56,7 @@ export default function EventPanel({
   // it is intentionally not destructured here.
   onBack,
 }: EventPanelProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   // Derived, debounced copy of the query — the input itself stays controlled
@@ -249,8 +250,11 @@ export default function EventPanel({
             {t("eventPanel.eventFeed")}
           </h2>
           <p className="mt-1 text-xs text-zinc-500">
-            {sortedEvents.length}{activeFilter || debouncedQuery ? ` of ${events.length}` : ""} {t("header.events")} • {t("eventPanel.latestFirst")}
+            {sortedEvents.length}{activeFilter || debouncedQuery ? ` ${t("modal.of")} ${events.length}` : ""} {t("header.events")} • {t("eventPanel.latestFirst")}
           </p>
+          {locale !== "en" && (
+            <p className="mt-1 text-[11px] text-zinc-600">{t("eventPanel.machineTranslated")}</p>
+          )}
         </div>
 
         {/* Search */}
@@ -328,7 +332,7 @@ export default function EventPanel({
               color="text-zinc-200"
             />
             <StatBox
-              label={t("stats.countriesText")}
+              label={t("stats.countries").toLowerCase()}
               value={countryCount.toString()}
               color="text-blue-400"
             />
@@ -397,13 +401,14 @@ const EventRow = React.memo(function EventRow({
               {formatRelativeDate(event.date, t, locale)}
             </span>
           </div>
-          {/* Descriptions, civilian impact and place names come straight from
-              an English-language news pipeline. Inside an RTL document the
-              bidi algorithm reorders mixed runs like "Bushehr, Iran — 12
-              killed", so each pipeline string is isolated as its own LTR
-              English node. */}
+          {/* Place names come straight from an English-language pipeline;
+              descriptions arrive in the reader's language when a translation
+              exists and say so in `description_lang`. Inside an RTL document
+              the bidi algorithm reorders mixed runs like "Bushehr, Iran — 12
+              killed", so any run not in the page's language is isolated as
+              its own node with its own direction. */}
           <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-zinc-400">
-            <span lang="en" dir="ltr">{event.description}</span>
+            <span {...textAttrs(event.description_lang, locale)}>{event.description}</span>
           </p>
           <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500">
             <span lang="en" dir="ltr">
@@ -424,7 +429,7 @@ const EventRow = React.memo(function EventRow({
           {event.civilian_impact && (
             <div className="mt-1 flex items-center gap-1 text-xs text-amber-400">
               <span aria-hidden="true">&#9888;</span>
-              <span lang="en" dir="ltr">{event.civilian_impact}</span>
+              <span {...textAttrs(event.civilian_impact_en ? event.description_lang : "en", locale)}>{event.civilian_impact}</span>
             </div>
           )}
         </div>

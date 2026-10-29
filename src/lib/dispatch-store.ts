@@ -74,6 +74,9 @@ function parseDispatch(raw: string): Dispatch | null {
       disclosure: parsed.disclosure ?? core.DISCLOSURE,
       revision: typeof parsed.revision === "number" ? parsed.revision : 1,
       edited_at: parsed.edited_at ?? null,
+      translations: parsed.translations && typeof parsed.translations === "object" ? parsed.translations : null,
+      translated_at: parsed.translated_at ?? null,
+      emailed: parsed.emailed && typeof parsed.emailed === "object" ? parsed.emailed : null,
     };
   } catch {
     return null;

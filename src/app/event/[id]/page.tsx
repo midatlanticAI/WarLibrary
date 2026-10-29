@@ -12,6 +12,8 @@ import {
 import { conflictForEvent, conflictLabel } from "@/lib/conflicts";
 import { SITE_URL, SITE_NAME, eventTypeLabel, subTypeLabel, formatDate, excerpt } from "@/lib/site";
 import { resolveLocale, makeT, formatDateFor, formatNumberFor } from "@/i18n/server";
+import { textAttrs } from "@/i18n/locale";
+import { localizeEvent } from "@/lib/translation-store";
 import { ldJson } from "@/components/seo/JsonLd";
 import PageView from "@/components/analytics/PageView";
 import SiteNav from "@/components/site/SiteNav";
@@ -94,6 +96,9 @@ export default async function EventPage({ params }: Params) {
   const t = makeT(locale);
   const fmtDate = (iso: string) => formatDateFor(locale, iso);
   const fmtNum = (n: number) => formatNumberFor(locale, n);
+  // The description in the reader's language when the translator has
+  // produced one; `event` keeps the English record for metadata and JSON-LD.
+  const shown = localizeEvent(event, locale);
 
   const related = getRelatedEvents(event, 8);
   const slug = countrySlug(event.country);
@@ -208,9 +213,18 @@ export default async function EventPage({ params }: Params) {
           {conflict && <> · <span lang="en">{conflictLabel(conflict)}</span></>}
         </p>
 
-        <p className="mt-5 text-base leading-relaxed text-zinc-300 sm:text-lg" lang="en" dir="ltr">
-          {event.description}
+        <p className="mt-5 text-base leading-relaxed text-zinc-300 sm:text-lg" {...textAttrs(shown.description_lang, locale)}>
+          {shown.description}
         </p>
+        {shown.translated && (
+          <details className="mt-2 text-xs text-zinc-500">
+            <summary className="cursor-pointer underline-offset-2 hover:underline">{t("pages.showOriginal")}</summary>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-400" lang="en" dir="ltr">{event.description}</p>
+            {event.civilian_impact && shown.civilian_impact_en && (
+              <p className="mt-1 text-sm text-amber-200/70" lang="en" dir="ltr">{event.civilian_impact}</p>
+            )}
+          </details>
+        )}
 
         {event.evidence_quote && (
           <figure className="mt-4 border-s-2 border-zinc-700 ps-4">
@@ -229,14 +243,15 @@ export default async function EventPage({ params }: Params) {
           </figure>
         )}
 
-        {event.civilian_impact && (
+        {shown.civilian_impact && (
           <p className="mt-4 rounded-lg border border-amber-900/40 bg-amber-950/20 p-3 text-sm text-amber-200/80">
-            <span className="font-semibold">{t("pages.civilianImpact")}</span> <span lang="en">{event.civilian_impact}</span>
+            <span className="font-semibold">{t("pages.civilianImpact")}</span>{" "}
+            <span {...textAttrs(shown.civilian_impact_en ? shown.description_lang : "en", locale)}>{shown.civilian_impact}</span>
           </p>
         )}
 
         {locale !== "en" && (
-          <p className="mt-3 text-xs text-zinc-500">{t("pages.englishContent")}</p>
+          <p className="mt-3 text-xs text-zinc-500">{t(shown.translated ? "pages.machineTranslated" : "pages.englishContent")}</p>
         )}
 
         <dl className="mt-6 grid grid-cols-1 gap-x-6 gap-y-3 rounded-xl border border-zinc-800 bg-[#111] p-4 text-sm sm:grid-cols-2">

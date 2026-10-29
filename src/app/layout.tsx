@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Arabic, Noto_Sans_Hebrew } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Nastaliq_Urdu, Noto_Sans_Arabic, Noto_Sans_Hebrew, Vazirmatn } from "next/font/google";
 import JsonLd from "@/components/seo/JsonLd";
 // Imported from @/i18n/locale and @/i18n/server, NOT @/i18n — the latter is
 // a "use client" module, and a server component calling into it throws at
@@ -34,6 +34,26 @@ const notoHebrew = Noto_Sans_Hebrew({
   weight: ["400", "500", "600", "700"],
 });
 
+// Persian is written in the Arabic script with four extra letters. Noto Sans
+// Arabic has the glyphs, but Vazirmatn is what Persian-language sites use:
+// its letterforms and the extended digits (۰-۹) are drawn for Persian, not
+// adapted from Arabic.
+const vazirmatn = Vazirmatn({
+  variable: "--font-vazirmatn",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+});
+
+// Urdu is set in Nastaliq, a hanging calligraphic style that a Naskh face
+// such as Noto Sans Arabic renders legibly but wrong — Urdu readers see it
+// as foreign. Nastaliq needs more line height than Latin; globals.css
+// raises it for `[lang="ur"]`.
+const notoNastaliq = Noto_Nastaliq_Urdu({
+  variable: "--font-noto-nastaliq",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+});
+
 const siteUrl = "https://warlibrary.midatlantic.ai";
 const siteTitle = "War Library — Live Conflict Tracker";
 // Deliberately free of event and country counts. Both change continuously, a
@@ -43,7 +63,7 @@ const siteTitle = "War Library — Live Conflict Tracker";
 // stale number in the first thing a search engine reads is not a small thing.
 // Live counts are rendered from the data itself, in the app.
 const siteDescription =
-  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). Tens of thousands of source-attributed conflict events — airstrikes, missile attacks, drone strikes, and strategic developments — each carrying its source, confidence and verification status. Read it in English, Spanish, Arabic or Hebrew. Includes an AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
+  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). Tens of thousands of source-attributed conflict events — airstrikes, missile attacks, drone strikes, and strategic developments — each carrying its source, confidence and verification status. Read it in English, Spanish, French, Turkish, Arabic, Persian, Urdu or Hebrew. Includes an AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
 export const metadata: Metadata = {
   title: {
     default: siteTitle,
@@ -134,7 +154,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoArabic.variable} ${notoHebrew.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoArabic.variable} ${notoHebrew.variable} ${vazirmatn.variable} ${notoNastaliq.variable} antialiased`}
       >
         <JsonLd />
         {children}
