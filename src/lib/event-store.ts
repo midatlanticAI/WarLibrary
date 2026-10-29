@@ -278,7 +278,7 @@ export function sourceSignature(): string {
   return [EVENTS_FILE, EXPANDED_FILE, LATEST_FILE]
     .map((file) => {
       try {
-        const stat = fs.statSync(file);
+        const stat = fs.statSync(/*turbopackIgnore: true*/ file);
         return `${stat.mtimeMs}:${stat.size}`;
       } catch {
         return "0:0";
