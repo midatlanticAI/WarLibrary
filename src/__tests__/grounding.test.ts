@@ -131,7 +131,48 @@ describe("groundEvent", () => {
   });
 });
 
+describe("fatality overrides", () => {
+  it("zeroes the range and attribution with the figure, stashing claimed values on quarantine", () => {
+    const e: Row = { fatalities: 10000, fatalities_min: 10000, fatalities_max: 12000, fatalities_attribution: "ministry" };
+    pipeline.clearFatalityFigure(e, { stashAsClaimed: true });
+    expect([e.fatalities, e.fatalities_min, e.fatalities_max, e.fatalities_attribution]).toEqual([0, 0, 0, null]);
+    expect([e.claimed_fatalities, e.claimed_fatalities_min, e.claimed_fatalities_max, e.claimed_fatalities_attribution]).toEqual([10000, 10000, 12000, "ministry"]);
+    const c: Row = { fatalities: 1300, fatalities_min: 1300, fatalities_max: 1300, fatalities_attribution: "health ministry" };
+    pipeline.clearFatalityFigure(c);
+    expect([c.fatalities, c.fatalities_max, c.fatalities_attribution]).toEqual([0, 0, null]);
+    expect(c.claimed_fatalities).toBeUndefined();
+  });
+
+  it("raising a figure widens the range and keeps the low end", () => {
+    const e: Row = { fatalities: 12, fatalities_min: 12, fatalities_max: 12 };
+    pipeline.raiseFatalities(e, 30);
+    expect([e.fatalities, e.fatalities_min, e.fatalities_max]).toEqual([30, 12, 30]);
+    const legacy: Row = { fatalities: 5 };
+    pipeline.raiseFatalities(legacy, 9);
+    expect([legacy.fatalities, legacy.fatalities_min, legacy.fatalities_max]).toEqual([9, 9, 9]);
+  });
+
+  it("accepts a quote wrapped in quote marks or opened with an ellipsis", () => {
+    expect(pipeline.verifyEvidenceQuote('"At least twelve workers were killed when strikes hit a fuel depot"', article)).not.toBeNull();
+    expect(pipeline.verifyEvidenceQuote("…strikes hit a fuel depot near Isfahan on Tuesday, the provincial governor said.", article)).not.toBeNull();
+  });
+});
+
 describe("mergeSourceIntoExisting", () => {
+  it("tolerates malformed legacy sources and never confirms from an unnamed outlet", () => {
+    const broken: Row = { source: "Reuters", source_url: "https://example.com/a", sources: [null, "x"], verification_status: "reported" };
+    expect(pipeline.mergeSourceIntoExisting(broken, { source: "BBC News", source_url: "https://example.com/b" }, "t")).toBe(true);
+    expect(broken.sources.map((s: { name: string }) => s.name)).toEqual(["Reuters", "BBC News"]);
+    expect(broken.verification_status).toBe("confirmed");
+    const unnamed: Row = { source_url: "https://example.com/a", verification_status: "reported" };
+    pipeline.mergeSourceIntoExisting(unnamed, { source: "BBC News", source_url: "https://example.com/b" }, "t");
+    expect(unnamed.verification_status).toBe("reported");
+    expect(unnamed.source_count).toBe(2);
+    const named: Row = { source: "Reuters", source_url: "https://example.com/a", verification_status: "reported" };
+    pipeline.mergeSourceIntoExisting(named, { source: "", source_url: "https://example.com/c" }, "t");
+    expect(named.verification_status).toBe("reported");
+  });
+
   it("adds a new outlet, upgrades to confirmed, bumps revision; ignores the same URL", () => {
     const existing: Row = { source: "Reuters", source_url: "https://example.com/a", verification_status: "reported", revision: 1 };
     const candidate = { source: "BBC News", source_url: "https://example.com/b" };
@@ -172,7 +213,19 @@ describe("backfillEvent", () => {
     expect(e.actor1).toBe("A");
     expect(e.actor2_type).toBe("unknown");
     expect(e.revision).toBe(1);
+    expect(e.first_reported_at).toBeNull();
     expect(backfill.backfillEvent(e)).toBe(false);
+  });
+
+  it("does not invent a recording time, repairs an earlier date-based one, and dedups actors", () => {
+    const e: Record<string, unknown> = { date: "2026-03-01T00:00:00Z", description: "x", actors: ["IDF", "IDF"], fatalities: 0, source: "S", first_reported_at: "2026-03-01T00:00:00Z", conflict_id: "epic-fury-2026" };
+    expect(backfill.backfillEvent(e)).toBe(true);
+    expect(e.first_reported_at).toBeNull();
+    expect(e.actor1).toBe("IDF");
+    expect(e.actor2).toBeNull();
+    const withCreated: Record<string, unknown> = { date: "d", created_at: "2026-03-02T10:00:00Z", description: "x", actors: [], fatalities: 0, source: "S" };
+    backfill.backfillEvent(withCreated);
+    expect(withCreated.first_reported_at).toBe("2026-03-02T10:00:00Z");
   });
 
   it("marks non-centroid legacy rows as legacy and keeps null fatalities null", () => {

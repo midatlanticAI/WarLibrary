@@ -15,7 +15,7 @@
       "source": "Al Jazeera",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T22:03:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -51,7 +51,7 @@
       "source": "Greek City Times",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T23:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -86,7 +86,7 @@
       "source": "Al Jazeera",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T08:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -122,7 +122,7 @@
       "source": "Defense News",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -157,7 +157,7 @@
       "source": "Cyprus Mail",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-04T10:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -196,7 +196,7 @@
       "source": "Times of Israel",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-05T12:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -231,7 +231,7 @@
       "source": "Al Jazeera",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-06T10:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -266,7 +266,7 @@
       "source": "Cyprus Mail",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-07T08:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -303,7 +303,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-05T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -338,7 +338,7 @@
       "source": "Jerusalem Post",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-05T14:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -374,7 +374,7 @@
       "source": "OC Media",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-06T08:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -411,7 +411,7 @@
       "source": "Al Jazeera",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-04T04:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -447,7 +447,7 @@
       "source": "CNBC",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-04T12:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -482,7 +482,7 @@
       "source": "CNN",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T18:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -518,7 +518,7 @@
       "source": "Defence Security Asia",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T16:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -556,7 +556,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T10:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -593,7 +593,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T12:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -630,7 +630,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T14:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -665,7 +665,7 @@
       "source": "Al Jazeera",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -700,7 +700,7 @@
       "source": "Business Today India",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T08:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -735,7 +735,7 @@
       "source": "Business Today India",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-07T12:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -770,7 +770,7 @@
       "source": "Times of Israel",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T14:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -805,7 +805,7 @@
       "source": "Al Arabiya",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T10:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -840,7 +840,7 @@
       "source": "CNBC",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T16:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -875,7 +875,7 @@
       "source": "Al Jazeera",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T00:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -910,7 +910,7 @@
       "source": "CNBC",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-05T10:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -945,7 +945,7 @@
       "source": "CNN",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-04T08:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -980,7 +980,7 @@
       "source": "Down to Earth",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-05T08:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1016,7 +1016,7 @@
       "source": "Times of Israel",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T04:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1054,7 +1054,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T02:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1089,7 +1089,7 @@
       "source": "CNBC",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T16:30:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1124,7 +1124,7 @@
       "source": "Wikipedia",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T04:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1162,7 +1162,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-04T14:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1200,7 +1200,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T18:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1237,7 +1237,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T01:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1273,7 +1273,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T04:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1311,7 +1311,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-05T16:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1348,7 +1348,7 @@
       "verification_status": "confirmed",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-02-28T04:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1385,7 +1385,7 @@
       "verification_status": "confirmed",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T04:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1422,7 +1422,7 @@
       "verification_status": "confirmed",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1458,7 +1458,7 @@
       "verification_status": "confirmed",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T02:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1494,7 +1494,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1529,7 +1529,7 @@
       "source": "NPR",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-04T16:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1565,7 +1565,7 @@
       "source": "Washington Post",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-06T14:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1602,7 +1602,7 @@
       "source": "CNN",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-07T08:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1639,7 +1639,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-02-28T08:30:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1676,7 +1676,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-02-28T09:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1713,7 +1713,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T04:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1749,7 +1749,7 @@
       "source": "Stars and Stripes",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-05T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1785,7 +1785,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T20:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1821,7 +1821,7 @@
       "source": "Kyiv Post",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1857,7 +1857,7 @@
       "source": "The National",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T18:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1897,7 +1897,7 @@
       "source": "Indian Republic",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T12:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1932,7 +1932,7 @@
       "source": "Fox News",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-04T02:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -1968,7 +1968,7 @@
       "verification_status": "reported",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T20:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2003,7 +2003,7 @@
       "source": "Al Jazeera",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-06T20:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2038,7 +2038,7 @@
       "source": "Defence Security Asia",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-05T18:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2074,7 +2074,7 @@
       "source": "Amnesty International",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-03T20:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2109,7 +2109,7 @@
       "source": "Oxford Economics",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-07T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2145,7 +2145,7 @@
       "source": "Pravda Cyprus",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-06T06:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2180,7 +2180,7 @@
       "source": "CNBC",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T22:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2216,7 +2216,7 @@
       "source": "CBS News",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-04T20:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2252,7 +2252,7 @@
       "source": "Al Jazeera",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-01T22:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {
@@ -2287,7 +2287,7 @@
       "source": "The National",
       "conflict_id": "epic-fury-2026",
       "revision": 1,
-      "first_reported_at": "2026-03-02T12:00:00Z",
+      "first_reported_at": null,
       "updated_at": null,
       "sources": [
         {

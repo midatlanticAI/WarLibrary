@@ -1464,8 +1464,43 @@ function normalizeQuoteText(text) {
     .replace(/[“”„]/g, '"')
     .replace(/[–—]/g, "-")
     .replace(/\s+/g, " ")
-    .replace(/[.,;:!?"'()\[\]\-]+$/g, "")
+    // A quote the model wraps in quote marks or opens with an ellipsis is
+    // still verbatim; strip wrapping punctuation on both ends before matching.
+    .replace(/^[\s.,;:!?"'()\[\]\-…]+/g, "")
+    .replace(/[\s.,;:!?"'()\[\]\-…]+$/g, "")
     .trim();
+}
+
+/**
+ * Zero a per-event fatality figure the pipeline has decided not to trust (a
+ * cumulative toll, or a single-event count at or above the quarantine
+ * threshold). The model's range and attribution go with it, otherwise a
+ * "0–10,000, figure from the health ministry" range would be published —
+ * exactly the double count the figure was zeroed to avoid. For a quarantine
+ * the claimed values are stashed so a reviewer still sees them.
+ */
+function clearFatalityFigure(event, { stashAsClaimed = false } = {}) {
+  if (stashAsClaimed) {
+    event.claimed_fatalities = event.fatalities;
+    event.claimed_fatalities_min = event.fatalities_min ?? null;
+    event.claimed_fatalities_max = event.fatalities_max ?? null;
+    event.claimed_fatalities_attribution = event.fatalities_attribution ?? null;
+  }
+  event.fatalities = 0;
+  event.fatalities_min = 0;
+  event.fatalities_max = 0;
+  event.fatalities_attribution = null;
+}
+
+/**
+ * Raise an existing event's fatality figure after a later report gives a
+ * higher per-event count. The range widens to include the new figure; the
+ * low end stays, because that is what the first outlet reported.
+ */
+function raiseFatalities(event, newFat) {
+  event.fatalities = newFat;
+  if (typeof event.fatalities_min !== "number") event.fatalities_min = newFat;
+  event.fatalities_max = Math.max(typeof event.fatalities_max === "number" ? event.fatalities_max : 0, newFat);
 }
 
 /**
@@ -1568,15 +1603,26 @@ function outletKey(name) {
  */
 function mergeSourceIntoExisting(existing, candidate, nowIso) {
   if (!candidate.source_url) return false;
-  if (!Array.isArray(existing.sources) || existing.sources.length === 0) {
-    existing.sources = [{ name: existing.source, url: existing.source_url || null }];
+  // Tolerate any legacy shape: missing, empty, or holding non-objects.
+  existing.sources = (Array.isArray(existing.sources) ? existing.sources : []).filter(
+    (s) => s && typeof s === "object"
+  );
+  if (existing.sources.length === 0) {
+    existing.sources = [{ name: existing.source || "Unknown", url: existing.source_url || null }];
   }
   if (existing.sources.some((s) => s.url === candidate.source_url)) return false;
+  const candidateOutlet = outletKey(candidate.source);
   const knownOutlets = new Set(existing.sources.map((s) => outletKey(s.name)));
-  const newOutlet = !knownOutlets.has(outletKey(candidate.source));
-  existing.sources.push({ name: candidate.source, url: candidate.source_url, fetched_at: nowIso });
+  // Independence needs a named outlet on both sides: an unnamed legacy
+  // source cannot corroborate anything, and neither can an unnamed candidate.
+  const independent =
+    candidateOutlet !== "" &&
+    candidateOutlet !== "unknown" &&
+    !knownOutlets.has(candidateOutlet) &&
+    [...knownOutlets].some((k) => k !== "" && k !== "unknown");
+  existing.sources.push({ name: candidate.source || "Unknown", url: candidate.source_url, fetched_at: nowIso });
   existing.source_count = existing.sources.length;
-  if (newOutlet && ["reported", "unconfirmed"].includes(existing.verification_status)) {
+  if (independent && ["reported", "unconfirmed"].includes(existing.verification_status)) {
     existing.verification_status = "confirmed";
   }
   existing.revision = (existing.revision || 1) + 1;
@@ -2436,8 +2482,9 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
     );
     if (e.fatalities > 0 && isCumulative) {
       console.log(`  FIX cumulative fatalities ${e.fatalities}->0: ${e.description?.slice(0, 80)}...`);
-      e.fatalities = 0;
+      clearFatalityFigure(e);
       e.event_type = "strategic_development";
+      if (e.sub_event_type === undefined || e.sub_event_type === "unspecified") e.sub_event_type = "casualty_toll";
     }
     // Quarantine suspicious single-event fatality counts rather than silently
     // zeroing them. Zeroing destroyed information in both directions: a real
@@ -2449,8 +2496,7 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
     // marked disputed so the UI and any audit can find it.
     if (e.fatalities >= SUSPICIOUS_FATALITY_THRESHOLD) {
       console.log(`  QUARANTINE suspicious fatalities ${e.fatalities}: ${e.description?.slice(0, 80)}...`);
-      e.claimed_fatalities = e.fatalities;
-      e.fatalities = 0;
+      clearFatalityFigure(e, { stashAsClaimed: true });
       e.verification_status = "disputed";
       e.needs_review = "fatalities_above_threshold";
       pipelineStats.events_quarantined = (pipelineStats.events_quarantined || 0) + 1;
@@ -2505,18 +2551,26 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
   const dedupLog = loadDedupLog();
   let fatalityUpdates = 0;
   let sourceMerges = 0;
+  let batchMerges = 0;
 
   // Track events accepted this batch (to catch intra-batch duplicates)
   const acceptedThisBatch = [];
+
+  // Only events_latest.json is ever written back, so a merge into a row from
+  // the two seed files would change memory, be logged as a merge, and be lost
+  // on disk. Those rows are static history; matches against them are plain
+  // rejections.
+  const persistable = new Set(eventsLatest);
 
   const uniqueEvents = validEvents.filter((e) => {
     // Check against ALL existing events
     const existingMatch = findDuplicateMatch(e, allEvents);
     if (existingMatch.isDup) {
+      const canPersist = persistable.has(existingMatch.match);
       // A second outlet reporting the same incident corroborates it: record
       // the source on the existing event (and upgrade to "confirmed" when the
       // outlet is new) instead of discarding the report.
-      if (mergeSourceIntoExisting(existingMatch.match, e, RUN_ISO)) {
+      if (canPersist && mergeSourceIntoExisting(existingMatch.match, e, RUN_ISO)) {
         sourceMerges++;
         console.log(`  CORROBORATE (+${e.source}, now ${existingMatch.match.source_count} sources, ${existingMatch.match.verification_status}): ${e.description?.slice(0, 60)}...`);
         logDedupDecision(dedupLog, "merged_source", e, existingMatch.match, {
@@ -2529,9 +2583,9 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
       // If the new event has a higher fatality count, update the existing event
       const newFat = e.fatalities || 0;
       const existingFat = existingMatch.match.fatalities || 0;
-      if (newFat > existingFat && newFat <= 500) {
+      if (canPersist && newFat > existingFat && newFat <= 500) {
         console.log(`  MERGE fatalities ${existingFat}->${newFat}: ${e.description?.slice(0, 60)}...`);
-        existingMatch.match.fatalities = newFat;
+        raiseFatalities(existingMatch.match, newFat);
         fatalityUpdates++;
         logDedupDecision(dedupLog, "merged_fatalities", e, existingMatch.match, {
           similarity: existingMatch.sim,
@@ -2553,11 +2607,23 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
     // Check against events already accepted in THIS batch (intra-batch dedup)
     const batchMatch = findDuplicateMatch(e, acceptedThisBatch);
     if (batchMatch.isDup) {
+      // Two outlets in one run is the commonest corroboration of all (same
+      // news cycle); the accepted event already carries sources[] from 8g.
+      if (mergeSourceIntoExisting(batchMatch.match, e, RUN_ISO)) {
+        batchMerges++;
+        console.log(`  CORROBORATE in batch (+${e.source}, ${batchMatch.match.verification_status}): ${e.description?.slice(0, 60)}...`);
+        logDedupDecision(dedupLog, "merged_source", e, batchMatch.match, {
+          similarity: batchMatch.sim,
+          method: "intra_batch_" + batchMatch.method,
+          source_count: batchMatch.match.source_count,
+          verification_status: batchMatch.match.verification_status,
+        });
+      }
       const newFat = e.fatalities || 0;
       const existingFat = batchMatch.match.fatalities || 0;
       if (newFat > existingFat && newFat <= 500) {
-        batchMatch.match.fatalities = newFat;
-        fatalityUpdates++;
+        raiseFatalities(batchMatch.match, newFat);
+        // The accepted event is not on disk yet, so no write-back is needed.
         logDedupDecision(dedupLog, "merged_fatalities", e, batchMatch.match, {
           similarity: batchMatch.sim,
           method: "intra_batch_" + batchMatch.method,
@@ -2586,7 +2652,7 @@ Extract every distinct NEW event from ALL articles above, including headline-onl
 
   // If existing events changed (fatalities raised, or a second source
   // recorded), write back the affected file.
-  pipelineStats.source_merges = sourceMerges;
+  pipelineStats.source_merges = sourceMerges + batchMerges;
   if (fatalityUpdates > 0 || sourceMerges > 0) {
     console.log(`  Updated ${fatalityUpdates} fatality figure(s) and corroborated ${sourceMerges} event(s). Writing back data files...`);
     // Write back events_latest.json (most likely to have updated events)
@@ -2702,6 +2768,8 @@ module.exports = {
   groundEvent,
   verifyEvidenceQuote,
   mergeSourceIntoExisting,
+  clearFatalityFigure,
+  raiseFatalities,
   MODEL,
   ADVISOR_MODEL,
   ADVISOR_BETA,

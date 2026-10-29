@@ -165,7 +165,8 @@ export default function CodebookPage() {
           </p>
           <ul className="mt-2 list-disc space-y-1.5 ps-5">
             <li>Every number in the &quot;by the numbers&quot; table and in the change-against-last-period column is computed from the dataset in code. The model is never asked to add anything up.</li>
-            <li>The model receives the period&apos;s statistics and the top events by reliability and human cost, and must end every sentence with the id of the event it rests on. Sentences citing an event it was not given are deleted; sections left without a citation are deleted.</li>
+            <li>The model receives the period&apos;s statistics and the top events by reliability and human cost, and must end every sentence with the id of the event it rests on. A sentence with no citation, or citing an event it was not given, is deleted; a section left with no sentence is deleted; a dispatch left with no summary is held for review.</li>
+            <li>Country counts fold spelling variants and skip aggregate strings such as &quot;Multiple&quot; or &quot;Iran, Yemen&quot;, by the same rules as the country hubs.</li>
             <li>Any figure of 10 or more in the prose that is not in the statistics or in a cited event&apos;s text flags the dispatch for review instead of publishing it.</li>
             <li>Daily dispatches publish on generation when they pass those checks. Weekly and monthly dispatches are drafts for 24 hours, then publish on their own unless an editor pulls or edits them. A pulled dispatch returns 404.</li>
             <li>Weekly dispatches are written from the week&apos;s dailies plus the week&apos;s statistics; monthly from the weeklies. When fewer than three dailies exist the writer falls back to the raw events.</li>

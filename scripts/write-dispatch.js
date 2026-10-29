@@ -102,7 +102,9 @@ function readDispatchFile(kind, key) {
 function writeDispatchFile(dispatch) {
   const file = path.join(DISPATCH_DIR, core.dispatchFileName(dispatch.kind, dispatch.key));
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  const tmp = `${file}.tmp`;
+  // Per-process temp name: two writers racing on one key must not truncate
+  // each other's partial file before the rename.
+  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(dispatch, null, 2), "utf-8");
   fs.renameSync(tmp, file);
   return file;
@@ -235,18 +237,32 @@ function assemble({ kind, key, inputs, output, usage, now = new Date(), existing
   if (check.unknown_citations > 0) needsReview.push(`unknown_citations:${check.unknown_citations}`);
   if (check.sections.length === 0) needsReview.push("no_sections");
 
+  // The lede and the civilian note obey the same rule as the sections: an
+  // uncited sentence is dropped, never kept as plain prose. A lede that
+  // loses everything leaves the dispatch for review rather than publishing
+  // an empty summary.
   const ledeCheck = core.citationCheck([{ heading: "lede", body: output.lede, event_ids: [] }], allowedIds);
-  const lede = ledeCheck.sections[0]?.body || core.stripCitations(output.lede || "");
+  const lede = ledeCheck.sections[0]?.body || "";
   if (ledeCheck.unknown_citations > 0) needsReview.push(`lede_unknown_citations:${ledeCheck.unknown_citations}`);
+  if (!lede) needsReview.push("no_lede");
 
   let civilianNote = null;
+  let noteDropped = 0;
   if (output.civilian_note && output.civilian_note.trim()) {
     const noteCheck = core.citationCheck([{ heading: "civilian", body: output.civilian_note, event_ids: [] }], allowedIds);
     civilianNote = noteCheck.sections[0]?.body || null;
+    noteDropped = noteCheck.dropped_sentences;
     if (noteCheck.unknown_citations > 0) needsReview.push(`civilian_note_unknown_citations:${noteCheck.unknown_citations}`);
   }
 
-  const allowedNums = core.allowedNumbers({ stats, prior, diff }, inputEvents, childDispatches.flatMap((d) => [d.stats, d.prior_stats, d.diff]).filter(Boolean).flatMap(numbersIn));
+  // Figures the narrative may repeat: this period's statistics, the input
+  // events' own numbers, and — for weekly/monthly — everything in the child
+  // dispatches, whose prose already passed this same guard.
+  const childNumbers = childDispatches.flatMap((d) => [
+    ...numbersIn([d.stats, d.prior_stats, d.diff].filter(Boolean)),
+    ...core.numbersInText(core.narrativeText(d)),
+  ]);
+  const allowedNums = core.allowedNumbers({ stats, prior, diff }, inputEvents, childNumbers);
   const title = core.stripCitations(String(output.title || "").trim()).slice(0, 120) || `${kind[0].toUpperCase()}${kind.slice(1)} dispatch: ${win.label}`;
   const narrative = core.narrativeText({ title, lede, civilian_note: civilianNote, sections: check.sections });
   const offenders = core.numberGuard(narrative, allowedNums);
@@ -265,6 +281,7 @@ function assemble({ kind, key, inputs, output, usage, now = new Date(), existing
   let status;
   let publishAfter = null;
   let publishedAt = null;
+  const wasPublished = existing ? core.effectiveStatus(existing, now) === "published" : false;
   if (publishOverride === "publish") {
     status = "published";
     publishedAt = now.toISOString();
@@ -272,6 +289,10 @@ function assemble({ kind, key, inputs, output, usage, now = new Date(), existing
     status = "draft";
   } else if (existing && existing.status === "pulled") {
     status = "draft";
+  } else if (wasPublished && needsReview.length === 0) {
+    // Regenerating a live dispatch must not take its URL offline for a day.
+    status = "published";
+    publishedAt = existing.published_at || existing.publish_after || now.toISOString();
   } else if (kind === "daily") {
     status = needsReview.length === 0 ? "published" : "draft";
     if (status === "published") publishedAt = now.toISOString();
@@ -317,7 +338,8 @@ function assemble({ kind, key, inputs, output, usage, now = new Date(), existing
     revision: existing ? (existing.revision || 1) + 1 : 1,
     edited_at: null,
     check: {
-      dropped_sentences: check.dropped_sentences + ledeCheck.dropped_sentences,
+      dropped_sentences: check.dropped_sentences + ledeCheck.dropped_sentences + noteDropped,
+      uncited_sentences: check.uncited_sentences + ledeCheck.uncited_sentences,
       dropped_sections: check.dropped_sections,
       unverified_numbers: offenders,
     },

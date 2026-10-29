@@ -55,10 +55,19 @@ describe("period keys and windows", () => {
     expect(core.windowFor("monthly", "2027-01")!.prior.from).toBe("2026-12-01T00:00:00.000Z");
   });
 
-  it("defaultKey is the period that just ended", () => {
+  it("defaultKey is the period that just ended, whatever the day", () => {
     expect(core.defaultKey("daily", new Date("2026-10-29T06:00:00Z"))).toBe("2026-10-28");
+    expect(core.defaultKey("daily", new Date("2026-10-29T00:30:00Z"))).toBe("2026-10-28");
     expect(core.defaultKey("weekly", new Date("2026-11-02T06:30:00Z"))).toBe("2026-W44");
+    expect(core.defaultKey("weekly", new Date("2026-10-28T12:00:00Z"))).toBe("2026-W43"); // a Wednesday
     expect(core.defaultKey("monthly", new Date("2026-11-01T07:00:00Z"))).toBe("2026-10");
+    expect(core.defaultKey("monthly", new Date("2026-10-15T12:00:00Z"))).toBe("2026-09");
+  });
+
+  it("rejects years outside the plausible span", () => {
+    expect(core.isValidKey("monthly", "0026-10")).toBe(false);
+    expect(core.isValidKey("daily", "0026-10-01")).toBe(false);
+    expect(core.isValidKey("weekly", "2101-W01")).toBe(false);
   });
 
   it("child keys cover the parent window exactly", () => {
@@ -100,6 +109,20 @@ describe("statistics (the code counts)", () => {
     expect(stats.by_verification).toEqual({ confirmed: 1, reported: 2 });
   });
 
+  it("folds country spellings and never counts aggregates as countries", () => {
+    const stats = core.computeStats([
+      ev({ id: "a", country: "US" }),
+      ev({ id: "b", country: "United States" }),
+      ev({ id: "c", country: "Multiple (Kuwait, Bahrain)" }),
+      ev({ id: "d", country: "Iran, Yemen" }),
+      ev({ id: "e", country: "Global" }),
+    ]);
+    expect(stats.events).toBe(5);
+    expect(stats.countries).toBe(1);
+    expect(stats.unplaced_country).toBe(3);
+    expect(stats.top_countries).toEqual([{ name: "United States", events: 2, kinetic: 2, fatalities: 0 }]);
+  });
+
   it("diff is signed with a null percentage from zero", () => {
     const a = core.computeStats([ev({ id: "x", fatalities: 4 })]);
     const b = core.computeStats([]);
@@ -134,15 +157,46 @@ describe("citation check", () => {
     expect(r.sections[0].body).toBe("Strikes hit a depot [ev:aaaaaaaaaaaa]. Follow-up fire [ev:bbbbbbbbbbbb].");
     expect(r.sections[0].event_ids).toEqual(["aaaaaaaaaaaa"]);
     expect(r.cited).toEqual(["aaaaaaaaaaaa", "bbbbbbbbbbbb"]);
-    expect(r.dropped_sentences).toBe(1);
+    expect(r.dropped_sentences).toBe(2); // one unknown citation, one uncited
+    expect(r.uncited_sentences).toBe(1);
     expect(r.dropped_sections).toBe(1);
     expect(r.unknown_citations).toBe(1);
   });
 
-  it("keeps a section alive through event_ids alone", () => {
-    const r = core.citationCheck([{ heading: "h", body: "Plain sentence.", event_ids: ["bbbbbbbbbbbb"] }], allowed);
-    expect(r.sections).toHaveLength(1);
-    expect(r.cited).toEqual(["bbbbbbbbbbbb"]);
+  it("drops uncited sentences even when the section lists event_ids", () => {
+    const r = core.citationCheck(
+      [{ heading: "h", body: "Plain uncited sentence. Cited one [ev:bbbbbbbbbbbb].", event_ids: ["aaaaaaaaaaaa"] }],
+      allowed
+    );
+    expect(r.sections[0].body).toBe("Cited one [ev:bbbbbbbbbbbb].");
+    expect(r.uncited_sentences).toBe(1);
+    expect(r.cited).toEqual(["aaaaaaaaaaaa", "bbbbbbbbbbbb"]);
+    const gone = core.citationCheck([{ heading: "h", body: "Only uncited prose here.", event_ids: ["aaaaaaaaaaaa"] }], allowed);
+    expect(gone.sections).toHaveLength(0);
+    expect(gone.dropped_sections).toBe(1);
+  });
+
+  it("keeps a trailing citation with the sentence it follows", () => {
+    const r = core.citationCheck(
+      [{ heading: "h", body: "Depot hit. [ev:aaaaaaaaaaaa] Invented thing. [ev:cccccccccccc] Fire followed. [ev:bbbbbbbbbbbb]", event_ids: [] }],
+      allowed
+    );
+    expect(r.sections[0].body).toBe("Depot hit [ev:aaaaaaaaaaaa]. Fire followed [ev:bbbbbbbbbbbb].");
+    expect(r.unknown_citations).toBe(1);
+  });
+
+  it("does not split on abbreviations", () => {
+    expect(core.splitSentences("The U.S. Navy struck the port [ev:aaaaaaaaaaaa]. Dr. Lee spoke [ev:bbbbbbbbbbbb].")).toEqual([
+      "The U.S. Navy struck the port [ev:aaaaaaaaaaaa].",
+      "Dr. Lee spoke [ev:bbbbbbbbbbbb].",
+    ]);
+  });
+
+  it("treats malformed or uppercase tokens as unknown citations and strips them everywhere", () => {
+    const r = core.citationCheck([{ heading: "h", body: "Fake claim [ev:AAAAAAAAAAAA]. Short [ev:abc]. Real [ev:aaaaaaaaaaaa].", event_ids: [] }], allowed);
+    expect(r.sections[0].body).toBe("Real [ev:aaaaaaaaaaaa].");
+    expect(r.unknown_citations).toBe(2);
+    expect(core.stripCitations("Title [ev:AAAAAAAAAAAA] here [ev:abc].")).toBe("Title here.");
   });
 });
 

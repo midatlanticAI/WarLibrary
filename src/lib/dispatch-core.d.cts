@@ -27,6 +27,7 @@ export interface DispatchStats {
   confirmed_or_reported: number;
   outlets: number;
   countries: number;
+  unplaced_country: number;
   by_type: Record<string, number>;
   by_verification: Record<string, number>;
   by_conflict: Record<string, number>;
@@ -100,6 +101,7 @@ export interface CitationResult {
   sections: DispatchSection[];
   cited: string[];
   dropped_sentences: number;
+  uncited_sentences: number;
   dropped_sections: number;
   unknown_citations: number;
 }
@@ -126,6 +128,9 @@ export const KINETIC_TYPES: Set<string>;
 export const DISCLOSURE: string;
 export const DAY_MS: number;
 export const CITATION_RE: RegExp;
+export const LOOSE_CITATION_RE: RegExp;
+export function splitSentences(text: string): string[];
+export function numbersInText(text: string | null | undefined): number[];
 
 export function stableEventId(raw: { date: string; latitude: number; longitude: number; description?: string }): string;
 export function utcDay(date: Date): string;

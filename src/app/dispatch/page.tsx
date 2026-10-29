@@ -75,7 +75,7 @@ export default function DispatchIndexPage() {
         <p className="mt-2 text-sm leading-relaxed text-zinc-400">
           A daily digest at 06:00 UTC, a weekly one on Mondays and a monthly one on the first of the month.
           The numbers are computed from the dataset in code; the narrative is model-written, every sentence
-          cites the event it rests on, and anything it cannot cite is dropped before publication.{" "}
+          must cite the event it rests on, and any sentence that does not is dropped before publication.{" "}
           <Link href="/codebook#dispatches" className="underline-offset-2 hover:underline">How this works</Link>
           {" · "}
           <a href="/dispatch/feed.xml" className="underline-offset-2 hover:underline">RSS</a>

@@ -10,13 +10,14 @@
  *
  * Principle from the growth plan: the model narrates, the code counts.
  * Everything numeric on a dispatch comes from `computeStats`; the model is
- * never asked to add anything up, and `citationCheck` drops any sentence that
- * cites an event it was not given.
+ * never asked to add anything up, and `citationCheck` drops any sentence
+ * that does not cite an event it was given.
  */
 "use strict";
 
 /* eslint-disable @typescript-eslint/no-require-imports -- CommonJS by design, see above */
 const crypto = require("crypto");
+const { canonicalCountry } = require("./country-rules.cjs");
 
 const KINDS = ["daily", "weekly", "monthly"];
 const STATUSES = ["draft", "published", "pulled"];
@@ -34,6 +35,9 @@ const DISCLOSURE =
   "Automated digest from the War Library dataset. Figures are computed in code from source-attributed events; the narrative is model-generated and spot-checked. Every event mentioned links to its record and its source.";
 
 const DAY_MS = 86_400_000;
+/** Keys outside this span are malformed, whatever the regex says. */
+const MIN_YEAR = 1970;
+const MAX_YEAR = 2100;
 
 // ---------------------------------------------------------------------------
 // Event identity (must match src/lib/event-store.ts exactly)
@@ -115,11 +119,13 @@ function keyFor(kind, date) {
 
 /**
  * The most recently COMPLETED period as of `now`: yesterday, last week, last
- * month. Cron runs each writer just after its period ends, so this is the
- * key it should write; the admin's "regenerate" passes an explicit key.
+ * month — whatever the day of the week or month. Cron runs each writer just
+ * after its period ends, so this is the key it should write; the admin's
+ * Generate box prefills the same.
  */
 function defaultKey(kind, now = new Date()) {
-  return keyFor(kind, new Date(now.getTime() - DAY_MS));
+  const current = windowFor(kind, keyFor(kind, now));
+  return keyFor(kind, new Date(new Date(current.from).getTime() - 1));
 }
 
 /**
@@ -131,19 +137,23 @@ function windowFor(kind, key) {
   if (!isKind(kind) || typeof key !== "string") return null;
   const m = KEY_PATTERNS[kind].exec(key);
   if (!m) return null;
+  const y = Number(m[1]);
+  // Date.UTC maps two-digit years onto 1900–1999; a floor keeps "0026-10"
+  // from quietly becoming October 1926.
+  if (y < MIN_YEAR || y > MAX_YEAR) return null;
   let from;
   let to;
   let priorFrom;
   let label;
   if (kind === "daily") {
-    const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+    const [mo, d] = [Number(m[2]), Number(m[3])];
     from = new Date(Date.UTC(y, mo - 1, d));
     if (from.getUTCFullYear() !== y || from.getUTCMonth() !== mo - 1 || from.getUTCDate() !== d) return null;
     to = new Date(from.getTime() + DAY_MS);
     priorFrom = new Date(from.getTime() - DAY_MS);
     label = formatDay(from);
   } else if (kind === "weekly") {
-    const [y, w] = [Number(m[1]), Number(m[2])];
+    const w = Number(m[2]);
     if (w < 1 || w > 53) return null;
     from = mondayOfIsoWeek(y, w);
     if (isoWeek(from).week !== w || isoWeek(from).year !== y) return null;
@@ -151,7 +161,7 @@ function windowFor(kind, key) {
     priorFrom = new Date(from.getTime() - 7 * DAY_MS);
     label = `Week of ${formatDay(from)}`;
   } else {
-    const [y, mo] = [Number(m[1]), Number(m[2])];
+    const mo = Number(m[2]);
     if (mo < 1 || mo > 12) return null;
     from = new Date(Date.UTC(y, mo - 1, 1));
     to = new Date(Date.UTC(y, mo, 1));
@@ -238,6 +248,11 @@ function sortCounts(map, limit) {
 /**
  * Everything numeric a dispatch may state. Computed in code, never by the
  * model. `events` must already be the window's events.
+ *
+ * Countries are folded through the same rules as the country hubs: "US" and
+ * "United States" are one row, and aggregates ("Multiple", "Global",
+ * "Iran, Yemen") are not counted as countries at all — the events still
+ * count everywhere else.
  */
 function computeStats(events, { topCountries = 10 } = {}) {
   const byType = {};
@@ -250,6 +265,7 @@ function computeStats(events, { topCountries = 10 } = {}) {
   let fatalEvents = 0;
   let civilianImpactEvents = 0;
   let confirmedOrReported = 0;
+  let unplaced = 0;
 
   for (const e of events) {
     byType[e.event_type] = (byType[e.event_type] || 0) + 1;
@@ -267,13 +283,15 @@ function computeStats(events, { topCountries = 10 } = {}) {
     }
     if (e.civilian_impact && String(e.civilian_impact).trim()) civilianImpactEvents++;
     if (e.source) outlets.add(String(e.source).trim().toLowerCase());
-    const name = (e.country || "").trim();
+    const name = canonicalCountry(e.country);
     if (name) {
       const row = countries.get(name) || { name, events: 0, kinetic: 0, fatalities: 0 };
       row.events++;
       if (k) row.kinetic++;
       row.fatalities += f;
       countries.set(name, row);
+    } else {
+      unplaced++;
     }
   }
 
@@ -291,6 +309,8 @@ function computeStats(events, { topCountries = 10 } = {}) {
     confirmed_or_reported: confirmedOrReported,
     outlets: outlets.size,
     countries: countryRows.length,
+    /** Events whose country string is a list or an aggregate (not counted above). */
+    unplaced_country: unplaced,
     by_type: Object.fromEntries(sortCounts(byType, 20)),
     by_verification: byVerification,
     by_conflict: byConflict,
@@ -358,19 +378,42 @@ function compactEvent(event, descriptionMax = 220) {
 // Post-checks on model output
 // ---------------------------------------------------------------------------
 
+/** A well-formed citation: twelve lowercase hex characters. */
 const CITATION_RE = /\[ev:([0-9a-f]{12})\]/g;
+/** Anything that looks like a citation, well-formed or not. */
+const LOOSE_CITATION_RE = /\[ev:[^\]]*\]/gi;
 
+/** Abbreviations whose full stop must not end a sentence. */
+const ABBREVIATIONS = /\b(U\.S\.A|U\.S|U\.K|U\.N|U\.A\.E|E\.U|e\.g|i\.e|Mr|Mrs|Ms|Dr|St|Lt|Gen|Col|Maj|Sgt|Capt|Adm|Brig|Prof|Sen|Rep|Gov|No|vs|approx)\./g;
+const DOT_MARK = "\u0001";
+
+/**
+ * Split prose into sentences, keeping each sentence's citations with it.
+ * The model is told to end every sentence with its citation; it sometimes
+ * puts the citation after the full stop ("Depot hit. [ev:a] Fire."), and a
+ * naive split then hands that citation to the next sentence, so the wrong
+ * sentence gets dropped. Citation runs that follow a terminator are moved
+ * back in front of it before splitting.
+ */
 function splitSentences(text) {
-  // Keep the separators so the text can be reassembled without changing it.
-  return String(text).split(/(?<=[.!?])\s+/);
+  const prepared = String(text)
+    .replace(ABBREVIATIONS, (m) => m.replace(/\./g, DOT_MARK))
+    .replace(/([.!?])((?:\s*\[ev:[^\]]*\])+)/g, (m, stop, cites) => ` ${cites.trim().replace(/\s+/g, " ")}${stop}`);
+  return prepared
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.replace(new RegExp(DOT_MARK, "g"), ".").trim())
+    .filter(Boolean);
 }
 
 /**
  * Enforce "every sentence cites an event it was given".
  *
- * - A sentence carrying a citation to an unknown id is dropped.
- * - `event_ids` on a section are filtered to known ids.
- * - A section left with no citations at all (inline or listed) is dropped.
+ * - A sentence with no citation is dropped.
+ * - A sentence carrying a citation to an unknown id, or a malformed citation
+ *   token, is dropped.
+ * - `event_ids` on a section are filtered to known ids; they do not rescue
+ *   an uncited sentence.
+ * - A section left with no sentence is dropped.
  *
  * Returns the cleaned sections, the ids actually cited (sorted) and counts of
  * what was removed, so the dispatch can carry a review flag when the model
@@ -380,6 +423,7 @@ function citationCheck(sections, allowedIds) {
   const allowed = allowedIds instanceof Set ? allowedIds : new Set(allowedIds);
   const cited = new Set();
   let droppedSentences = 0;
+  let uncitedSentences = 0;
   let droppedSections = 0;
   let unknownCitations = 0;
   const cleaned = [];
@@ -389,23 +433,29 @@ function citationCheck(sections, allowedIds) {
     const kept = [];
     for (const sentence of splitSentences(body)) {
       let bad = false;
-      for (const m of sentence.matchAll(CITATION_RE)) {
-        if (allowed.has(m[1])) cited.add(m[1]);
-        else {
+      let good = 0;
+      for (const token of sentence.match(LOOSE_CITATION_RE) || []) {
+        const strict = /^\[ev:([0-9a-f]{12})\]$/.exec(token);
+        if (strict && allowed.has(strict[1])) {
+          cited.add(strict[1]);
+          good++;
+        } else {
           bad = true;
           unknownCitations++;
         }
       }
       if (bad) droppedSentences++;
-      else if (sentence.trim()) kept.push(sentence);
+      else if (good === 0) {
+        droppedSentences++;
+        uncitedSentences++;
+      } else kept.push(sentence);
     }
     const ids = [...new Set((section.event_ids || []).filter((id) => allowed.has(id)))];
-    for (const id of ids) cited.add(id);
-    const inlineCount = kept.join(" ").match(CITATION_RE)?.length ?? 0;
-    if (kept.length === 0 || (inlineCount === 0 && ids.length === 0)) {
+    if (kept.length === 0) {
       droppedSections++;
       continue;
     }
+    for (const id of ids) cited.add(id);
     cleaned.push({
       heading: String(section.heading || "").trim(),
       body: kept.join(" ").trim(),
@@ -417,6 +467,7 @@ function citationCheck(sections, allowedIds) {
     sections: cleaned,
     cited: [...cited].sort(),
     dropped_sentences: droppedSentences,
+    uncited_sentences: uncitedSentences,
     dropped_sections: droppedSections,
     unknown_citations: unknownCitations,
   };
@@ -445,13 +496,24 @@ function allowedNumbers(stats, events, extra = []) {
       allowed.add(Number(m[3]));
     }
     // Figures quoted in the description are fair game to repeat.
-    for (const n of String(e.description || "").match(/\d[\d,]*/g) || []) {
-      allowed.add(Number(n.replace(/,/g, "")));
-    }
+    for (const n of numbersInText(e.description)) allowed.add(n);
+    for (const n of numbersInText(e.civilian_impact)) allowed.add(n);
   }
   for (let y = 1990; y <= 2100; y++) allowed.add(y);
   for (let d = 1; d <= 31; d++) allowed.add(d);
   return allowed;
+}
+
+/** Integers in a piece of prose (citation tokens removed first). */
+function numbersInText(text) {
+  const out = [];
+  if (!text) return out;
+  const prose = String(text).replace(LOOSE_CITATION_RE, " ");
+  for (const raw of prose.match(/\d[\d,]*/g) || []) {
+    const n = Number(raw.replace(/,/g, ""));
+    if (Number.isFinite(n)) out.push(n);
+  }
+  return out;
 }
 
 /**
@@ -461,10 +523,8 @@ function allowedNumbers(stats, events, extra = []) {
  */
 function numberGuard(text, allowed) {
   const offenders = new Set();
-  const prose = String(text).replace(CITATION_RE, " ");
-  for (const raw of prose.match(/\d[\d,]*/g) || []) {
-    const n = Number(raw.replace(/,/g, ""));
-    if (!Number.isFinite(n) || n < 10) continue;
+  for (const n of numbersInText(text)) {
+    if (n < 10) continue;
     if (!allowed.has(n)) offenders.add(n);
   }
   return [...offenders];
@@ -509,14 +569,14 @@ function dispatchFileName(kind, key) {
 
 /** Plain text for a social post: title, lede, link. Code-built, not model-built. */
 function socialText(dispatch, url) {
-  const lede = String(dispatch.lede || "").replace(/\s+/g, " ").trim();
+  const lede = stripCitations(dispatch.lede || "");
   const short = lede.length > 200 ? `${lede.slice(0, 199).trimEnd()}…` : lede;
-  return `${dispatch.title}\n\n${short}\n\n${url}`.replace(CITATION_RE, "").replace(/ {2,}/g, " ");
+  return `${stripCitations(dispatch.title || "")}\n\n${short}\n\n${url}`.replace(/ {2,}/g, " ");
 }
 
-/** Strip `[ev:id]` markers for places that cannot render links (feeds, meta). */
+/** Strip `[ev:…]` markers (well-formed or not) for places that cannot render links. */
 function stripCitations(text) {
-  return String(text).replace(CITATION_RE, "").replace(/\s+([.,;:!?])/g, "$1").replace(/ {2,}/g, " ").trim();
+  return String(text).replace(LOOSE_CITATION_RE, "").replace(/\s+([.,;:!?])/g, "$1").replace(/ {2,}/g, " ").trim();
 }
 
 module.exports = {
@@ -526,6 +586,7 @@ module.exports = {
   DISCLOSURE,
   DAY_MS,
   CITATION_RE,
+  LOOSE_CITATION_RE,
   stableEventId,
   utcDay,
   isoWeek,
@@ -545,8 +606,10 @@ module.exports = {
   eventScore,
   selectTopEvents,
   compactEvent,
+  splitSentences,
   citationCheck,
   allowedNumbers,
+  numbersInText,
   numberGuard,
   narrativeText,
   effectiveStatus,

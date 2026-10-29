@@ -94,8 +94,10 @@ const BLOCKED_PATTERNS = [
 
 // Country, actor and conflict names from the registry, so a question about a
 // newly tracked conflict passes the relevance gate without a code change.
-let _registryKeywords: string[] | null = null;
-function registryKeywords(): string[] {
+// Whole-word matches only: "oman" must not match "woman", "jordan" a
+// basketball question.
+let _registryKeywords: RegExp[] | null = null;
+function registryKeywords(): RegExp[] {
   if (!_registryKeywords) {
     const words = new Set<string>();
     for (const c of getActiveConflicts()) {
@@ -103,7 +105,9 @@ function registryKeywords(): string[] {
       for (const country of c.countries) words.add(country.toLowerCase());
       for (const actor of c.actors) words.add(actor.name.toLowerCase().replace(/\s*\(.*\)$/, ""));
     }
-    _registryKeywords = [...words].filter((w) => w.length >= 3);
+    _registryKeywords = [...words]
+      .filter((w) => w.length >= 3)
+      .map((w) => new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`));
   }
   return _registryKeywords;
 }
@@ -260,7 +264,7 @@ function checkGuardrails(question: string): GuardrailResult {
   // Relevance check — at least one conflict keyword must appear
   // (generous matching: lowercase, partial)
   const qLower = q.toLowerCase();
-  const isRelevant = CONFLICT_KEYWORDS.some((kw) => qLower.includes(kw)) || registryKeywords().some((kw) => qLower.includes(kw));
+  const isRelevant = CONFLICT_KEYWORDS.some((kw) => qLower.includes(kw)) || registryKeywords().some((re) => re.test(qLower));
 
   if (!isRelevant) {
     return {

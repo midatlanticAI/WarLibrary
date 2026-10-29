@@ -42,7 +42,13 @@ function backfillEvent(e) {
 
   set("conflict_id", DEFAULT_CONFLICT_ID);
   set("revision", 1);
-  set("first_reported_at", e.created_at || e.date || null);
+  // No legacy row records when the pipeline first saw it; the event date is
+  // not that, so it stays null rather than inventing a recording time.
+  set("first_reported_at", e.created_at || null);
+  if (!e.created_at && e.first_reported_at !== null && e.first_reported_at === e.date) {
+    e.first_reported_at = null; // undo an earlier backfill that used the event date
+    changed = true;
+  }
   set("updated_at", null);
 
   if (!Array.isArray(e.sources)) {
@@ -63,10 +69,11 @@ function backfillEvent(e) {
   set("fatalities_attribution", null);
 
   const actors = Array.isArray(e.actors) ? e.actors.filter((a) => typeof a === "string" && a.trim()) : [];
+  const second = actors[1] && actors[1] !== actors[0] ? actors[1] : null;
   set("actor1", actors[0] || null);
-  set("actor2", actors[1] || null);
+  set("actor2", second);
   set("actor1_type", actors[0] ? "unknown" : null);
-  set("actor2_type", actors[1] ? "unknown" : null);
+  set("actor2_type", second ? "unknown" : null);
 
   if (e.geo_source === undefined) {
     e.geo_source = e.approximate_location === true || e.location_precision === "country" ? "centroid" : "legacy";

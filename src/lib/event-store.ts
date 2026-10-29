@@ -347,7 +347,7 @@ export function toSerializedEvent(raw: RawEvent, id: string): SerializedEvent {
     sources,
     source_count: sources.length,
     actor1: raw.actor1 ?? actors[0] ?? null,
-    actor2: raw.actor2 ?? actors[1] ?? null,
+    actor2: raw.actor2 ?? (actors[1] && actors[1] !== actors[0] ? actors[1] : null),
     actor1_type: raw.actor1_type ?? null,
     actor2_type: raw.actor2_type ?? null,
     geo_source: geoSourceOf(raw),

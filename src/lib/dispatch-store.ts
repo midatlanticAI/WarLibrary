@@ -30,12 +30,51 @@ function fileFor(kind: DispatchKind, key: string): string {
   return path.join(DISPATCH_DIR, core.dispatchFileName(kind, key));
 }
 
+const EMPTY_USAGE = { input_tokens: 0, output_tokens: 0, cost_usd: 0, model: "" };
+
+/**
+ * Parse and normalise a dispatch file. Optional collections default to
+ * empty and the window is recomputed when missing, so a hand-edited or
+ * older file can never throw in a page or the admin list.
+ */
 function parseDispatch(raw: string): Dispatch | null {
   try {
-    const parsed = JSON.parse(raw) as Dispatch;
+    const parsed = JSON.parse(raw) as Partial<Dispatch>;
     if (!core.isKind(parsed.kind) || !core.isValidKey(parsed.kind, parsed.key)) return null;
     if (typeof parsed.title !== "string" || !Array.isArray(parsed.sections)) return null;
-    return parsed;
+    const kind = parsed.kind;
+    const key = parsed.key as string;
+    const emptyStats = core.computeStats([]);
+    const stats = parsed.stats ?? emptyStats;
+    const prior = parsed.prior_stats ?? emptyStats;
+    return {
+      ...parsed,
+      kind,
+      key,
+      title: parsed.title,
+      window: parsed.window ?? core.windowFor(kind, key)!,
+      generated_at: parsed.generated_at ?? new Date(0).toISOString(),
+      status: core.STATUSES.includes(parsed.status as never) ? (parsed.status as Dispatch["status"]) : "draft",
+      publish_after: parsed.publish_after ?? null,
+      published_at: parsed.published_at ?? null,
+      pulled_at: parsed.pulled_at ?? null,
+      needs_review: Array.isArray(parsed.needs_review) ? parsed.needs_review : [],
+      lede: typeof parsed.lede === "string" ? parsed.lede : "",
+      sections: parsed.sections
+        .filter((s) => s && typeof s === "object")
+        .map((s) => ({ heading: String(s.heading ?? ""), body: String(s.body ?? ""), event_ids: Array.isArray(s.event_ids) ? s.event_ids : [] })),
+      civilian_note: typeof parsed.civilian_note === "string" ? parsed.civilian_note : null,
+      stats,
+      prior_stats: prior,
+      diff: parsed.diff ?? core.diffStats(stats, prior),
+      top_events: Array.isArray(parsed.top_events) ? parsed.top_events : [],
+      cited_ids: Array.isArray(parsed.cited_ids) ? parsed.cited_ids : [],
+      inputs: parsed.inputs ?? { source: "events", keys: [], event_count: 0 },
+      usage: { ...EMPTY_USAGE, ...(parsed.usage ?? {}) },
+      disclosure: parsed.disclosure ?? core.DISCLOSURE,
+      revision: typeof parsed.revision === "number" ? parsed.revision : 1,
+      edited_at: parsed.edited_at ?? null,
+    };
   } catch {
     return null;
   }
@@ -57,7 +96,8 @@ export function readDispatch(kind: DispatchKind, key: string): Dispatch | null {
 export function writeDispatch(dispatch: Dispatch): void {
   const file = fileFor(dispatch.kind, dispatch.key);
   fs.mkdirSync(/*turbopackIgnore: true*/ path.dirname(file), { recursive: true });
-  const tmp = `${file}.tmp`;
+  // Per-process temp name, same reason as in the writer script.
+  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
   fs.writeFileSync(/*turbopackIgnore: true*/ tmp, JSON.stringify(dispatch, null, 2), "utf-8");
   fs.renameSync(/*turbopackIgnore: true*/ tmp, file);
   invalidateDispatchCache();

@@ -24,6 +24,10 @@ const WRITER = join(process.cwd(), "scripts", "write-dispatch.js");
 const INDEXNOW = join(process.cwd(), "scripts", "indexnow.js");
 const LOG_PATH = "/var/log/warlibrary-dispatch.log";
 
+/** Writer runs in flight, keyed `kind/key`, so a double click cannot start two. */
+const inflight = new Map<string, number>();
+const INFLIGHT_STALE_MS = 10 * 60_000;
+
 interface Body {
   action?: string;
   kind?: string;
@@ -48,9 +52,10 @@ function summary(d: Dispatch, now: Date) {
     sections: d.sections.length,
     cited: d.cited_ids.length,
     events: d.stats.events,
-    cost_usd: d.usage?.cost_usd ?? 0,
+    cost_usd: d.usage.cost_usd ?? 0,
     label: d.window.label,
     url: core.dispatchUrlPath(d.kind, d.key),
+    in_flight: inflight.has(`${d.kind}/${d.key}`),
   };
 }
 
@@ -72,8 +77,13 @@ function csrfFailure(req: NextRequest): NextResponse | null {
   return null;
 }
 
-/** Run a script detached, output appended to the dispatch log (or dropped). */
-function runDetached(args: string[]): void {
+/**
+ * Run a script detached, output appended to the dispatch log (or dropped).
+ * The 'error' listener matters: without it a failed spawn (ENOMEM on the
+ * 2 GB box, a missing node binary) is an unhandled event that would bring
+ * down the process serving the whole site.
+ */
+function runDetached(args: string[], tag?: string): void {
   let out: number | "ignore" = "ignore";
   try {
     out = openSync(LOG_PATH, "a");
@@ -85,6 +95,14 @@ function runDetached(args: string[]): void {
     detached: true,
     stdio: ["ignore", out, out],
     env: process.env,
+  });
+  child.on("error", (err) => {
+    console.error("[dispatches] script failed to start:", err);
+    if (tag) inflight.delete(tag);
+  });
+  child.on("exit", () => {
+    if (tag) inflight.delete(tag);
+    invalidateDispatchCache();
   });
   child.unref();
   if (typeof out === "number") closeSync(out);
@@ -140,11 +158,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const now = new Date();
 
   if (action === "generate" || action === "regenerate") {
+    const tag = `${k}/${key}`;
+    const started = inflight.get(tag);
+    if (started && now.getTime() - started < INFLIGHT_STALE_MS) {
+      return NextResponse.json({ error: `A writer for ${tag} is already running; wait for it to finish.` }, { status: 409 });
+    }
     const args = [WRITER, "--kind", k, "--key", key as string];
     if (action === "regenerate") args.push("--force");
+    inflight.set(tag, now.getTime());
     try {
-      runDetached(args);
+      runDetached(args, tag);
     } catch (err) {
+      inflight.delete(tag);
       return NextResponse.json({ error: `Could not start the writer: ${err instanceof Error ? err.message : String(err)}` }, { status: 500 });
     }
     return NextResponse.json({ ok: true, message: `${action === "regenerate" ? "Regenerating" : "Generating"} ${k} ${key} in the background; it appears in the list in about a minute.` });
@@ -179,6 +204,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const title = typeof body.title === "string" ? body.title.replace(/\s+/g, " ").trim().slice(0, 160) : null;
     const lede = typeof body.lede === "string" ? body.lede.trim().slice(0, 2000) : null;
     if (!title && !lede) return NextResponse.json({ error: "Nothing to change" }, { status: 400 });
+    // A draft that already went live on its own is live: make that explicit
+    // before touching publish_after, or the edit would take the page down.
+    if (core.effectiveStatus(d, now) === "published" && d.status === "draft") {
+      d.status = "published";
+      d.published_at = d.published_at ?? d.publish_after;
+    }
     if (title) d.title = title;
     if (lede) d.lede = lede;
     d.edited_at = now.toISOString();

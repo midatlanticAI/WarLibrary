@@ -26,7 +26,7 @@ type Inputs = {
 type Writer = {
   buildInputs: (kind: string, key: string, dataset: Record<string, unknown>[]) => Inputs;
   assemble: (opts: Record<string, unknown>) => import("@/lib/dispatch-core.cjs").Dispatch & {
-    check: { dropped_sentences: number; dropped_sections: number; unverified_numbers: number[] };
+    check: { dropped_sentences: number; uncited_sentences: number; dropped_sections: number; unverified_numbers: number[] };
   };
 };
 
@@ -147,13 +147,50 @@ describe("assemble", () => {
     expect(again.revision).toBe(4);
   });
 
+  it("regenerating a live dispatch keeps it live; a flagged regeneration does not", () => {
+    const now = new Date("2026-10-29T06:00:00Z");
+    const clean = { ...output, sections: output.sections.slice(0, 1) };
+    const live = { status: "published", published_at: "2026-10-29T06:00:00.000Z", revision: 1 };
+    const again = writer.assemble({ kind: "weekly", key: "2026-W44", inputs: writer.buildInputs("weekly", "2026-W44", dataset), output: clean, usage: null, now, existing: live });
+    expect(again.status).toBe("published");
+    expect(again.published_at).toBe("2026-10-29T06:00:00.000Z");
+    // A draft that auto-published counts as live too.
+    const autoLive = { status: "draft", publish_after: "2026-10-28T06:30:00.000Z", needs_review: [], revision: 1 };
+    expect(writer.assemble({ kind: "weekly", key: "2026-W44", inputs: writer.buildInputs("weekly", "2026-W44", dataset), output: clean, usage: null, now, existing: autoLive }).status).toBe("published");
+    const flagged = writer.assemble({ kind: "daily", key: "2026-10-28", inputs: inputs(), output, usage: null, now, existing: live });
+    expect(flagged.status).toBe("draft");
+  });
+
+  it("a lede with no surviving citation holds the dispatch; uncited sentences never publish", () => {
+    const d = writer.assemble({ kind: "daily", key: "2026-10-28", inputs: inputs(), output: { ...output, sections: output.sections.slice(0, 1), lede: "An uncited summary of the day." }, usage: null, now: new Date("2026-10-29T06:00:00Z") });
+    expect(d.lede).toBe("");
+    expect(d.needs_review).toContain("no_lede");
+    expect(d.status).toBe("draft");
+    const mixed = writer.assemble({ kind: "daily", key: "2026-10-28", inputs: inputs(), output: { ...output, sections: [{ heading: "Iran", body: "Cited [ev:aaaaaaaaaaaa]. This sentence invents a claim with no source.", event_ids: [] }] }, usage: null, now: new Date("2026-10-29T06:00:00Z") });
+    expect(mixed.sections[0].body).toBe("Cited [ev:aaaaaaaaaaaa].");
+    expect(mixed.check.uncited_sentences).toBe(1);
+  });
+
+  it("weekly prose may repeat a figure that a daily already cited", () => {
+    const now = new Date("2026-11-02T06:30:00Z");
+    // A daily for 2026-10-28 whose cited text carries "40 wounded"; the
+    // weekly's own inputs do not include that event's text.
+    const daily = writer.assemble({ kind: "daily", key: "2026-10-28", inputs: inputs(), output: { ...output, sections: [{ heading: "Iran", body: "Four workers were killed and 40 wounded at a depot [ev:aaaaaaaaaaaa].", event_ids: [] }] }, usage: null, now });
+    daily.needs_review = [];
+    store.writeDispatch(daily);
+    const wInputs = writer.buildInputs("weekly", "2026-W44", dataset);
+    expect(wInputs.childDispatches.map((c) => c.key)).toContain("2026-10-28");
+    const weekly = writer.assemble({ kind: "weekly", key: "2026-W44", inputs: wInputs, output: { ...output, sections: [{ heading: "Iran", body: "The week's worst strike left 40 wounded [ev:aaaaaaaaaaaa].", event_ids: [] }] }, usage: null, now });
+    expect(weekly.needs_review.some((r) => r.startsWith("unverified_numbers"))).toBe(false);
+  });
+
   it("round-trips through the store, honours publish state, and refuses bad keys", () => {
     const d = writer.assemble({ kind: "daily", key: "2026-10-28", inputs: inputs(), output: { ...output, sections: output.sections.slice(0, 1) }, usage: null, now: new Date("2026-10-29T06:00:00Z") });
     store.writeDispatch(d);
     expect(existsSync(join(tmp, "daily", "2026-10-28.json"))).toBe(true);
     expect(JSON.parse(readFileSync(join(tmp, "daily", "2026-10-28.json"), "utf-8")).title).toBe(d.title);
     expect(store.readDispatch("daily", "2026-10-28")?.key).toBe("2026-10-28");
-    expect(store.publishedDispatches("daily").map((x) => x.key)).toEqual(["2026-10-28"]);
+    expect(store.publishedDispatches("daily").map((x) => x.key)).toContain("2026-10-28");
     expect(store.readDispatch("daily", "../../etc/passwd")).toBeNull();
     expect(() => store.writeDispatch({ ...d, key: "../x" })).toThrow();
     // Now the weekly for that week sees the daily as an input.

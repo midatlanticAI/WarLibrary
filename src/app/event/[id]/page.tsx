@@ -68,8 +68,10 @@ function pageTitle(event: EventRecord): string {
 /** "12", "12–30", or "None reported"; the range only when it differs from the point figure. */
 function fatalitiesText(event: EventRecord): string {
   const point = event.fatalities && event.fatalities > 0 ? event.fatalities : 0;
-  const min = event.fatalities_min ?? point;
-  const max = event.fatalities_max ?? point;
+  // The point figure is always inside the range: a later report may have
+  // raised it past a range recorded earlier.
+  const min = Math.min(event.fatalities_min ?? point, point);
+  const max = Math.max(event.fatalities_max ?? point, point);
   if (max <= 0) return "None reported";
   if (min !== max) return `${formatNumber(min)}–${formatNumber(max)}`;
   return formatNumber(max);

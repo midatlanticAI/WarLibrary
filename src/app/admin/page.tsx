@@ -666,6 +666,7 @@ interface DispatchSummary {
   cost_usd: number;
   label: string;
   url: string;
+  in_flight?: boolean;
 }
 
 interface DispatchDetail extends Omit<DispatchSummary, "sections" | "cited" | "events" | "cost_usd" | "label" | "url"> {
@@ -674,12 +675,13 @@ interface DispatchDetail extends Omit<DispatchSummary, "sections" | "cited" | "e
   civilian_note: string | null;
   stats: { events: number; kinetic: number; fatalities: number; countries: number };
   usage: { input_tokens: number; output_tokens: number; cost_usd: number; model: string };
-  check?: { dropped_sentences: number; dropped_sections: number; unverified_numbers: number[] };
+  check?: { dropped_sentences: number; uncited_sentences?: number; dropped_sections: number; unverified_numbers: number[] };
   social: string;
   window: { label: string };
 }
 
 function dispatchStatusLabel(d: DispatchSummary): { text: string; cls: string } {
+  if (d.in_flight) return { text: "writing…", cls: "bg-sky-500/15 text-sky-300" };
   if (d.effective_status === "published") return { text: "published", cls: "bg-green-500/15 text-green-400" };
   if (d.effective_status === "pulled") return { text: "pulled", cls: "bg-red-500/15 text-red-400" };
   if (d.needs_review.length > 0) return { text: "needs review", cls: "bg-amber-500/15 text-amber-400" };
@@ -852,17 +854,17 @@ function DispatchesTab() {
             <a href={`/dispatch/${detail.kind}/${detail.key}`} target="_blank" rel="noreferrer" className="rounded-lg border border-[#262626] px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#1a1a1a]">Open page ↗</a>
           </div>
 
-          {detail.needs_review.length > 0 && (
+          {(detail.needs_review?.length ?? 0) > 0 && (
             <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
-              Flagged: {detail.needs_review.join("; ")}. The writer dropped {detail.check?.dropped_sentences ?? 0} sentence(s) and {detail.check?.dropped_sections ?? 0} section(s). Edit or regenerate, then publish.
+              Flagged: {detail.needs_review.join("; ")}. The writer dropped {detail.check?.dropped_sentences ?? 0} sentence(s) ({detail.check?.uncited_sentences ?? 0} uncited) and {detail.check?.dropped_sections ?? 0} section(s). Edit or regenerate, then publish.
             </div>
           )}
 
           <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Stat label="Events" value={String(detail.stats.events)} />
-            <Stat label="Kinetic" value={String(detail.stats.kinetic)} />
-            <Stat label="Fatalities (as reported)" value={String(detail.stats.fatalities)} />
-            <Stat label="Cost" value={`$${detail.usage.cost_usd.toFixed(4)}`} sub={`${detail.usage.input_tokens} in / ${detail.usage.output_tokens} out`} />
+            <Stat label="Events" value={String(detail.stats?.events ?? 0)} />
+            <Stat label="Kinetic" value={String(detail.stats?.kinetic ?? 0)} />
+            <Stat label="Fatalities (as reported)" value={String(detail.stats?.fatalities ?? 0)} />
+            <Stat label="Cost" value={`$${(detail.usage?.cost_usd ?? 0).toFixed(4)}`} sub={`${detail.usage?.input_tokens ?? 0} in / ${detail.usage?.output_tokens ?? 0} out`} />
           </div>
 
           <label className="mb-2 block text-xs text-zinc-500">
