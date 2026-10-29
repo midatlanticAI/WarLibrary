@@ -25,6 +25,21 @@ export const LOCALES: Locale[] = ["en", "es", "ar", "he"];
  */
 export const LOCALE_COOKIE = "wl_lang";
 
+/**
+ * BCP 47 tags for every Intl call, server and client, so dates and numbers
+ * render the same way everywhere. Arabic pins Arabic-Indic digits
+ * (`nu-arab`) because the Arabic strings use them; ICU's default for plain
+ * "ar" differs between Node and browsers, and a page that mixes ٢٠٢٦ in one
+ * sentence with 2026 in the next looks careless. Switching the whole Arabic
+ * UI to Western digits is this one tag plus the digits in ar.json.
+ */
+export const LOCALE_TAG: Record<Locale, string> = {
+  en: "en-GB",
+  es: "es",
+  ar: "ar-u-nu-arab",
+  he: "he-IL",
+};
+
 export function isLocale(value: string | undefined | null): value is Locale {
   return typeof value === "string" && (LOCALES as string[]).includes(value);
 }

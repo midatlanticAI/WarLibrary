@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { Geist, Geist_Mono, Noto_Sans_Arabic } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Arabic, Noto_Sans_Hebrew } from "next/font/google";
 import JsonLd from "@/components/seo/JsonLd";
-// Imported from @/i18n/locale, NOT @/i18n — the latter is a "use client"
-// module, and a server component calling into it throws at runtime
-// ("Attempted to call isLocale() from the server"). That failure typechecks
-// and builds cleanly, so only an end-to-end request surfaces it.
-import { LOCALE_COOKIE, isLocale, localeDir, type Locale } from "@/i18n/locale";
+// Imported from @/i18n/locale and @/i18n/server, NOT @/i18n — the latter is
+// a "use client" module, and a server component calling into it throws at
+// runtime ("Attempted to call isLocale() from the server"). That failure
+// typechecks and builds cleanly, so only an end-to-end request surfaces it.
+import { localeDir } from "@/i18n/locale";
+import { resolveLocale } from "@/i18n/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,6 +22,15 @@ const geistMono = Geist_Mono({
 const notoArabic = Noto_Sans_Arabic({
   variable: "--font-noto-arabic",
   subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+});
+
+// Geist has no Hebrew glyphs; without this the Hebrew UI fell back to
+// whatever the OS had (Arial on Windows, something else elsewhere) and
+// mixed weights with the Latin fragments around it.
+const notoHebrew = Noto_Sans_Hebrew({
+  variable: "--font-noto-hebrew",
+  subsets: ["hebrew"],
   weight: ["400", "500", "600", "700"],
 });
 
@@ -102,12 +111,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // Resolve the reader's language on the server so the very first paint has the
-  // correct direction. Previously this was hardcoded to en/ltr, so every visit
-  // by an Arabic or Hebrew reader rendered left-to-right and then mirrored the
-  // entire layout once the client picked up their saved preference.
-  const cookieStore = await cookies();
-  const savedLocale = cookieStore.get(LOCALE_COOKIE)?.value;
-  const locale: Locale = isLocale(savedLocale) ? savedLocale : "en";
+  // correct direction. The saved cookie wins; a first-time visitor gets the
+  // best match for their browser's Accept-Language. Previously a first visit
+  // always rendered English/LTR and then mirrored the whole layout once the
+  // client detected the browser language.
+  const locale = await resolveLocale();
 
   return (
     <html lang={locale} dir={localeDir(locale)} className="dark" suppressHydrationWarning>
@@ -126,7 +134,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoArabic.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoArabic.variable} ${notoHebrew.variable} antialiased`}
       >
         <JsonLd />
         {children}

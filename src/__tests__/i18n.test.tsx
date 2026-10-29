@@ -11,7 +11,6 @@ import {
   I18nProvider,
   useI18n,
   LOCALES,
-  AI_SYSTEM_PROMPTS,
   type Locale,
 } from "@/i18n";
 import en from "@/i18n/en.json";
@@ -159,37 +158,6 @@ describe("AI suggested questions are translated", () => {
 // ---------------------------------------------------------------------------
 // 4. AI system prompts
 // ---------------------------------------------------------------------------
-describe("AI system prompts", () => {
-  it("every locale has a system prompt entry", () => {
-    for (const locale of LOCALES) {
-      expect(AI_SYSTEM_PROMPTS[locale]).toBeDefined();
-      expect(typeof AI_SYSTEM_PROMPTS[locale]).toBe("string");
-    }
-  });
-
-  it("English prompt is empty (uses the default chat route prompt)", () => {
-    expect(AI_SYSTEM_PROMPTS.en).toBe("");
-  });
-
-  it("non-English prompts are substantial (>200 chars)", () => {
-    for (const locale of ["es", "ar", "he"] as const) {
-      expect(AI_SYSTEM_PROMPTS[locale].length).toBeGreaterThan(200);
-    }
-  });
-
-  it("Spanish prompt is in Spanish", () => {
-    expect(AI_SYSTEM_PROMPTS.es).toContain("REGLAS");
-    expect(AI_SYSTEM_PROMPTS.es).toContain("español");
-  });
-
-  it("Arabic prompt is in Arabic", () => {
-    expect(AI_SYSTEM_PROMPTS.ar).toMatch(/[\u0600-\u06FF]/); // Arabic Unicode range
-  });
-
-  it("Hebrew prompt is in Hebrew", () => {
-    expect(AI_SYSTEM_PROMPTS.he).toMatch(/[\u0590-\u05FF]/); // Hebrew Unicode range
-  });
-});
 
 // ---------------------------------------------------------------------------
 // 5. RTL configuration
@@ -263,7 +231,7 @@ describe("useI18n hook — t() function", () => {
   it("returns Hebrew translation after switching locale", () => {
     const { result } = renderHook(() => useI18n(), { wrapper });
     act(() => result.current.setLocale("he"));
-    expect(result.current.t("app.live")).toBe("שידור חי");
+    expect(result.current.t("app.live")).toBe("חי");
   });
 
   it("falls back to English for missing keys", () => {
@@ -329,11 +297,6 @@ describe("LOCALES constant", () => {
     expect(LOCALES).toEqual(["en", "es", "ar", "he"]);
   });
 
-  it("matches the keys in AI_SYSTEM_PROMPTS", () => {
-    const promptKeys = Object.keys(AI_SYSTEM_PROMPTS).sort();
-    const localesSorted = [...LOCALES].sort();
-    expect(promptKeys).toEqual(localesSorted);
-  });
 });
 
 // ---------------------------------------------------------------------------

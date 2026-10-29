@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/home/PageShell";
+import { resolveLocale } from "@/i18n/server";
 import AboutClient from "./AboutClient";
 
 export const metadata: Metadata = {
@@ -16,9 +17,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AboutRoute() {
+export default async function AboutRoute() {
+  const locale = await resolveLocale();
   return (
-    <PageShell tab="about">
+    <PageShell tab="about" initialLocale={locale}>
       <AboutClient />
     </PageShell>
   );

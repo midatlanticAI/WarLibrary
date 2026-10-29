@@ -417,3 +417,51 @@ test.describe("Server-rendered locale", () => {
     expect(html).toMatch(/<html[^>]*\bdir="ltr"/);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 10. Server-resolved locale: the first byte already carries the reader's
+// language and direction (Accept-Language), on the app and on the
+// server-rendered pages, which have no client-side provider.
+// ---------------------------------------------------------------------------
+test.describe("Server-resolved locale from Accept-Language", () => {
+  test.describe("Arabic browser", () => {
+    test.use({ locale: "ar" });
+
+    test("home page is RTL and Arabic from the first response", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+    });
+
+    test("countries page is translated and RTL", async ({ page }) => {
+      await page.goto("/country");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("الدول");
+    });
+  });
+
+  test.describe("Hebrew browser", () => {
+    test.use({ locale: "he" });
+
+    test("dispatch index is translated and RTL", async ({ page }) => {
+      await page.goto("/dispatch");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.locator("html")).toHaveAttribute("lang", "he");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("סיכומים");
+    });
+  });
+
+  test.describe("Spanish browser", () => {
+    test.use({ locale: "es-MX" });
+
+    test("server pages speak Spanish and the switcher changes the cookie", async ({ page }) => {
+      await page.goto("/country");
+      await expect(page.locator("html")).toHaveAttribute("lang", "es");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Países");
+      await page.getByRole("combobox", { name: /idioma/i }).selectOption("en");
+      await page.waitForLoadState("networkidle");
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Countries");
+    });
+  });
+});

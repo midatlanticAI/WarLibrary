@@ -197,6 +197,22 @@ writer detached; publish pings IndexNow; nothing deletes). Pages:
 `/dispatch`, `/dispatch/[kind]/[key]`, `/dispatch/feed.xml`,
 `/sitemaps/news.xml` (last 48 h, Google News namespace).
 
+### Languages (en, es, ar, he)
+
+One set of JSON files (`src/i18n/*.json`, parity enforced by tests) feeds two
+translators: the client provider in `src/i18n/index.tsx` for the app, and
+`makeT()` in `src/i18n/server.ts` for the server-rendered pages. The locale
+is resolved on the server by `resolveLocale()` (cookie `wl_lang`, then
+`Accept-Language`, then English) and passed as `initialLocale` to every
+`I18nProvider`, so the first byte is already in the reader's language and
+direction. All `Intl` calls use `LOCALE_TAG` from `src/i18n/locale.ts`
+(Arabic pins Arabic-Indic digits). Use logical Tailwind classes (`ms-`,
+`end-`, `text-start`) never physical ones. Event descriptions, evidence
+quotes and dispatch prose are English and carry `lang="en" dir="ltr"`
+inside non-English pages. The AI analyst uses one registry-driven prompt
+plus a language directive per language (`LANGUAGE_DIRECTIVES` in the chat
+route). Audit and roadmap: `docs/I18N-AUDIT-2026-10-29.md`.
+
 ### Event Pipeline
 - Runs every 30 minutes via cron
 - Pulls from 3 source types: NewsData.io API (25+ articles), Google News RSS (3 queries), Outlet RSS (6 feeds)

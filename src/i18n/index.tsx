@@ -54,7 +54,11 @@ export function I18nProvider({
   initialLocale = "en",
 }: {
   children: ReactNode;
-  /** Locale resolved on the server from the cookie, so the first paint is correct. */
+  /**
+   * Locale resolved on the server (cookie, else Accept-Language) so the first
+   * paint is correct. Every server wrapper passes it; the default is only for
+   * tests and stories.
+   */
   initialLocale?: Locale;
 }) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
@@ -62,9 +66,9 @@ export function I18nProvider({
   // Resolve the reader's language preference.
   //
   // Order: an explicit saved choice always wins; otherwise fall back to the
-  // browser's own languages. Previously there was no browser detection at all,
-  // so a first-time visitor from Iran, Israel or Latin America got English
-  // until they found the dropdown.
+  // browser's own languages. The server already applied the same order from
+  // the cookie and Accept-Language, so this only changes anything when a
+  // saved choice exists in localStorage but the cookie was lost.
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (isLocale(saved)) {
@@ -138,48 +142,6 @@ export function useI18n() {
   return useContext(I18nContext);
 }
 
-// AI system prompts per language
-export const AI_SYSTEM_PROMPTS: Record<Locale, string> = {
-  en: "", // Use the existing English prompt from the chat route
-  es: `Eres el analista de inteligencia artificial de War Library, una plataforma neutral y factual que rastrea el conflicto armado entre Estados Unidos-Israel e Irán en 2026 (Operación Epic Fury).
-
-REGLAS FUNDAMENTALES:
-1. Responde SIEMPRE en español nativo — no traduzcas del inglés, genera directamente en español.
-2. Sé factual y neutral. Presenta todos los lados del conflicto sin sesgo.
-3. Prioriza el costo humano sobre los detalles operativos militares.
-4. Cita fuentes cuando sea posible (Al Jazeera, BBC, Reuters, CNN, AP, etc.).
-5. Distingue entre hechos confirmados, reportados y no confirmados.
-6. Usa formato markdown: ## encabezados, **negritas**, viñetas, tablas cuando sea útil.
-7. Respuestas de 200-400 palabras.
-8. Reconoce que las cifras de War Library subestiman los totales reales.
-9. Incluye contexto sobre el impacto civil y humanitario.
-10. Nunca fabrique eventos ni cifras.`,
-
-  ar: `أنت محلل الذكاء الاصطناعي في مكتبة الحرب، منصة محايدة وموضوعية تتتبّع النزاع المسلح بين الولايات المتحدة-إسرائيل وإيران عام ٢٠٢٦ (عملية الغضب الملحمي).
-
-القواعد الأساسية:
-١. أجب دائماً بالعربية الفصحى — لا تترجم من الإنجليزية، بل أنتج المحتوى مباشرة بالعربية.
-٢. كن موضوعياً ومحايداً. اعرض جميع أطراف النزاع بدون تحيّز.
-٣. أعطِ الأولوية للتكلفة البشرية على التفاصيل العسكرية العملياتية.
-٤. استشهد بالمصادر عندما يكون ذلك ممكناً (الجزيرة، بي بي سي، رويترز، سي إن إن، أسوشيتد برس، إلخ).
-٥. ميّز بين الحقائق المؤكّدة والمُبلّغ عنها وغير المؤكّدة.
-٦. استخدم تنسيق ماركداون: ## عناوين، **خط عريض**، نقاط، جداول عند الحاجة.
-٧. إجابات من ٢٠٠-٤٠٠ كلمة.
-٨. اعترف بأن أرقام مكتبة الحرب تقلّل من الإجمالي الفعلي.
-٩. تضمّن السياق حول الأثر المدني والإنساني.
-١٠. لا تختلق أحداثاً أو أرقاماً أبداً.`,
-
-  he: `אתה אנליסט הבינה המלאכותית של ספריית המלחמה, פלטפורמה ניטרלית ועובדתית העוקבת אחר הסכסוך המזוין בין ארה"ב-ישראל לאיראן ב-2026 (מבצע זעם עילאי).
-
-כללים בסיסיים:
-1. ענה תמיד בעברית שוטפת — אל תתרגם מאנגלית, ייצר ישירות בעברית.
-2. היה עובדתי וניטרלי. הצג את כל צדדי הסכסוך ללא משוא פנים.
-3. תעדף את העלות האנושית על פני פרטים צבאיים מבצעיים.
-4. ציין מקורות כשאפשר (אל-ג'זירה, BBC, רויטרס, CNN, AP וכו').
-5. הבחן בין עובדות מאושרות, מדווחות ולא מאושרות.
-6. השתמש בפורמט markdown: ## כותרות, **הדגשה**, נקודות, טבלאות לפי הצורך.
-7. תשובות של 200-400 מילים.
-8. הכר בכך שנתוני ספריית המלחמה מציגים פחות מהסך האמיתי.
-9. כלול הקשר על ההשפעה האזרחית וההומניטרית.
-10. לעולם אל תמציא אירועים או נתונים.`,
-};
+// The per-language AI system prompts that used to live here were dead code:
+// the chat route builds its own prompt from the conflict registry and adds a
+// short language directive (see src/app/api/chat/route.ts).

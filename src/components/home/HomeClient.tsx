@@ -16,7 +16,7 @@ import AskPanel from "@/components/chat/AskPanel";
 import MobileNav from "@/components/ui/MobileNav";
 import PWAProvider from "@/components/pwa/PWAProvider";
 import BreakingTicker, { useMediaQuery } from "@/components/home/BreakingTicker";
-import { I18nProvider, useI18n } from "@/i18n";
+import { I18nProvider, useI18n, type Locale } from "@/i18n";
 import { CONFLICT_START, pathForTab, type Tab, type MobileTab } from "@/lib/navigation";
 import { countrySlug } from "@/lib/country";
 
@@ -52,9 +52,9 @@ function defaultDateRange() {
   return { start: oneDayAgo.toISOString(), end: now.toISOString() };
 }
 
-export default function HomeClient() {
+export default function HomeClient({ initialLocale = "en" }: { initialLocale?: Locale }) {
   return (
-    <I18nProvider>
+    <I18nProvider initialLocale={initialLocale}>
       <HomeContent />
     </I18nProvider>
   );
@@ -341,7 +341,8 @@ function HomeContent() {
             />
 
             {/* Full timeline on desktop, compact filter bar on mobile */}
-            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 sm:pb-3 md:right-[380px]">
+            {/* `end-` not `right-`: the side panel mirrors to the left in RTL, and the overlay must clear it there too. */}
+            <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 sm:pb-3 md:end-[380px]">
               <TimelineSlider
                 events={visibleEvents}
                 dateRange={dateRange}

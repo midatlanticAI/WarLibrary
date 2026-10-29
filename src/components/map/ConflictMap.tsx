@@ -1,5 +1,6 @@
 "use client";
 
+import { LOCALE_TAG } from "@/i18n/locale";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, {
   Source,
@@ -82,7 +83,7 @@ const POINT_RADIUS: ExpressionSpecification = [
 function useMapFormat() {
   const { t, locale } = useI18n();
 
-  const numberFormat = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const numberFormat = useMemo(() => new Intl.NumberFormat(LOCALE_TAG[locale]), [locale]);
   const pluralRules = useMemo(() => new Intl.PluralRules(locale), [locale]);
 
   const num = useCallback(
@@ -102,7 +103,7 @@ function useMapFormat() {
   );
 
   const date = useCallback(
-    (iso: string) => new Date(iso).toLocaleDateString(locale),
+    (iso: string) => new Date(iso).toLocaleDateString(LOCALE_TAG[locale]),
     [locale]
   );
 

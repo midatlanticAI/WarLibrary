@@ -1,5 +1,6 @@
 "use client";
 
+import { LOCALE_TAG } from "@/i18n/locale";
 import { useMemo, useCallback } from "react";
 import type { ConflictEvent } from "@/types";
 import { useI18n, type Locale } from "@/i18n";
@@ -274,13 +275,13 @@ function alignToInterval(ts: number, scale: BucketScale): number {
 function formatBucketLabel(ts: number, scale: BucketScale, locale: Locale): string {
   const d = new Date(ts);
   if (scale === "30min") {
-    return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
+    return d.toLocaleTimeString(LOCALE_TAG[locale], { hour: "numeric", minute: "2-digit" });
   }
   if (scale === "6h") {
-    return d.toLocaleDateString(locale, { month: "short", day: "numeric" }) +
-      " " + d.toLocaleTimeString(locale, { hour: "numeric" });
+    return d.toLocaleDateString(LOCALE_TAG[locale], { month: "short", day: "numeric" }) +
+      " " + d.toLocaleTimeString(LOCALE_TAG[locale], { hour: "numeric" });
   }
-  return d.toLocaleDateString(locale, { month: "short", day: "numeric" });
+  return d.toLocaleDateString(LOCALE_TAG[locale], { month: "short", day: "numeric" });
 }
 
 function getTickLabels(
@@ -301,12 +302,12 @@ function getTickLabels(
     let label: string;
 
     if (scale === "30min") {
-      label = d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
+      label = d.toLocaleTimeString(LOCALE_TAG[locale], { hour: "numeric", minute: "2-digit" });
     } else if (scale === "6h") {
-      label = d.toLocaleDateString(locale, { weekday: "short" }) +
-        " " + d.toLocaleTimeString(locale, { hour: "numeric" });
+      label = d.toLocaleDateString(LOCALE_TAG[locale], { weekday: "short" }) +
+        " " + d.toLocaleTimeString(LOCALE_TAG[locale], { hour: "numeric" });
     } else {
-      label = d.toLocaleDateString(locale, { month: "short", day: "numeric" });
+      label = d.toLocaleDateString(LOCALE_TAG[locale], { month: "short", day: "numeric" });
     }
 
     ticks.push({ label, position });
@@ -318,7 +319,7 @@ function getTickLabels(
 function formatDateFull(iso: string, locale: Locale): string {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString(LOCALE_TAG[locale], { month: "short", day: "numeric", year: "numeric" });
 }
 
 function isRangeMatch(

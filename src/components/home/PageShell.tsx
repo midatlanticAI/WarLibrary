@@ -6,7 +6,7 @@ import Header from "@/components/ui/Header";
 import MobileNav from "@/components/ui/MobileNav";
 import BreakingTicker from "@/components/home/BreakingTicker";
 import PageView from "@/components/analytics/PageView";
-import { I18nProvider } from "@/i18n";
+import { I18nProvider, type Locale } from "@/i18n";
 import { useSummary } from "@/hooks/useSummary";
 import { CONFLICT_START, pathForTab, type Tab, type MobileTab } from "@/lib/navigation";
 
@@ -14,17 +14,20 @@ import { CONFLICT_START, pathForTab, type Tab, type MobileTab } from "@/lib/navi
  * Chrome for the content pages (/about, /sources, /support): the same header,
  * breaking-news ticker and mobile nav as the map, with navigation going
  * through real URLs. These used to be client-side tabs under "/" —
- * unlinkable and invisible to search.
+ * unlinkable and invisible to search. `initialLocale` comes from the server
+ * so the first paint is already in the reader's language.
  */
 export default function PageShell({
   tab,
+  initialLocale = "en",
   children,
 }: {
   tab: Exclude<Tab, "map" | "ask">;
+  initialLocale?: Locale;
   children: ReactNode;
 }) {
   return (
-    <I18nProvider>
+    <I18nProvider initialLocale={initialLocale}>
       <ShellContent tab={tab}>{children}</ShellContent>
     </I18nProvider>
   );

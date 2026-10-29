@@ -1,10 +1,17 @@
 import Link from "next/link";
 import type { SerializedEvent } from "@/lib/event-store";
 import { EVENT_COLORS } from "@/lib/constants";
-import { eventTypeLabel, formatDate, excerpt, formatNumber } from "@/lib/site";
+import { excerpt } from "@/lib/site";
+import { formatDateFor, formatNumberFor, makeT, type Translate } from "@/i18n/server";
+import type { Locale } from "@/i18n/locale";
 
-/** One event as a list row on the server-rendered pages. */
-export default function EventCard({ event }: { event: SerializedEvent }) {
+/**
+ * One event as a list row on the server-rendered pages. The page resolves
+ * the locale once and passes it down; building a translator per card is
+ * cheap but the lookup of cookies and headers is not.
+ */
+export default function EventCard({ event, locale, t }: { event: SerializedEvent; locale: Locale; t?: Translate }) {
+  const tr = t ?? makeT(locale);
   const color = EVENT_COLORS[event.event_type] ?? "#71717a";
   return (
     <Link
@@ -14,10 +21,10 @@ export default function EventCard({ event }: { event: SerializedEvent }) {
       <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
         <span className="inline-flex items-center gap-1.5 font-medium text-zinc-300">
           <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: color }} aria-hidden="true" />
-          {eventTypeLabel(event.event_type)}
+          {tr(`eventTypes.${event.event_type}`)}
         </span>
         <span aria-hidden="true">·</span>
-        <time dateTime={event.date}>{formatDate(event.date)}</time>
+        <time dateTime={event.date}>{formatDateFor(locale, event.date)}</time>
         {event.region && event.region !== event.country && (
           <>
             <span aria-hidden="true">·</span>
@@ -27,11 +34,11 @@ export default function EventCard({ event }: { event: SerializedEvent }) {
         {event.fatalities && event.fatalities > 0 ? (
           <>
             <span aria-hidden="true">·</span>
-            <span className="text-red-400">{formatNumber(event.fatalities)} killed</span>
+            <span className="text-red-400">{tr("pages.killedN", { n: formatNumberFor(locale, event.fatalities) })}</span>
           </>
         ) : null}
       </div>
-      <p className="text-sm leading-snug text-zinc-200">{excerpt(event.description, 220)}</p>
+      <p className="text-sm leading-snug text-zinc-200" lang="en">{excerpt(event.description, 220)}</p>
       <p className="mt-1 text-xs text-zinc-500">{event.source}</p>
     </Link>
   );

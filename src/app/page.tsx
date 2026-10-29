@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import HomeClient from "@/components/home/HomeClient";
+import { resolveLocale } from "@/i18n/server";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -8,11 +9,14 @@ export const metadata: Metadata = {
 
 /**
  * The map. All of the interactive app lives in HomeClient; this server
- * wrapper exists so the homepage can carry its own metadata and so
+ * wrapper exists so the homepage can carry its own metadata, so
  * `useSearchParams` (which reads ?tab, ?e, ?from, ?to for deep links) has
- * the Suspense boundary Next requires.
+ * the Suspense boundary Next requires, and so the locale resolved on the
+ * server seeds the client provider — otherwise the first paint is English
+ * whatever the reader chose.
  */
-export default function Home() {
+export default async function Home() {
+  const locale = await resolveLocale();
   return (
     <Suspense
       fallback={
@@ -21,7 +25,7 @@ export default function Home() {
         </div>
       }
     >
-      <HomeClient />
+      <HomeClient initialLocale={locale} />
     </Suspense>
   );
 }
