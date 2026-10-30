@@ -98,6 +98,21 @@ describe("translation-store: signature debounce", () => {
     expect(store.translationSignature("fa", later)).not.toBe(first);
   });
 
+  it("a file that never goes quiet still refreshes after the hold limit", () => {
+    store.invalidateTranslations();
+    const file = path.join(dir, "fa.jsonl");
+    const quiet = new Date(Date.now() - 120_000);
+    fs.utimesSync(file, quiet, quiet);
+    const t0 = Date.now();
+    const first = store.translationSignature("fa", t0);
+    // Simulate a backfill: the file keeps changing (mtime always "just now").
+    fs.appendFileSync(file, row("e8", "هشتم") + "\n");
+    const busy = new Date(t0 + 30 * 60_000);
+    fs.utimesSync(file, busy, busy);
+    expect(store.translationSignature("fa", t0 + 5 * 60_000)).toBe(first);
+    expect(store.translationSignature("fa", t0 + 11 * 60_000)).not.toBe(first);
+  });
+
   it("rejects prototype keys as languages", () => {
     expect(store.isContentLanguage("constructor")).toBe(false);
     expect(store.isContentLanguage("__proto__")).toBe(false);

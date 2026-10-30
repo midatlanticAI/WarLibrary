@@ -44,9 +44,16 @@ const tables = new Map<string, Table>();
  * hours the backfill runs.
  */
 const QUIET_MS = 60_000;
+/**
+ * Upper bound on holding a signature while the file keeps changing. A
+ * backfill appends for hours and is never quiet; without this bound the
+ * site would show no new translations until it finished. With it, the
+ * table reloads (and the ETag changes) at most once per interval.
+ */
+const MAX_HOLD_MS = 10 * 60_000;
 /** Tables no request has touched for this long are dropped (a 37k-row table is ~30 MB). */
 const IDLE_EVICT_MS = 30 * 60_000;
-const stableSignature = new Map<string, string>();
+const stableSignature = new Map<string, { sig: string; at: number }>();
 
 export function isContentLanguage(value: unknown): value is ContentLanguage {
   return tc.isLanguage(value);
@@ -73,11 +80,11 @@ export function translationSignature(lang: ContentLanguage, now: number = Date.n
     current = "0:0";
   }
   const stable = stableSignature.get(lang);
-  if (quiet || stable === undefined) {
-    stableSignature.set(lang, current);
+  if (quiet || stable === undefined || now - stable.at >= MAX_HOLD_MS) {
+    if (stable?.sig !== current || stable === undefined) stableSignature.set(lang, { sig: current, at: now });
     return current;
   }
-  return stable;
+  return stable.sig;
 }
 
 function evictIdle(now: number): void {

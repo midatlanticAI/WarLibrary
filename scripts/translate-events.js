@@ -36,7 +36,8 @@ const STATS_FILE = path.join(TRANSLATIONS_DIR, "stats.json");
 const ATTEMPTS_FILE = path.join(TRANSLATIONS_DIR, "attempts.json");
 const MAX_ATTEMPTS = 3;
 
-const DEFAULTS = { limit: 60, batch: 25, concurrency: 3 };
+const DEFAULTS = { limit: 60, batch: 25, concurrency: 3, sinceHours: 72 };
+const BACKFILL_LOCK = path.join(TRANSLATIONS_DIR, ".backfill.lock");
 
 // ---------------------------------------------------------------------------
 // Data
@@ -84,7 +85,8 @@ function loadDataset() {
       id = `${id}-${suffix}`;
     }
     used.add(id);
-    return { id, description: String(raw.description || ""), civilian_impact: raw.civilian_impact || null, date: raw.date };
+    const reported = new Date(raw.first_reported_at || raw.date).getTime();
+    return { id, description: String(raw.description || ""), civilian_impact: raw.civilian_impact || null, date: raw.date, reported };
   });
 }
 
@@ -141,7 +143,10 @@ function parseArgs(argv) {
     } else if (a === "--limit") args.limit = Math.max(1, Number(argv[++i]) || DEFAULTS.limit);
     else if (a === "--batch") args.batch = Math.min(50, Math.max(1, Number(argv[++i]) || DEFAULTS.batch));
     else if (a === "--concurrency") args.concurrency = Math.min(8, Math.max(1, Number(argv[++i]) || DEFAULTS.concurrency));
-    else throw new Error(`Unknown argument: ${a}`);
+    else if (a === "--since-hours") {
+      const n = Number(argv[++i]);
+      args.sinceHours = Number.isFinite(n) && n > 0 ? n : DEFAULTS.sinceHours;
+    } else throw new Error(`Unknown argument: ${a}`);
   }
   return args;
 }
@@ -149,6 +154,42 @@ function parseArgs(argv) {
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
+
+/** One backfill at a time: O_EXCL lock file holding the pid; stale when that pid is gone. */
+function acquireBackfillLock() {
+  fs.mkdirSync(TRANSLATIONS_DIR, { recursive: true });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      fs.writeFileSync(BACKFILL_LOCK, String(process.pid), { flag: "wx" });
+      const release = () => {
+        try {
+          if (fs.readFileSync(BACKFILL_LOCK, "utf-8").trim() === String(process.pid)) fs.unlinkSync(BACKFILL_LOCK);
+        } catch {
+          /* already gone */
+        }
+      };
+      process.on("exit", release);
+      for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => { release(); process.exit(130); });
+      return true;
+    } catch (err) {
+      if (err.code !== "EEXIST") throw err;
+      let alive = false;
+      try {
+        process.kill(Number(fs.readFileSync(BACKFILL_LOCK, "utf-8").trim()), 0);
+        alive = true;
+      } catch (e) {
+        alive = e.code === "EPERM";
+      }
+      if (alive) return false;
+      try {
+        fs.unlinkSync(BACKFILL_LOCK);
+      } catch {
+        /* raced another cleaner */
+      }
+    }
+  }
+  return false;
+}
 
 async function runPool(tasks, concurrency) {
   let next = 0;
@@ -172,6 +213,11 @@ async function main() {
 
   // Work per language: newest events without a translation, skipping ones
   // that have failed the checks MAX_ATTEMPTS times.
+  // Incremental runs (every pipeline tick) only look at recently reported
+  // events. The archive is the backfill's job; without this window the
+  // half-hourly run would chase the backfill's frontier and pay twice for
+  // the same events.
+  const floor = Date.now() - args.sinceHours * 3600_000;
   const plan = [];
   let skippedExhausted = 0;
   for (const lang of args.langs) {
@@ -179,6 +225,7 @@ async function main() {
     const todo = [];
     for (const e of dataset) {
       if (done.has(e.id) || !e.description.trim()) continue;
+      if (!args.all && !(e.reported >= floor)) continue;
       if ((attempts[`${lang}:${e.id}`] || 0) >= MAX_ATTEMPTS) {
         skippedExhausted++;
         continue;
@@ -205,6 +252,11 @@ async function main() {
     console.log("STATUS: DRY_RUN");
     return;
   }
+  if (args.all && !acquireBackfillLock()) {
+    console.log("A backfill is already running; not starting a second one.");
+    console.log("STATUS: LOCKED");
+    return;
+  }
 
   const stats = { started_at: new Date(started).toISOString(), model: call.MODEL, by_lang: {}, cost_usd: 0, accepted: 0, rejected: 0, call_failures: 0, calls: 0, rejections: [] };
   // An outage must not spend hours failing batch after batch: after this
@@ -212,12 +264,14 @@ async function main() {
   const MAX_CONSECUTIVE_FAILURES = 5;
   let consecutiveFailures = 0;
   let aborted = false;
-  const tasks = [];
+  const queues = [];
   for (const { lang, todo } of plan) {
     stats.by_lang[lang] = { accepted: 0, rejected: 0, cost_usd: 0 };
+    const queue = [];
+    queues.push(queue);
     for (let i = 0; i < todo.length; i += args.batch) {
       const items = todo.slice(i, i + args.batch);
-      tasks.push(async () => {
+      queue.push(async () => {
         if (aborted) return;
         const result = await call.translateEventBatch(lang, items);
         stats.calls++;
@@ -254,6 +308,14 @@ async function main() {
         }
       });
     }
+  }
+
+  // Round-robin across languages: the newest events reach every language
+  // first, instead of Spanish finishing the whole archive before Persian
+  // starts.
+  const tasks = [];
+  for (let i = 0; queues.some((q) => i < q.length); i++) {
+    for (const q of queues) if (i < q.length) tasks.push(q[i]);
   }
 
   // Persist attempts every so often during a long backfill so a kill keeps the record.
