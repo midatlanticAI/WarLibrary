@@ -229,7 +229,7 @@ appends one JSON line per event and language to
 `src/data/translations/<lang>.jsonl` (gitignored, droplet-only, excluded
 from deploys; `TRANSLATIONS_DIR` overrides). It runs after every pipeline
 run from `auto-update.sh` (bounded by `--limit`) and `--all` is the
-resumable archive backfill (~$2–3 per language). Every translation passes
+resumable archive backfill (measured about $7 per language for the 37k-event archive). Every translation passes
 `src/lib/translate-core.cjs` checks before it is written: same multiset of
 numbers (Arabic-Indic and Persian digits normalised), sane length ratio,
 not left in English, no HTML; a rejected item stays English and is retried

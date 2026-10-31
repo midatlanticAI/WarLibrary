@@ -356,7 +356,7 @@ Caddy access log and `analytics.json` on the droplet.
   5.5 into every non-English language with number, length and HTML checks
   (`scripts/translate-events.js`, sidecar `src/data/translations/<lang>.jsonl`,
   incremental after every pipeline run, `--all` for the archive at roughly
-  $2–3 per language); `/api/events?lang=` serves them and every description
+  about $7 per language, measured); `/api/events?lang=` serves them and every description
   on the site carries its text language. Dispatch narratives are translated
   on write (`scripts/translate-dispatch.js`, citation multiset must match,
   all-or-nothing per language) and pages offer the English original.

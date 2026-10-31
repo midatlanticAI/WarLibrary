@@ -170,9 +170,9 @@ describe("translate-core: rows", () => {
   });
 
   it("estimates cost in the expected range", () => {
-    // 37,500 events into one language: well under five dollars.
-    expect(tc.estimateCostUsd(37_500)).toBeLessThan(5);
-    expect(tc.estimateCostUsd(37_500)).toBeGreaterThan(1);
+    // Measured: about $0.00019 per translation, so ~$7 for 37,500 events in one language.
+    expect(tc.estimateCostUsd(35_424)).toBeGreaterThan(6);
+    expect(tc.estimateCostUsd(35_424)).toBeLessThan(7.5);
   });
 });
 
@@ -197,5 +197,24 @@ describe("translate-core: review follow-ups", () => {
       expect(() => tc.translationFile("/tmp/x", bad as never)).toThrow();
     }
     expect(tc.isLanguage("fa")).toBe(true);
+  });
+});
+
+describe("translate-core: placeholder civilian-impact notes", () => {
+  it("recognises the extraction model's placeholders and nothing else", () => {
+    for (const p of ["None", "None reported", "None reported.", "None specified", "N/A", "None in this event", "None reported in the article.", "No civilian impact reported", "Not reported in source", "", null]) {
+      expect(tc.isPlaceholderImpact(p)).toBe(true);
+    }
+    for (const real of ["3 civilians killed", "No civilian casualties reported; 2 soldiers wounded in the attack on the depot", "Hospital damaged", "Nonetheless, 40 families were displaced"]) {
+      expect(tc.isPlaceholderImpact(real)).toBe(false);
+    }
+  });
+
+  it("accepts an empty translation for a placeholder note and stores none", () => {
+    const items = [{ id: "p1", description: "Talks resumed in Muscat.", civilian_impact: "None reported" }];
+    const r = tc.acceptEventBatch(items, { items: [{ id: "p1", description: "Les pourparlers ont repris à Mascate.", civilian_impact: "" }] });
+    expect(r.rejected).toEqual([]);
+    expect(r.accepted[0].civilian_impact).toBeNull();
+    expect(tc.eventBatchPrompt(items)).toContain("civilian_impact: (none)");
   });
 });

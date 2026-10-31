@@ -143,6 +143,7 @@ function parseArgs(argv) {
     } else if (a === "--limit") args.limit = Math.max(1, Number(argv[++i]) || DEFAULTS.limit);
     else if (a === "--batch") args.batch = Math.min(50, Math.max(1, Number(argv[++i]) || DEFAULTS.batch));
     else if (a === "--concurrency") args.concurrency = Math.min(8, Math.max(1, Number(argv[++i]) || DEFAULTS.concurrency));
+    else if (a === "--reset-attempts") args.resetAttempts = true;
     else if (a === "--since-hours") {
       const n = Number(argv[++i]);
       args.sinceHours = Number.isFinite(n) && n > 0 ? n : DEFAULTS.sinceHours;
@@ -209,6 +210,14 @@ async function main() {
 
   const dataset = loadDataset();
   console.log(`Dataset: ${dataset.length} events`);
+  // After a change to the acceptance rules, items the old rules exhausted
+  // deserve another try. The old record is set aside under a dated name,
+  // never deleted.
+  if (args.resetAttempts && !args.dryRun && fs.existsSync(ATTEMPTS_FILE)) {
+    const aside = `${ATTEMPTS_FILE}.bak-${new Date().toISOString().replace(/[:.]/g, "-")}`;
+    fs.renameSync(ATTEMPTS_FILE, aside);
+    console.log(`Attempts record set aside: ${path.basename(aside)}`);
+  }
   const attempts = readJson(ATTEMPTS_FILE, {});
 
   // Work per language: newest events without a translation, skipping ones

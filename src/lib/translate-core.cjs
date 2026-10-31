@@ -94,6 +94,20 @@ function citationMultiset(text) {
 }
 
 /**
+ * The extraction model writes a placeholder ("None", "None reported",
+ * "N/A", "Not reported in source") when an event has no civilian impact.
+ * Measured on the live archive, those were the largest single source of
+ * rejected translations: the translator rightly returned nothing and the
+ * check called that a failure. A placeholder is treated as no note at all.
+ */
+function isPlaceholderImpact(text) {
+  const s = String(text ?? "").trim().toLowerCase().replace(/[.!]+$/, "");
+  if (!s) return true;
+  if (s.length > 60 || /\d/.test(s)) return false;
+  return /^(none|n\/?a|nil|unknown|not (reported|specified|applicable|stated|mentioned)|no (civilian )?(impact|casualties|harm)( reported| specified| mentioned)?)\b/.test(s);
+}
+
+/**
  * Accept or reject one translated string against its source.
  * Returns null when acceptable, else a short reason.
  */
@@ -122,7 +136,7 @@ function systemPrompt(lang) {
 
 RULES (strict):
 1. Translate meaning faithfully. Add nothing, drop nothing, soften nothing, intensify nothing.
-2. Keep every number exactly as given (same value, same count of numbers). Write numbers with ${DIGIT_STYLE[lang]}.
+2. Keep every number exactly as given (same value, same count of numbers). Write numbers with ${DIGIT_STYLE[lang]}. A number the English spells as a word ("six", "ten") stays a word. For large amounts keep the English digits and translate only the scale word: "$2 billion" becomes 2 followed by your language's word for billion, never "2,000 million"; "1.5 million" keeps 1.5.
 3. Keep proper nouns (people, places, units, outlets, operations) in their standard ${name} form where one exists; otherwise transliterate once and keep it consistent. Never translate an outlet name.
 4. Keep any token of the form [ev:…] exactly as it appears, in the same sentence it appears in.
 5. Attributed claims stay attributed ("Iranian state media said…"). Do not resolve ambiguity the English leaves open.
@@ -154,7 +168,7 @@ const EVENT_BATCH_SCHEMA = {
 
 function eventBatchPrompt(items) {
   const lines = items.map((e) =>
-    [`ID: ${e.id}`, `description: ${e.description}`, e.civilian_impact ? `civilian_impact: ${e.civilian_impact}` : "civilian_impact: (none)"].join("\n")
+    [`ID: ${e.id}`, `description: ${e.description}`, isPlaceholderImpact(e.civilian_impact) ? "civilian_impact: (none)" : `civilian_impact: ${e.civilian_impact}`].join("\n")
   );
   return `Translate each record. Return one item per ID, in the same order.\n\n${lines.join("\n\n")}`;
 }
@@ -181,7 +195,7 @@ function acceptEventBatch(items, output) {
       continue;
     }
     let civilian = null;
-    if (src.civilian_impact) {
+    if (!isPlaceholderImpact(src.civilian_impact)) {
       const cReason = checkTranslation(src.civilian_impact, row.civilian_impact);
       if (cReason) {
         rejected.push({ id: row.id, reason: `civilian_impact:${cReason}` });
@@ -287,8 +301,13 @@ function decodeRow(line) {
   }
 }
 
-/** Rough cost of translating `n` events into one language, in USD, from measured averages. */
-function estimateCostUsd(n, { inPerEvent = 160, outPerEvent = 140, priceIn = 0.1, priceOut = 0.5 } = {}) {
+/**
+ * Cost of translating `n` event-translations, in USD. Defaults are the
+ * measured average on the live archive (46 runs, 35,424 translations,
+ * $6.61, so about $0.00019 each): non-Latin scripts tokenise heavily and
+ * the system prompt repeats per batch.
+ */
+function estimateCostUsd(n, { inPerEvent = 420, outPerEvent = 290, priceIn = 0.1, priceOut = 0.5 } = {}) {
   return Math.round(((n * inPerEvent * priceIn + n * outPerEvent * priceOut) / 1e6) * 1e4) / 1e4;
 }
 
@@ -297,6 +316,7 @@ module.exports = {
   DIGIT_STYLE,
   isLanguage,
   normalizeDigits,
+  isPlaceholderImpact,
   numberMultiset,
   citationMultiset,
   checkTranslation,

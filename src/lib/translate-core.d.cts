@@ -30,6 +30,7 @@ export const LANGUAGES: Record<ContentLanguage, string>;
 export const DIGIT_STYLE: Record<ContentLanguage, string>;
 export function isLanguage(value: unknown): value is ContentLanguage;
 export function normalizeDigits(text: string | null | undefined): string;
+export function isPlaceholderImpact(text: string | null | undefined): boolean;
 export function numberMultiset(text: string | null | undefined): string[];
 export function citationMultiset(text: string | null | undefined): string[];
 export function checkTranslation(
