@@ -14,6 +14,7 @@
 
 import { getActiveConflicts, conflictLabel } from "@/lib/conflicts";
 import fs from "fs";
+import { cleanCivilianImpact } from "@/lib/civilian-impact.cjs";
 import path from "path";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -551,7 +552,9 @@ export function getAllEvents(): EventRecord[] {
   for (const e of raw) {
     const key = e.id || `${e.date}-${(e.description || "").slice(0, 80)}`;
     if (!seen.has(key)) {
-      seen.set(key, e);
+      // Same rule as the site: a note saying no civilians were harmed is no
+      // note, so the assistant never cites "Civilian impact: None".
+      seen.set(key, { ...e, civilian_impact: cleanCivilianImpact(e.civilian_impact) ?? undefined });
     }
   }
 

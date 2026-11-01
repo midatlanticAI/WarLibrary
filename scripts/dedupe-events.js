@@ -24,6 +24,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { cleanCivilianImpact } = require("../src/lib/civilian-impact.cjs");
 
 const DATA_DIR = path.join(__dirname, "..", "src", "data");
 const LATEST_FILE = path.join(DATA_DIR, "events_latest.json");
@@ -113,7 +114,7 @@ function score(event) {
   if (event.verification_status && event.verification_status !== "unconfirmed") s += 200;
   if (typeof event.confidence === "number") s += Math.round(event.confidence * 100);
   if (typeof event.fatalities === "number" && event.fatalities > 0) s += 150;
-  if (event.civilian_impact) s += 50;
+  if (cleanCivilianImpact(event.civilian_impact)) s += 50;
   if (event.location_precision && event.location_precision !== "country") s += 75;
   // Longer descriptions usually carry more detail, but cap the contribution so
   // verbosity alone can't beat a properly-sourced record.

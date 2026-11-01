@@ -202,10 +202,10 @@ describe("translate-core: review follow-ups", () => {
 
 describe("translate-core: placeholder civilian-impact notes", () => {
   it("recognises the extraction model's placeholders and nothing else", () => {
-    for (const p of ["None", "None reported", "None reported.", "None specified", "N/A", "None in this event", "None reported in the article.", "No civilian impact reported", "Not reported in source", "", null]) {
+    for (const p of ["None", "None reported", "None reported.", "None specified", "N/A", "None in this event", "None reported in the article.", "No civilian impact reported", "Not reported in source", "No civilian casualties reported; 2 soldiers wounded in the attack on the depot", "", null]) {
       expect(tc.isPlaceholderImpact(p)).toBe(true);
     }
-    for (const real of ["3 civilians killed", "No civilian casualties reported; 2 soldiers wounded in the attack on the depot", "Hospital damaged", "Nonetheless, 40 families were displaced"]) {
+    for (const real of ["3 civilians killed", "No casualties reported; 40 homes damaged near the depot", "Hospital damaged", "Nonetheless, 40 families were displaced"]) {
       expect(tc.isPlaceholderImpact(real)).toBe(false);
     }
   });

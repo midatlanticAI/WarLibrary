@@ -18,6 +18,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- CommonJS by design, see above */
 const crypto = require("crypto");
 const { canonicalCountry } = require("./country-rules.cjs");
+const { cleanCivilianImpact } = require("./civilian-impact.cjs");
 
 const KINDS = ["daily", "weekly", "monthly"];
 const STATUSES = ["draft", "published", "pulled"];
@@ -281,7 +282,7 @@ function computeStats(events, { topCountries = 10 } = {}) {
       fatalities += f;
       fatalEvents++;
     }
-    if (e.civilian_impact && String(e.civilian_impact).trim()) civilianImpactEvents++;
+    if (cleanCivilianImpact(e.civilian_impact)) civilianImpactEvents++;
     if (e.source) outlets.add(String(e.source).trim().toLowerCase());
     const name = canonicalCountry(e.country);
     if (name) {
@@ -344,7 +345,7 @@ function eventScore(event) {
   if (isKinetic(event)) score += 0.3;
   if (event.verification_status === "confirmed") score += 0.2;
   if (event.source_url) score += 0.1;
-  if (event.civilian_impact) score += 0.05;
+  if (cleanCivilianImpact(event.civilian_impact)) score += 0.05;
   return score;
 }
 
@@ -366,7 +367,7 @@ function compactEvent(event, descriptionMax = 220) {
     event_type: event.event_type,
     description: desc.length > descriptionMax ? `${desc.slice(0, descriptionMax - 1).trimEnd()}…` : desc,
     fatalities: fatalitiesOf(event),
-    civilian_impact: event.civilian_impact ? String(event.civilian_impact).slice(0, 160) : null,
+    civilian_impact: cleanCivilianImpact(event.civilian_impact)?.slice(0, 160) ?? null,
     verification_status: event.verification_status || null,
     source: event.source || "",
     source_url: event.source_url || null,

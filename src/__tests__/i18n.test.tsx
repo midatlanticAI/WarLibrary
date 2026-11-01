@@ -267,7 +267,7 @@ describe("useI18n hook — t() function", () => {
   it("handles deeply nested keys", () => {
     const { result } = renderHook(() => useI18n(), { wrapper });
     expect(result.current.t("modal.civilianFatalitiesLabel")).toBe(
-      "Civilian Fatalities"
+      "Deaths in these events"
     );
   });
 });

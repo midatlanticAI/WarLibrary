@@ -17,6 +17,9 @@
  */
 "use strict";
 
+/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS by design, like dispatch-core.cjs */
+const { isNoCivilianImpact } = require("./civilian-impact.cjs");
+
 /** Languages the translators produce, keyed by locale code (CONTENT_LOCALES in src/i18n/locale.ts). */
 const LANGUAGES = {
   es: "Spanish",
@@ -101,10 +104,9 @@ function citationMultiset(text) {
  * check called that a failure. A placeholder is treated as no note at all.
  */
 function isPlaceholderImpact(text) {
-  const s = String(text ?? "").trim().toLowerCase().replace(/[.!]+$/, "");
-  if (!s) return true;
-  if (s.length > 60 || /\d/.test(s)) return false;
-  return /^(none|n\/?a|nil|unknown|not (reported|specified|applicable|stated|mentioned)|no (civilian )?(impact|casualties|harm)( reported| specified| mentioned)?)\b/.test(s);
+  // One rule for the site and the translator, so a note the site does not
+  // show is never paid for: see civilian-impact.cjs.
+  return isNoCivilianImpact(text);
 }
 
 /**

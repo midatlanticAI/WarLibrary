@@ -9,6 +9,7 @@ import {
 } from "@/lib/country";
 import { DEFAULT_CONFLICT_ID } from "@/lib/conflicts";
 import { stableEventId as coreStableEventId } from "@/lib/dispatch-core.cjs";
+import { cleanCivilianImpact } from "@/lib/civilian-impact.cjs";
 
 export { canonicalCountry, countrySlug, isCountryName, slugifyCountry };
 
@@ -335,7 +336,10 @@ export function toSerializedEvent(raw: RawEvent, id: string): SerializedEvent {
     source_url: raw.source_url ?? null,
     confidence: raw.confidence ?? null,
     verification_status: raw.verification_status ?? null,
-    civilian_impact: raw.civilian_impact ?? null,
+    // "None", "Unknown", "No civilian casualties reported": the codebook
+    // field is a note on harm, so a note saying there was none is no note.
+    // About 3,400 such notes were inflating the CIVILIAN figure.
+    civilian_impact: cleanCivilianImpact(raw.civilian_impact),
     location_precision: raw.location_precision ?? null,
     created_at: raw.date,
     conflict_id: raw.conflict_id || DEFAULT_CONFLICT_ID,

@@ -17,6 +17,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { cleanCivilianImpact } = require("../src/lib/civilian-impact.cjs");
 const http = require("http");
 const { Readability } = require("@mozilla/readability");
 const { JSDOM } = require("jsdom");
@@ -1567,6 +1568,11 @@ function groundEvent(event, article, nowIso) {
   event.actor1_type = event.actor1 ? (VALID_ACTOR_TYPES.includes(event.actor1_type) ? event.actor1_type : "unknown") : null;
   event.actor2_type = event.actor2 ? (VALID_ACTOR_TYPES.includes(event.actor2_type) ? event.actor2_type : "unknown") : null;
 
+  // The field is required by the schema, so the model fills it even when no
+  // civilian was harmed ("None", "No civilian casualties reported"). Store
+  // those as null: the codebook field is a note on harm.
+  event.civilian_impact = cleanCivilianImpact(event.civilian_impact);
+
   // geocodeFallback() stamps "gazetteer" or "centroid"; anything else came
   // from the model reading the article.
   if (!["gazetteer", "centroid"].includes(event.geo_source)) {
@@ -2150,7 +2156,7 @@ event_type: "airstrike"|"missile_attack"|"drone_attack"|"battle"|"explosion"|"vi
 verification_status: "confirmed"|"reported"|"claimed"|"disputed"|"unconfirmed"
 location_precision: "exact"|"city"|"region"|"country"
 fatalities: exact number killed IN THIS SPECIFIC EVENT. 0 if unknown or cumulative. NEVER use running totals.
-civilian_impact: brief description of human suffering if civilians affected. Lead with people, not operations.
+civilian_impact: brief description of human suffering if civilians affected. Lead with people, not operations. Empty string when the article describes no harm to civilians or does not say; never write "None", "Unknown", "N/A" or "No civilian impact". Harm to soldiers or fighters belongs in the description and fatalities, not here.
 confidence: 0.0–1.0 based on source reliability. Headline-only = 0.5-0.7 depending on source.
 
 EXAMPLE EVENT (shape reference — the response format is enforced separately):
