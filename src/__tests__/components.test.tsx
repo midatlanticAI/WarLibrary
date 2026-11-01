@@ -652,7 +652,8 @@ describe("DonationPanel", () => {
 
   it("names the legal entity behind each tax ID and links each rating to its source", () => {
     render(<I18nProvider><DonationPanel onBack={() => {}} /></I18nProvider>);
-    expect(screen.getByText("US tax ID (USA for UNHCR): 52-1662800")).toBeTruthy();
+    // The entity and EIN sit in LTR isolates (U+2066…U+2069) for RTL pages.
+    expect(screen.getByText((text) => text.replace(/[\u2066-\u2069]/g, "").replace(/\u2011/g, "-") === "US tax ID (USA for UNHCR): 52-1662800")).toBeTruthy();
     const ratings = screen.getAllByRole("link", { name: /stars on Charity Navigator/ });
     expect(ratings).toHaveLength(8);
     for (const a of ratings) expect(a.getAttribute("href")).toMatch(/^https:\/\/www\.charitynavigator\.org\/ein\/\d{9}$/);

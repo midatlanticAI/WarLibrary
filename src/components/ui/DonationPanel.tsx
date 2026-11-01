@@ -3,14 +3,25 @@
 /**
  * DonationPanel — Humanitarian Aid & Human Cost
  *
- * All donation URLs verified via web search on 2026-03-08.
- * Humanitarian data verified from authoritative sources as of mid-March 2026.
+ * Charity facts were checked on CHECKED_ON (below); the human-cost figures
+ * live in src/lib/humanitarian-figures.ts with their own sources and dates.
  * War Library does NOT collect or process donations.
  */
 
 import { useState } from "react";
 import { useI18n } from "@/i18n";
 import { LOCALE_TAG } from "@/i18n/locale";
+import {
+  COUNTRIES,
+  FIGURES_CHECKED_ON,
+  HEADLINE,
+  MINAB,
+  SHIPPING,
+  STATUS,
+  allSources,
+  type Figure,
+  type FigureSource,
+} from "@/lib/humanitarian-figures";
 
 /* ─── Icons (inline SVGs to avoid deps) ─── */
 
@@ -28,13 +39,32 @@ function ChevronDown({ open }: { open: boolean }) {
   );
 }
 
-function SourceTag({ text }: { text: string }) {
+/** A source as a link, with who relayed it and whether it is a party to the conflict. */
+function SourceLink({ source }: { source: FigureSource }) {
+  const { t } = useI18n();
   return (
-    <span className="inline-block rounded bg-zinc-800/60 px-1.5 py-0.5 text-[9px] text-zinc-500">
-      {text}
+    <span className="inline-flex flex-wrap items-center gap-1">
+      <a
+        href={source.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        lang="en"
+        className="inline-block rounded bg-zinc-800/60 px-1.5 py-0.5 text-[9px] text-zinc-400 underline decoration-zinc-700 hover:text-zinc-200"
+      >
+        {source.org}
+        {source.via ? ` · ${source.via}` : ""}
+      </a>
+      {source.party && (
+        <span className="rounded bg-amber-950/40 px-1.5 py-0.5 text-[9px] text-amber-400/90">
+          {t("donate.hcParty")}
+        </span>
+      )}
     </span>
   );
 }
+
+/** Wrap Latin text for use inside a translated sentence (LRI … PDI). */
+const ltr = (text: string) => `\u2066${text}\u2069`;
 
 /* ─── Types ─── */
 
@@ -72,9 +102,9 @@ const ORGANISATIONS: Organisation[] = [
     name: "International Committee of the Red Cross",
     abbr: "ICRC",
     descKey: "orgICRC",
-    donateUrl: "https://www.icrc.org/en/donate",
+    donateUrl: "https://www.icrc.org/en/donate/middle-east",
     website: "https://www.icrc.org",
-    responseUrl: "https://www.icrc.org",
+    responseUrl: "https://www.icrc.org/en/where-we-work/iran",
     taxEntity: "International Committee of the Red Cross",
     ein: "98-6001029",
     stars: 3,
@@ -86,7 +116,7 @@ const ORGANISATIONS: Organisation[] = [
     descKey: "orgUNHCR",
     donateUrl: "https://donate.unhcr.org/int/en/general",
     website: "https://www.unhcr.org",
-    responseUrl: "https://www.unhcr.org",
+    responseUrl: "https://www.unhcr.org/emergencies/middle-east-emergency",
     taxEntity: "USA for UNHCR",
     ein: "52-1662800",
     stars: 4,
@@ -98,7 +128,7 @@ const ORGANISATIONS: Organisation[] = [
     descKey: "orgMSF",
     donateUrl: "https://www.msf.org/donate",
     website: "https://www.msf.org",
-    responseUrl: "https://www.msf.org",
+    responseUrl: "https://www.doctorswithoutborders.org/latest/msf-response-escalating-conflict-middle-east",
     taxEntity: "Doctors Without Borders, USA",
     ein: "13-3433452",
     stars: 4,
@@ -110,7 +140,7 @@ const ORGANISATIONS: Organisation[] = [
     descKey: "orgUNICEF",
     donateUrl: "https://help.unicef.org/en",
     website: "https://www.unicef.org",
-    responseUrl: "https://www.unicef.org",
+    responseUrl: "https://www.unicef.org/appeals/lebanon",
     taxEntity: "UNICEF USA",
     ein: "13-1760110",
     stars: 4,
@@ -122,7 +152,7 @@ const ORGANISATIONS: Organisation[] = [
     descKey: "orgIRC",
     donateUrl: "https://help.rescue.org/donate",
     website: "https://www.rescue.org",
-    responseUrl: "https://www.rescue.org",
+    responseUrl: "https://www.rescue.org/article/lebanon-crisis-what-happening-and-how-help",
     taxEntity: "International Rescue Committee",
     ein: "13-5660870",
     stars: 4,
@@ -134,7 +164,7 @@ const ORGANISATIONS: Organisation[] = [
     descKey: "orgDirectRelief",
     donateUrl: "https://www.directrelief.org/donate",
     website: "https://www.directrelief.org",
-    responseUrl: "https://www.directrelief.org",
+    responseUrl: "https://www.directrelief.org/place/lebanon/",
     taxEntity: "Direct Relief",
     ein: "95-1831116",
     stars: 4,
@@ -146,7 +176,7 @@ const ORGANISATIONS: Organisation[] = [
     descKey: "orgWFP",
     donateUrl: "https://wfpusa.org/give/",
     website: "https://www.wfp.org",
-    responseUrl: "https://www.wfp.org",
+    responseUrl: "https://www.wfp.org/emergencies/middle-east-conflict",
     taxEntity: "World Food Program USA",
     ein: "13-3843435",
     stars: 4,
@@ -158,41 +188,12 @@ const ORGANISATIONS: Organisation[] = [
     descKey: "orgSaveTheChildren",
     donateUrl: "https://www.savethechildren.org/savekids",
     website: "https://www.savethechildren.org",
-    responseUrl: "https://www.savethechildren.org",
+    responseUrl: "https://www.savethechildren.org/us/what-we-do/emergency-response/middle-east-regional-crisis",
     taxEntity: "Save the Children Federation",
     ein: "06-0726487",
     stars: 4,
     programShare: 0.8494,
   },
-];
-
-/* ─── Source Data ─── */
-
-const SOURCES = [
-  { org: "UNHCR", desc: "Iran displacement figures — up to 3.2 million internally displaced", date: "March 12, 2026" },
-  { org: "CARE", desc: "Lebanon displacement — 1 million+ displaced", date: "March 17, 2026" },
-  { org: "IRC", desc: "Lebanon-to-Syria border crossings — ~140,000; war cost estimate ~$2B/day (CSIS estimates ~$891M/day)", date: "March 19, 2026" },
-  { org: "Iran Ministry of Health", desc: "Iran casualties — 1,444 killed, 18,551 injured (government figures)", date: "Mid-March 2026" },
-  { org: "Hengaw Human Rights Org", desc: "Iran casualties — 5,900 killed (595 civilian, 5,305 military); 160+ women killed", date: "March 20, 2026 (6th report)" },
-  { org: "UNICEF", desc: "Regional child casualties — 1,800+ killed or injured; 240+ children killed in Iran; 107 in Lebanon; 4 in Israel; 1 in Kuwait", date: "March 16, 2026" },
-  { org: "Lebanon Health Ministry", desc: "Lebanon casualties — 1,021+ killed, 2,641 injured", date: "March 21, 2026" },
-  { org: "Alma Research Center", desc: "Israel casualties — 18 civilians killed, 4,002+ injured", date: "March 20, 2026" },
-  { org: "US CENTCOM", desc: "US military casualties — 13 killed (7 by enemy fire), ~200 wounded; 7,000+ strikes on Iran; 19 ships + 1 submarine destroyed", date: "Mid-March 2026" },
-  { org: "Iranian Red Crescent Society", desc: "Infrastructure damage — 65+ schools, 32+ medical facilities, 10,000+ residential units, 20,000+ civilian sites", date: "Mid-March 2026" },
-  { org: "Iranian Health Officials (via NPR)", desc: "Hospitals — 25 damaged, 9 out of service", date: "Mid-March 2026" },
-  { org: "UNESCO", desc: "World Heritage sites damaged — Golestan Palace, Naqsh-e Jahan Square, Chehel Sotoun, Ali Qapu, Shah Mosque, Falak-ol-Aflak", date: "Mid-March 2026" },
-  { org: "NetBlocks", desc: "Iran internet shutdown — 4% connectivity, 92M+ affected", date: "Mid-March 2026" },
-  { org: "WFP", desc: "Food security — 1,000,000+ hot meals in Lebanon; 230,000 reached; 45M more people at risk of hunger globally; shipping costs up 18%", date: "March 12–20, 2026" },
-  { org: "Mercy Corps", desc: "200,000+ children among Lebanon's displaced", date: "Mid-March 2026" },
-  { org: "Iraqi Health Authorities", desc: "Iraq casualties — 61+ killed", date: "Mid-March 2026" },
-  { org: "Various State Media (via NPR, AJ)", desc: "Gulf States casualties — UAE, Kuwait, Saudi Arabia, Bahrain, Oman combined 16+", date: "Mid-March 2026" },
-  { org: "Jordanian Authorities", desc: "Jordan — 0 killed, 28 injured", date: "Mid-March 2026" },
-  { org: "French Ministry of Defence", desc: "1 French service member killed in Iraq", date: "Mid-March 2026" },
-  { org: "TIME", desc: "US military wounded breakdown — 180+ returned to duty", date: "March 17, 2026" },
-  { org: "Common Dreams / Iranian Red Crescent", desc: "Civilian building damage — 10,000+ residential units, 20,000+ civilian sites", date: "Mid-March 2026" },
-  { org: "OHCHR", desc: "Regional human rights monitoring and civilian protection reporting", date: "Ongoing" },
-  { org: "Al Jazeera", desc: "Conflict tracker and casualty monitoring", date: "Ongoing" },
-  { org: "CFR (Council on Foreign Relations)", desc: "Conflict background and analysis", date: "Ongoing" },
 ];
 
 /* ─── Collapsible Section Component ─── */
@@ -227,28 +228,6 @@ function CollapsibleSection({
   );
 }
 
-/* ─── Stat Line (for country breakdowns) ─── */
-
-function StatLine({
-  label,
-  value,
-  source,
-}: {
-  label: string;
-  value: string;
-  source: string;
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-2 py-1">
-      <span className="text-xs text-zinc-400">{label}</span>
-      <div className="flex items-baseline gap-2">
-        <span className="text-xs font-semibold text-zinc-200">{value}</span>
-        <SourceTag text={source} />
-      </div>
-    </div>
-  );
-}
-
 /* ─── Main Component ─── */
 
 interface DonationPanelProps {
@@ -260,7 +239,22 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
   const tag = LOCALE_TAG[locale];
   const fmtNumber = new Intl.NumberFormat(tag);
   const fmtPercent = new Intl.NumberFormat(tag, { style: "percent", maximumFractionDigits: 0 });
+  const fmtCompact = new Intl.NumberFormat(tag, { notation: "compact", maximumFractionDigits: 1 });
+  const fmtDate = (iso: string) =>
+    new Date(`${iso}T12:00:00Z`).toLocaleDateString(tag, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+  const fmtValue = (f: Figure) => `${(f.compact ? fmtCompact : fmtNumber).format(f.value)}${f.plus ? "+" : ""}`;
+  const fmtUsd = new Intl.NumberFormat(tag, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  // Numbers and ISO dates in sentences use the reader's digits and calendar
+  // wording, so no translation carries a hand-typed digit.
+  const fmtVars = (vars?: Record<string, number | string>) =>
+    Object.fromEntries(
+      Object.entries(vars ?? {}).map(([k, v]) => [
+        k,
+        typeof v === "number" ? fmtNumber.format(v) : /^\d{4}-\d{2}-\d{2}$/.test(v) ? fmtDate(v) : v,
+      ])
+    );
   const checkedOn = new Date(`${CHECKED_ON}T12:00:00Z`).toLocaleDateString(tag, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+  const sources = allSources();
   const [showSources, setShowSources] = useState(false);
 
   return (
@@ -316,7 +310,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
           </div>
 
           {/* ───────────────────────────────────────────────────── */}
-          {/* SECTION 1: Human Cost Summary                        */}
+          {/* SECTION 1: Human cost — dated figures, each linked     */}
           {/* ───────────────────────────────────────────────────── */}
 
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
@@ -328,79 +322,48 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
             </p>
 
             {/*
-              The figures below are a dated snapshot, not live data — unlike the
-              event map, nothing here updates automatically. On a page badged
-              LIVE, present-tense humanitarian numbers read as current unless
+              A dated snapshot, not live data. On a page badged LIVE,
+              present-tense humanitarian numbers read as current unless
               something says otherwise, so this says otherwise.
             */}
             <p
               role="note"
               className="mt-3 rounded border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-200"
             >
-              {t("donate.snapshotNotice")}
+              {t("donate.snapshotNotice", { date: fmtDate(FIGURES_CHECKED_ON) })}
             </p>
 
-            {/* 6-card stat grid */}
+            <div className="mt-3 rounded-md border border-zinc-800 bg-zinc-950/50 p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                {t("donate.hcStatusTitle", { date: fmtDate(STATUS.asOf) })}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-zinc-300">
+                {t("donate.hcStatusIran", { date: fmtDate("2026-08-30") })}{" "}
+                {t("donate.hcStatusLebanon", { date: fmtDate("2026-04-16") })}
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                <SourceLink source={STATUS.source} />
+                <SourceLink source={STATUS.lebanonSource} />
+              </div>
+            </div>
+
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {[
-                {
-                  value: "3.2M+",
-                  label: "Displaced in Iran",
-                  source: "UNHCR, March 12",
-                },
-                {
-                  value: "1M+",
-                  label: "Displaced in Lebanon",
-                  source: "CARE, March 17",
-                },
-                {
-                  value: "1,444+",
-                  label: "Killed in Iran*",
-                  source: "Iran Min. of Health",
-                },
-                {
-                  value: "1,021+",
-                  label: "Killed in Lebanon",
-                  source: "Lebanon Health Min., March 21",
-                },
-                {
-                  value: "240+",
-                  label: "Children killed (Iran)",
-                  source: "Iran Health Min., March 17",
-                },
-                {
-                  value: "1,800+",
-                  label: "Children killed/injured (region)",
-                  source: "UNICEF, March 16",
-                },
-              ].map((stat) => (
+              {HEADLINE.map((f) => (
                 <div
-                  key={stat.label}
+                  key={f.label}
                   className="rounded-md border border-zinc-800 bg-zinc-900/60 p-2.5 text-center"
                 >
-                  <div className="text-base font-bold text-red-400">
-                    {stat.value}
-                  </div>
+                  <div className="text-base font-bold text-red-400">{fmtValue(f)}</div>
                   <div className="mt-0.5 text-[10px] leading-tight text-zinc-400">
-                    {stat.label}
+                    {t(`donate.${f.label}`, fmtVars(f.labelVars))}
                   </div>
+                  <div className="mt-1 text-[9px] text-zinc-500">{fmtDate(f.asOf)}</div>
                   <div className="mt-1">
-                    <SourceTag text={stat.source} />
+                    <SourceLink source={f.source} />
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Iran casualty discrepancy note */}
-            <div className="mt-3 rounded-md border border-amber-900/40 bg-amber-950/20 p-2.5">
-              <p className="text-[11px] leading-relaxed text-amber-300/80">
-                {t("donate.casualtyNote")}
-              </p>
-            </div>
-
-            <p className="mt-3 text-[10px] italic text-zinc-600">
-              {t("donate.figuresNote")}
-            </p>
           </div>
 
           {/* ───────────────────────────────────────────────────── */}
@@ -412,231 +375,98 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
               {t("donate.countryBreakdown")}
             </h2>
             <div className="space-y-2">
-              {/* IRAN */}
-              <CollapsibleSection
-                title="Iran"
-                defaultOpen
-                icon={<span className="text-xs">🇮🇷</span>}
-              >
-                <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label={`${t("donate.killed")} (${t("donate.govtFigure")})`} value="1,444" source="Iran Min. of Health" />
-                  <StatLine label={`${t("donate.injured")} (${t("donate.govtFigure")})`} value="18,551" source="Iran Min. of Health" />
-                  <StatLine label={`${t("donate.killed")} (${t("donate.independent")})`} value="5,900 total" source="Hengaw 6th report, March 20" />
-                  <StatLine label={`  — ${t("donate.civiliansKilled")}`} value="595" source="Hengaw" />
-                  <StatLine label={`  — ${t("donate.serviceMembersKilled")}`} value="5,305" source="Hengaw" />
-                  <StatLine label={t("donate.womenKilled")} value="160+" source="Hengaw, March 20" />
-                  <StatLine label={t("donate.childrenKilled")} value="240+" source="Iran Health Min., March 17" />
-                  <StatLine label={t("donate.childrenKilledSchools")} value="~180" source="UNICEF, March 5" />
-                  <StatLine label={t("donate.internallyDisplaced")} value="Up to 3.2M" source="UNHCR, March 12" />
-                </div>
-                <div className="mt-3 border-t border-zinc-800/30 pt-3">
-                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                    {t("donate.infrastructure")}
-                  </p>
+              {COUNTRIES.map((c, i) => (
+                <CollapsibleSection
+                  key={c.title}
+                  title={t(`donate.${c.title}`)}
+                  defaultOpen={i === 0}
+                  icon={<span className="text-xs" aria-hidden="true">{c.flag}</span>}
+                >
                   <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                    <StatLine label={t("donate.hospitalsDesc")} value="25 (9 out of service)" source="Iranian health officials via NPR" />
-                    <StatLine label={t("donate.medicalFacilities")} value="32+" source="Iranian Red Crescent" />
-                    <StatLine label={t("donate.schoolsDamaged")} value="65+" source="Iranian Red Crescent" />
-                    <StatLine label={t("donate.residentialDamaged")} value="10,000+" source="Iranian Red Crescent via Common Dreams" />
-                    <StatLine label={t("donate.civilianSites")} value="20,000+" source="Iranian Red Crescent via Common Dreams" />
-                    <StatLine label={t("donate.heritageDesc")} value="6 damaged" source="UNESCO" />
-                    <StatLine label={t("donate.internetDesc")} value="4% (92M+ affected)" source="NetBlocks" />
+                    {c.figures.map((f) => (
+                      <div
+                        key={`${f.label}-${f.asOf}-${f.value}`}
+                        className="flex flex-col gap-0.5 py-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2"
+                      >
+                        <div className="min-w-0">
+                          <span className="text-xs text-zinc-400">{t(`donate.${f.label}`, fmtVars(f.labelVars))}</span>
+                          {f.detail && (
+                            <span className="block text-[10px] text-zinc-500">
+                              {t(`donate.${f.detail.key}`, fmtVars(f.detail.vars))}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-baseline gap-1.5 sm:justify-end">
+                          <span className="text-xs font-semibold text-zinc-200">{fmtValue(f)}</span>
+                          <span className="text-[9px] text-zinc-500">{fmtDate(f.asOf)}</span>
+                          <SourceLink source={f.source} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
-                  UNESCO World Heritage sites damaged include Golestan Palace,
-                  Naqsh-e Jahan Square, Chehel Sotoun, Ali Qapu, Shah Mosque,
-                  and Falak-ol-Aflak Castle.
-                </p>
-              </CollapsibleSection>
-
-              {/* LEBANON */}
-              <CollapsibleSection
-                title="Lebanon"
-                icon={<span className="text-xs">🇱🇧</span>}
-              >
-                <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label={t("donate.killed")} value="1,021+" source="Lebanon Health Min., March 21" />
-                  <StatLine label={t("donate.injured")} value="2,641" source="Lebanon Health Min., March 21" />
-                  <StatLine label={t("donate.childrenKilled")} value="107" source="UNICEF, March 16" />
-                  <StatLine label={t("donate.displaced")} value="1M+" source="CARE, March 17" />
-                  <StatLine label={t("donate.childrenDisplaced")} value="200,000+" source="Mercy Corps" />
-                  <StatLine label={t("donate.fleeTo")} value="~140,000" source="IRC, March 19" />
-                </div>
-                <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
-                  Shelters at capacity across the country. Syrian refugees are
-                  fleeing back into Syria — a reversal of a decade of displacement.
-                  WFP has reached 230,000 people and served 1,000,000+ hot meals
-                  since March 2.
-                </p>
-              </CollapsibleSection>
-
-              {/* ISRAEL */}
-              <CollapsibleSection
-                title="Israel"
-                icon={<span className="text-xs">🇮🇱</span>}
-              >
-                <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label={t("donate.civiliansKilled")} value="18" source="Alma Research Center, March 20" />
-                  <StatLine label={t("donate.injured")} value="4,002+" source="Alma Research Center, March 20" />
-                  <StatLine label={t("donate.childrenKilled")} value="4" source="UNICEF, March 11" />
-                </div>
-                <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
-                  300+ Iranian attack waves reported. State of emergency declared.
-                </p>
-              </CollapsibleSection>
-
-              {/* US MILITARY */}
-              <CollapsibleSection
-                title="United States (Military)"
-                icon={<span className="text-xs">🇺🇸</span>}
-              >
-                <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label={t("donate.serviceMembersKilled")} value="13" source="US CENTCOM" />
-                  <StatLine label={`  — ${t("donate.byEnemyFire")}`} value="7" source="US CENTCOM" />
-                  <StatLine label={t("donate.serviceMembersWounded")} value="~200" source="US CENTCOM via TIME, March 17" />
-                  <StatLine label={`  — ${t("donate.returnedToDuty")}`} value="180+" source="TIME, March 17" />
-                </div>
-                <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
-                  US bases attacked across 4+ countries. CENTCOM reports 7,000+
-                  strikes on Iranian targets, 19 ships and 1 submarine destroyed.
-                </p>
-              </CollapsibleSection>
-
-              {/* GULF STATES & OTHER */}
-              <CollapsibleSection
-                title="Gulf States, Iraq & Other"
-                icon={<span className="text-xs">🌍</span>}
-              >
-                <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label="Iraq — killed" value="61+" source="Iraqi health authorities" />
-                  <StatLine label="Gulf States combined — killed" value="16+" source="State media via NPR" />
-                  <StatLine label="Kuwait" value="2 officers + 1 child killed" source="State media, UNICEF" />
-                  <StatLine label="Bahrain" value="1 worker + 1 woman killed" source="State media via AJ" />
-                  <StatLine label="Oman" value="2 killed, 5 injured" source="Oman state media" />
-                  <StatLine label="Jordan" value="0 killed, 28 injured" source="Jordanian authorities" />
-                  <StatLine label="France (in Iraq)" value="1 killed, several injured" source="French MoD" />
-                </div>
-                <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
-                  PMF strikes in Iraq, oil terminal operations suspended.
-                  Infrastructure damage across Gulf states includes AWS data
-                  centers, airports, and oil facilities.
-                </p>
-              </CollapsibleSection>
+                  {c.notes?.map((n) => (
+                    <p key={n.key} className="mt-2 text-[10px] leading-relaxed text-zinc-500">
+                      {t(`donate.${n.key}`, fmtVars(n.vars))}
+                    </p>
+                  ))}
+                </CollapsibleSection>
+              ))}
             </div>
           </div>
 
           {/* ───────────────────────────────────────────────────── */}
-          {/* SECTION 3: Children & Education                       */}
+          {/* SECTION 3: Named event                                 */}
           {/* ───────────────────────────────────────────────────── */}
 
-          <div>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              {t("donate.childrenEducation")}
-            </h2>
-
-            {/* Highlight card */}
-            <div className="rounded-lg border border-red-900/40 bg-red-950/15 p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-400">1,800+</div>
-                <div className="mt-1 text-xs text-zinc-300">
-                  {t("donate.childrenImpact")}
-                </div>
-                <div className="mt-1">
-                  <SourceTag text="UNICEF, March 16, 2026" />
-                </div>
-              </div>
+          <div className="rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400">
+                {t("donate.namedEvent")}
+              </span>
             </div>
-
-            {/* Breakdown */}
-            <div className="mt-3 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                {t("donate.byCountry")}
-              </p>
-              <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                <StatLine label="Iran — children killed" value="240+" source="Iran Health Min., March 17" />
-                <StatLine label="Lebanon — children killed" value="107" source="UNICEF, March 16" />
-                <StatLine label="Israel — children killed" value="4" source="UNICEF" />
-                <StatLine label="Kuwait — children killed" value="1" source="UNICEF" />
-                <StatLine label="Lebanon — children displaced" value="200,000+" source="Mercy Corps" />
-              </div>
-            </div>
-
-            {/* Minab school attack */}
-            <div className="mt-3 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
-              <div className="mb-1.5 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400">
-                  {t("donate.namedEvent")}
-                </span>
-              </div>
-              <h3 className="text-sm font-semibold text-zinc-200">
-                Minab School Attack
-              </h3>
-              <p className="mt-1 text-xs leading-relaxed text-zinc-400">
-                Approximately 165–175 people — primarily schoolgirls, along with
-                boys, teachers, and staff — were killed when their school in
-                Minab, Iran was struck. This single event accounts for the
-                majority of school-related child fatalities in the conflict.
-              </p>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                <SourceTag text="UNICEF, March 5" />
-                <SourceTag text="BBC" />
-              </div>
-            </div>
-
-            {/* Education impact */}
-            <div className="mt-3 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                {t("donate.educationImpact")}
-              </p>
-              <ul className="space-y-1.5 text-xs leading-relaxed text-zinc-400">
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-zinc-600" />
-                  65+ schools damaged across Iran
-                  <SourceTag text="Iranian Red Crescent" />
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-zinc-600" />
-                  ~180 children killed while in school in Iran
-                  <SourceTag text="UNICEF" />
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-zinc-600" />
-                  Schools converted to displacement shelters in Lebanon
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-zinc-600" />
-                  Millions of children out of school regionally
-                </li>
-              </ul>
+            <h3 className="text-sm font-semibold text-zinc-200">
+              {t("donate.hcMinabTitle", { date: fmtDate("2026-02-28") })}
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-zinc-400">
+              {t(
+                "donate.hcMinabText",
+                fmtVars({ total: 156, children: 120, boys: 73, girls: 47, educators: 26, parents: 7, independent: 157, independentChildren: 123 })
+              )}
+            </p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span className="text-[9px] text-zinc-500">{fmtDate(MINAB.asOf)}</span>
+              <SourceLink source={MINAB.source} />
             </div>
           </div>
 
           {/* ───────────────────────────────────────────────────── */}
-          {/* SECTION 4: Economic & Food Security Impact            */}
+          {/* SECTION 4: Shipping and food                           */}
           {/* ───────────────────────────────────────────────────── */}
 
           <div>
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
               {t("donate.economicImpact")}
             </h2>
-            <div className="rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
-              <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                <StatLine label={t("donate.oilPrices")} value="Above $100/barrel" source="Multiple outlets" />
-                <StatLine label={t("donate.straitOfHormuz")} value="Virtual standstill" source="WFP" />
-                <StatLine label={t("donate.shippingCosts")} value="Up 18%" source="WFP, March 12" />
-                <StatLine label={t("donate.warCost")} value="~$891M–$2B/day" source="CSIS / IRC" />
-                <StatLine label={t("donate.hungerRisk")} value="45 million" source="WFP/UN News, March 18" />
-                <StatLine label={t("donate.fertilizerDisrupted")} value="25% — disrupted" source="WFP" />
-              </div>
-              <div className="mt-3 border-t border-zinc-800/30 pt-3">
-                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
-                  {t("donate.foodResponse")}
+            <div className="space-y-3 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-4">
+              <div>
+                <p className="text-xs font-semibold text-zinc-300">{t("donate.straitOfHormuz")}</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-zinc-400">
+                  {t("donate.hcHormuzText", fmtVars({ ...SHIPPING.hormuz.vars, date: SHIPPING.hormuz.asOf }))}
                 </p>
-                <div className="space-y-0.5 divide-y divide-zinc-800/30">
-                  <StatLine label={t("donate.peopleReached")} value="230,000" source="WFP" />
-                  <StatLine label={t("donate.mealsServed")} value="1,000,000+" source="WFP, mid-March" />
+                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                  <span className="text-[9px] text-zinc-500">{fmtDate(SHIPPING.hormuz.asOf)}</span>
+                  <SourceLink source={SHIPPING.hormuz.source} />
+                </div>
+              </div>
+              <div className="border-t border-zinc-800/30 pt-3">
+                <p className="text-xs font-semibold text-zinc-300">{t("donate.hungerRisk")}</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-zinc-400">
+                  {t("donate.hcHungerText", { n: fmtCompact.format(SHIPPING.hunger.vars.n), price: fmtUsd.format(SHIPPING.hunger.vars.price) })}
+                </p>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                  <span className="text-[9px] text-zinc-500">{fmtDate(SHIPPING.hunger.asOf)}</span>
+                  <SourceLink source={SHIPPING.hunger.source} />
                 </div>
               </div>
             </div>
@@ -757,7 +587,8 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                   </div>
 
                   <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-zinc-600">
-                    <span>{t("donate.taxId", { entity: org.taxEntity, ein: org.ein })}</span>
+                    {/* LTR isolates and a non-breaking hyphen: in RTL text "98-6001029" otherwise wraps and reorders. */}
+                    <span>{t("donate.taxId", { entity: ltr(org.taxEntity), ein: ltr(org.ein.replace("-", "\u2011")) })}</span>
                     <a
                       href={org.website}
                       target="_blank"
@@ -786,33 +617,27 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
               </p>
               <button
                 onClick={() => setShowSources(!showSources)}
+                aria-expanded={showSources}
                 className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-zinc-300 transition-colors hover:text-zinc-100"
               >
-                {showSources ? t("donate.hideAll") : t("donate.viewAll")} {t("donate.allSources", { n: SOURCES.length })}
+                {showSources ? t("donate.hideAll") : t("donate.viewAll")} {t("donate.allSources", { n: fmtNumber.format(sources.length) })}
                 <ChevronDown open={showSources} />
               </button>
 
               {showSources && (
-                <div className="mt-3 space-y-2 border-t border-zinc-800/50 pt-3">
-                  {SOURCES.map((s, i) => (
-                    <div
-                      key={i}
+                <ul className="mt-3 space-y-2 border-t border-zinc-800/50 pt-3">
+                  {sources.map((s) => (
+                    <li
+                      key={`${s.org}|${s.url}`}
                       className="flex flex-col gap-0.5 rounded-md border border-zinc-800/30 bg-zinc-950/40 p-2.5 sm:flex-row sm:items-baseline sm:justify-between"
                     >
-                      <div className="flex-1">
-                        <span className="text-[11px] font-semibold text-zinc-300">
-                          {s.org}
-                        </span>
-                        <p className="text-[10px] leading-relaxed text-zinc-500">
-                          {s.desc}
-                        </p>
-                      </div>
+                      <SourceLink source={s} />
                       <span className="flex-shrink-0 text-[10px] text-zinc-600">
-                        {s.date}
+                        {fmtDate(s.asOf)}
                       </span>
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
             </div>
           </div>
