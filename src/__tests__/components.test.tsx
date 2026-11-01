@@ -636,3 +636,38 @@ describe("useEvents", () => {
     expect(event).toHaveProperty("created_at");
   });
 });
+
+// ---------------------------------------------------------------------------
+// DonationPanel
+// ---------------------------------------------------------------------------
+
+describe("DonationPanel", () => {
+  let DonationPanel: typeof import("@/components/ui/DonationPanel").default;
+  let I18nProvider: typeof import("@/i18n").I18nProvider;
+
+  beforeEach(async () => {
+    DonationPanel = (await import("@/components/ui/DonationPanel")).default;
+    I18nProvider = (await import("@/i18n")).I18nProvider;
+  });
+
+  it("names the legal entity behind each tax ID and links each rating to its source", () => {
+    render(<I18nProvider><DonationPanel onBack={() => {}} /></I18nProvider>);
+    expect(screen.getByText("US tax ID (USA for UNHCR): 52-1662800")).toBeTruthy();
+    const ratings = screen.getAllByRole("link", { name: /stars on Charity Navigator/ });
+    expect(ratings).toHaveLength(8);
+    for (const a of ratings) expect(a.getAttribute("href")).toMatch(/^https:\/\/www\.charitynavigator\.org\/ein\/\d{9}$/);
+    expect(screen.queryByText("Verified")).toBeNull();
+  });
+
+  it("formats ratings and shares in the reader's numerals", () => {
+    // The server renders in the cookie's language; the client must keep it.
+    document.cookie = "wl_lang=fa; path=/";
+    try {
+      render(<I18nProvider initialLocale="fa"><DonationPanel onBack={() => {}} /></I18nProvider>);
+      expect(screen.getAllByText("۴/۴ ستاره در Charity Navigator").length).toBe(7);
+      expect(screen.getByText(/۹۹٪/)).toBeTruthy();
+    } finally {
+      document.cookie = "wl_lang=; path=/; max-age=0";
+    }
+  });
+});

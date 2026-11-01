@@ -10,6 +10,7 @@
 
 import { useState } from "react";
 import { useI18n } from "@/i18n";
+import { LOCALE_TAG } from "@/i18n/locale";
 
 /* ─── Icons (inline SVGs to avoid deps) ─── */
 
@@ -40,138 +41,128 @@ function SourceTag({ text }: { text: string }) {
 interface Organisation {
   name: string;
   abbr: string;
+  /** i18n key (under donate.) for the one-line description. */
+  descKey: string;
   donateUrl: string;
   website: string;
-  mission: string;
-  activeStatus: string;
-  currentResponse: string;
-  verification: string;
-  charityNavigator: string;
+  /** The organization's own page on its response to this conflict. */
+  responseUrl: string;
+  /** The US legal entity the EIN belongs to (IRS records via ProPublica). */
+  taxEntity: string;
   ein: string;
+  /** Charity Navigator stars out of 4, for the entity that holds the EIN. */
+  stars: number;
+  /** Program expenses as a share of total expenses, per Charity Navigator. */
+  programShare: number;
 }
 
 /* ─── Organisation Data ─── */
+
+/**
+ * Checked 2026-10-31: every donate and website URL resolves to the
+ * organization; every EIN matches the named entity in IRS records
+ * (ProPublica Nonprofit Explorer, all 501(c)(3)); stars and program
+ * shares are from each entity's Charity Navigator page. Bump
+ * CHECKED_ON when they are checked again.
+ */
+const CHECKED_ON = "2026-10-31";
 
 const ORGANISATIONS: Organisation[] = [
   {
     name: "International Committee of the Red Cross",
     abbr: "ICRC",
+    descKey: "orgICRC",
     donateUrl: "https://www.icrc.org/en/donate",
     website: "https://www.icrc.org",
-    mission:
-      "The ICRC is an impartial, neutral and independent organization whose exclusively humanitarian mission is to protect the lives and dignity of victims of armed conflict and other situations of violence.",
-    activeStatus:
-      "Operating on the ground in Iran, Israel, Lebanon and across the Gulf region. Working with the Iranian Red Crescent Society to provide medical services, search and rescue, and essential aid to displaced populations.",
-    currentResponse:
-      "Deploying emergency medical and surgical teams across the region. Coordinating with Iranian Red Crescent for medical services, search and rescue, and essential aid to displaced populations in Iran.",
-    verification: "International humanitarian organization · 501(c)(3) in the US",
-    charityNavigator: "3/4 Stars",
+    responseUrl: "https://www.icrc.org",
+    taxEntity: "International Committee of the Red Cross",
     ein: "98-6001029",
+    stars: 3,
+    programShare: 0.9111,
   },
   {
     name: "UNHCR — UN Refugee Agency",
     abbr: "UNHCR",
+    descKey: "orgUNHCR",
     donateUrl: "https://donate.unhcr.org/int/en/general",
     website: "https://www.unhcr.org",
-    mission:
-      "UNHCR leads international action to protect people forced to flee their homes because of conflict and persecution. It delivers life-saving assistance, safeguards fundamental human rights, and helps people find a safe place to call home.",
-    activeStatus:
-      "Mobilizing across the Middle East as over 4 million people have been forcibly displaced. Present in Iran since 1984 — the largest UN agency there — with offices in Tehran and five field locations, currently assisting displaced populations.",
-    currentResponse:
-      "Managing the displacement of up to 3.2 million people inside Iran. Operating logistics hub in Termez, Uzbekistan. Coordinating regional response for 4+ million displaced across the Middle East.",
-    verification: "United Nations agency · US arm (USA for UNHCR) is a 501(c)(3)",
-    charityNavigator: "3/4 Stars (USA for UNHCR)",
+    responseUrl: "https://www.unhcr.org",
+    taxEntity: "USA for UNHCR",
     ein: "52-1662800",
+    stars: 4,
+    programShare: 0.802,
   },
   {
     name: "Médecins Sans Frontières / Doctors Without Borders",
     abbr: "MSF",
+    descKey: "orgMSF",
     donateUrl: "https://www.msf.org/donate",
     website: "https://www.msf.org",
-    mission:
-      "MSF provides independent, impartial medical humanitarian assistance to people affected by conflict, epidemics, disasters, or exclusion from health care in over 75 countries.",
-    activeStatus:
-      "Adapting and scaling up activities amid escalating Middle East conflict. Teams in Lebanon responding to emerging needs of displaced people. Providing emergency medical care, surgical services, and mental health support across the region.",
-    currentResponse:
-      "Scaling up emergency medical care and surgical services across the region. Teams in Lebanon responding to needs of displaced people. Providing mental health support to conflict-affected populations.",
-    verification: "International NGO · US arm is a 501(c)(3)",
-    charityNavigator: "4/4 Stars · 97/100 Score",
+    responseUrl: "https://www.msf.org",
+    taxEntity: "Doctors Without Borders, USA",
     ein: "13-3433452",
+    stars: 4,
+    programShare: 0.8471,
   },
   {
     name: "UNICEF — United Nations Children's Fund",
     abbr: "UNICEF",
+    descKey: "orgUNICEF",
     donateUrl: "https://help.unicef.org/en",
     website: "https://www.unicef.org",
-    mission:
-      "UNICEF works in over 190 countries and territories to save children's lives, defend their rights, and help them fulfill their potential — from early childhood through adolescence.",
-    activeStatus:
-      "Mobilizing emergency supplies to families across the Middle East. Reported 1,800+ children killed or injured across the region. Providing emergency education, water and sanitation, and child protection services in affected areas.",
-    currentResponse:
-      "Monitoring child casualties across the region (1,800+ killed or injured). Calling for protection of schools and children. Providing emergency education, water, sanitation, and child protection in Iran and Lebanon.",
-    verification: "United Nations agency · US arm (UNICEF USA) is a 501(c)(3)",
-    charityNavigator: "4/4 Stars (UNICEF USA)",
+    responseUrl: "https://www.unicef.org",
+    taxEntity: "UNICEF USA",
     ein: "13-1760110",
+    stars: 4,
+    programShare: 0.8566,
   },
   {
     name: "International Rescue Committee",
     abbr: "IRC",
+    descKey: "orgIRC",
     donateUrl: "https://help.rescue.org/donate",
     website: "https://www.rescue.org",
-    mission:
-      "The IRC responds to the world's worst humanitarian crises, helping people whose lives and livelihoods are shattered by conflict and disaster to survive, recover, and regain control of their future.",
-    activeStatus:
-      "Responding to displacement across the Middle East. Providing emergency relief, cash assistance, and protection services. Tracking 1 million displaced in Lebanon.",
-    currentResponse:
-      "Operating in Lebanon, tracking 1 million+ displaced. Providing emergency relief, cash assistance, and protection services. Reporting ~140,000 people crossing from Lebanon into Syria. 87 cents of every dollar goes directly to aid.",
-    verification: "501(c)(3) · Candid Platinum Seal of Transparency",
-    charityNavigator: "4/4 Stars · 96/100 Score",
+    responseUrl: "https://www.rescue.org",
+    taxEntity: "International Rescue Committee",
     ein: "13-5660870",
+    stars: 4,
+    programShare: 0.8735,
   },
   {
     name: "Direct Relief",
     abbr: "Direct Relief",
+    descKey: "orgDirectRelief",
     donateUrl: "https://www.directrelief.org/donate",
     website: "https://www.directrelief.org",
-    mission:
-      "Direct Relief improves the health and lives of people affected by poverty and emergencies — without regard to politics, religion, or ability to pay — by providing essential medical resources to locally-run health facilities.",
-    activeStatus:
-      "Delivering vital medical supplies to health facilities in conflict-affected areas. Coordinating with local health providers in the Middle East to replenish depleted medical stocks and provide emergency pharmaceuticals.",
-    currentResponse:
-      "Delivering vital medical supplies to health facilities across the conflict zone. Coordinating with local providers to replenish depleted medical stocks and provide emergency pharmaceuticals where 25+ hospitals have been damaged.",
-    verification: "501(c)(3) · 100% Charity Navigator Impact Rating",
-    charityNavigator: "4/4 Stars · 100/100 Score",
+    responseUrl: "https://www.directrelief.org",
+    taxEntity: "Direct Relief",
     ein: "95-1831116",
+    stars: 4,
+    programShare: 0.9943,
   },
   {
     name: "World Food Programme",
     abbr: "WFP",
+    descKey: "orgWFP",
     donateUrl: "https://wfpusa.org/give/",
     website: "https://www.wfp.org",
-    mission:
-      "WFP is the world's largest humanitarian organization, saving lives in emergencies and using food assistance to build a pathway to peace, stability, and prosperity for people recovering from conflict, disasters, and the impact of climate change.",
-    activeStatus:
-      "Activated contingency plans in Lebanon to support displaced people. Served 1,000,000+ hot meals since March 2. Reached 230,000 people in first two weeks. Estimates 45 million more people globally at risk of acute hunger due to Hormuz disruption.",
-    currentResponse:
-      "Served 1,000,000+ hot meals in Lebanon since March 2. Reached 230,000 people in first two weeks. Establishing emergency cash safety net. Warning that 45 million more people face acute hunger globally due to Strait of Hormuz disruption.",
-    verification: "United Nations agency · US arm (WFP USA) is a 501(c)(3)",
-    charityNavigator: "3/4 Stars (WFP USA)",
+    responseUrl: "https://www.wfp.org",
+    taxEntity: "World Food Program USA",
     ein: "13-3843435",
+    stars: 4,
+    programShare: 0.897,
   },
   {
     name: "Save the Children",
     abbr: "Save the Children",
+    descKey: "orgSaveTheChildren",
     donateUrl: "https://www.savethechildren.org/savekids",
     website: "https://www.savethechildren.org",
-    mission:
-      "Save the Children believes every child deserves a future. In the United States and around the world, it gives children a healthy start in life, the opportunity to learn, and protection from harm.",
-    activeStatus:
-      "Providing emergency assistance to children and families affected by the conflict across the Middle East. 84% of every dollar goes directly to the organization's mission. Delivering child protection, education in emergencies, and life-saving supplies.",
-    currentResponse:
-      "Delivering child protection, education in emergencies, and life-saving supplies across the region. 84% of every dollar goes directly to mission. Responding to needs of 200,000+ displaced children in Lebanon.",
-    verification: "501(c)(3)",
-    charityNavigator: "4/4 Stars",
+    responseUrl: "https://www.savethechildren.org",
+    taxEntity: "Save the Children Federation",
     ein: "06-0726487",
+    stars: 4,
+    programShare: 0.8494,
   },
 ];
 
@@ -222,6 +213,7 @@ function CollapsibleSection({
     <div className="rounded-lg border border-zinc-800/50 bg-zinc-900/30">
       <button
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
         className="flex w-full items-center justify-between p-4 text-left"
       >
         <div className="flex items-center gap-2">
@@ -264,7 +256,11 @@ interface DonationPanelProps {
 }
 
 export default function DonationPanel({ onBack }: DonationPanelProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const tag = LOCALE_TAG[locale];
+  const fmtNumber = new Intl.NumberFormat(tag);
+  const fmtPercent = new Intl.NumberFormat(tag, { style: "percent", maximumFractionDigits: 0 });
+  const checkedOn = new Date(`${CHECKED_ON}T12:00:00Z`).toLocaleDateString(tag, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
   const [showSources, setShowSources] = useState(false);
 
   return (
@@ -273,9 +269,10 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
       <div className="flex items-center gap-3 border-b border-zinc-800 p-4">
         <button
           onClick={onBack}
+          aria-label={t("eventPanel.backToMap")}
           className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path
               fillRule="evenodd"
               d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z"
@@ -653,6 +650,7 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
               {t("donate.verifiedOrgs")}
             </h2>
+            <p className="mb-3 text-[10px] text-zinc-500">{t("donate.checkedOn", { date: checkedOn })}</p>
             <div className="space-y-3">
               {ORGANISATIONS.map((org) => (
                 <div
@@ -687,9 +685,14 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                                 clipRule="evenodd"
                               />
                             </svg>
-                            {t("donate.verifiedBadge")}
+                            {t("donate.registeredCharity")}
                           </span>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-950/40 px-2 py-0.5 text-[10px] text-amber-400">
+                          <a
+                            href={`https://www.charitynavigator.org/ein/${org.ein.replace("-", "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full bg-amber-950/40 px-2 py-0.5 text-[10px] text-amber-400 hover:text-amber-300"
+                          >
                             <svg
                               className="h-2.5 w-2.5"
                               fill="currentColor"
@@ -701,8 +704,8 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                                 clipRule="evenodd"
                               />
                             </svg>
-                            {org.charityNavigator}
-                          </span>
+                            {t("donate.ratingStars", { n: fmtNumber.format(org.stars), max: fmtNumber.format(4) })}
+                          </a>
                         </div>
                       </div>
                     </div>
@@ -731,25 +734,30 @@ export default function DonationPanel({ onBack }: DonationPanelProps) {
                   </div>
 
                   <p className="mt-3 text-xs leading-relaxed text-zinc-400">
-                    {org.mission}
+                    {t(`donate.${org.descKey}`)}
                   </p>
 
-                  {/* Current response — NEW */}
-                  <div className="mt-3 rounded-md border border-zinc-800 bg-zinc-950/50 p-2.5">
-                    <div className="mb-1 flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-green-400">
-                        {t("donate.whatTheyDo")}
-                      </span>
-                    </div>
-                    <p className="text-[11px] leading-relaxed text-zinc-500">
-                      {org.currentResponse}
-                    </p>
+                  {/*
+                    The organization's own page on this conflict, rather than
+                    a summary of it here: a summary goes stale within weeks
+                    (the March one did), their page does not.
+                  */}
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-zinc-800 bg-zinc-950/50 p-2.5">
+                    <a
+                      href={org.responseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-semibold text-green-400 underline decoration-green-900 hover:text-green-300"
+                    >
+                      {t("donate.responseLink")} →
+                    </a>
+                    <span className="text-[10px] text-zinc-500">
+                      {t("donate.programShare", { pct: fmtPercent.format(org.programShare) })}
+                    </span>
                   </div>
 
                   <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-zinc-600">
-                    <span>{org.verification}</span>
-                    <span>EIN: {org.ein}</span>
+                    <span>{t("donate.taxId", { entity: org.taxEntity, ein: org.ein })}</span>
                     <a
                       href={org.website}
                       target="_blank"

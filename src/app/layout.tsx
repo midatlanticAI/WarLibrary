@@ -63,7 +63,7 @@ const siteTitle = "War Library — Live Conflict Tracker";
 // stale number in the first thing a search engine reads is not a small thing.
 // Live counts are rendered from the data itself, in the app.
 const siteDescription =
-  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). Tens of thousands of source-attributed conflict events — airstrikes, missile attacks, drone strikes, and strategic developments — each carrying its source, confidence and verification status. Read it in English, Spanish, French, Turkish, Arabic, Persian, Urdu or Hebrew. Includes an AI analyst for querying the dataset. 100% of donations go to humanitarian aid.";
+  "Real-time, open-source tracker of the 2026 US-Israel war on Iran (Operation Epic Fury). Tens of thousands of source-attributed conflict events — airstrikes, missile attacks, drone strikes, and strategic developments — each carrying its source, confidence and verification status. Read it in English, Spanish, French, Turkish, Arabic, Persian, Urdu or Hebrew. Includes an AI analyst for querying the dataset, and links to vetted humanitarian charities; War Library takes no donations or commission.";
 export const metadata: Metadata = {
   title: {
     default: siteTitle,

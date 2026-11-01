@@ -79,6 +79,17 @@ export function I18nProvider({
       setLocaleState(saved);
       return;
     }
+    // The cookie is a choice too (the newsletter confirm link sets only the
+    // cookie), and the server has already rendered in it. Falling through to
+    // the browser languages here flipped a Persian reader back to English.
+    const cookie = document.cookie
+      .split(";")
+      .map((part) => part.trim().split("="))
+      .find(([name]) => name === LOCALE_COOKIE)?.[1];
+    if (isLocale(cookie)) {
+      setLocaleState(cookie);
+      return;
+    }
     const detected = matchBrowserLocale(navigator.languages ?? [navigator.language]);
     if (detected && detected !== initialLocale) {
       setLocaleState(detected);
